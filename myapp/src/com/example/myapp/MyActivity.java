@@ -23,7 +23,7 @@ public class  MyActivity extends Activity {
     public void sendMessage(View view) {
         Intent intent = new Intent(this, DisplayMessageActivity.class);
         EditText editMessage = (EditText) findViewById(R.id.edit_message);
-        String message = editMessage.toString();
+        String message = editMessage.getText().toString();
         intent.putExtra(EXTRA_MESSAGE, message);
         startActivity(intent);
     }
