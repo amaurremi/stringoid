@@ -4,6 +4,7 @@
 *.class
 myapp/bin/
 myapp/gen/
+myapp/out
 .gradle/
 build/
 local.properties
