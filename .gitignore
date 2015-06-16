@@ -1,0 +1,11 @@
+*.apk
+*.ap_
+*.dex
+*.class
+myapp/bin/
+myapp/gen/
+.gradle/
+build/
+local.properties
+*.log
+.idea
