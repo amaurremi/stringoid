@@ -10,3 +10,6 @@ build/
 local.properties
 *.log
 .idea
+strings/target
+strings/project/target
+.idea_modules
