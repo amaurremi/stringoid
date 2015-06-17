@@ -1,13 +1,10 @@
-*.dex
 *.class
 myapp/bin/
 myapp/gen/
-myapp/out
-.gradle/
-build/
+out/
 local.properties
-*.log
 .idea
-strings/target
-strings/project/target
 .idea_modules
+target/
+projectFilesBackup/
+project/target/

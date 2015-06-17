@@ -36,7 +36,7 @@ public class DisplayUrlActivity extends Activity {
         protected String doInBackground(String... urls) {
             try {
                 HttpURLConnection connection = (HttpURLConnection) new URL(
-                        "http://urls.api.twitter.com/1/urls/count.json?url=" + urls[0]
+                    "http://urls.api.twitter.com/1/urls/count.json?url=" + urls[0]
                 ).openConnection();
                 try {
                     StringWriter writer = new StringWriter();
