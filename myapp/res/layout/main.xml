@@ -5,7 +5,7 @@
               android:layout_height="fill_parent"
               android:layout_weight="1"
         >
-    <EditText android:id="@+id/edit_message"
+    <EditText android:id="@+id/edit_url"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:hint="@string/edit_message" />

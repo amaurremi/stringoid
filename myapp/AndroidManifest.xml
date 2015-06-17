@@ -14,7 +14,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.example.myapp.DisplayMessageActivity"
+            android:name=".DisplayUrlActivity"
             android:label="@string/title_activity_display_message"
             android:parentActivityName="com.example.myapp.MyActivity" >
             <meta-data
