@@ -6,12 +6,16 @@ organization := "University of Waterloo"
 
 scalaVersion := "2.11.1"
 
+resolvers += "Local Maven Repository" at "file:///"+Path.userHome.absolutePath+"/.m2/repository"
+
 libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "0.5.+",
 
+  "com.ibm.wala" % "com.ibm.wala.core" % "1.3.7",
   "com.ibm.wala" % "com.ibm.wala.shrike" % "1.3.7",
   "com.ibm.wala" % "com.ibm.wala.util" % "1.3.7",
-  "com.ibm.wala" % "com.ibm.wala.core" % "1.3.7",
+
+  "com.ibm.wala" % "com.ibm.wala.scandroid" % "1.3.8-SNAPSHOT",
 
   "edu.illinois.wala" %% "walafacade" % "0.1.2",
 
