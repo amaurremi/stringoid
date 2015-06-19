@@ -1,19 +1,19 @@
 package edu.illinois.wala.ipa.callgraph
 
-import com.typesafe.config.ConfigFactory
-import com.ibm.wala.ipa.cha.ClassHierarchy
-import com.ibm.wala.types.TypeReference
-import com.ibm.wala.types.MethodReference
-import com.ibm.wala.types.TypeName
-import com.ibm.wala.ipa.callgraph.impl.DefaultEntrypoint
-import com.ibm.wala.ipa.callgraph.Entrypoint
-import scala.collection.JavaConversions._
-import com.typesafe.config.Config
+import java.util
+
 import com.ibm.wala.classLoader.ClassLoaderFactoryImpl
-import com.ibm.wala.classLoader.ClassLoaderFactory
-import com.ibm.wala.types.ClassLoaderReference
-import com.typesafe.config.ConfigList
-import com.ibm.wala.ipa.cha.IClassHierarchy
+import com.ibm.wala.dalvik.util.AndroidEntryPointLocator
+import com.ibm.wala.dalvik.util.AndroidEntryPointLocator.LocatorFlags
+import com.ibm.wala.ipa.callgraph.Entrypoint
+import com.ibm.wala.ipa.callgraph.impl.DefaultEntrypoint
+import com.ibm.wala.ipa.cha.ClassHierarchy
+import com.ibm.wala.types.{MethodReference, TypeName, TypeReference}
+import com.ibm.wala.util.collections.HashSetFactory
+import com.typesafe.config.{Config, ConfigFactory}
+
+import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 class AnalysisOptions(scope: AnalysisScope, entrypoints: java.lang.Iterable[Entrypoint], val cha: ClassHierarchy, val isSourceAnalysis: Boolean)
   extends com.ibm.wala.ipa.callgraph.AnalysisOptions(scope, entrypoints) {
@@ -60,10 +60,20 @@ object AnalysisOptions {
       } else
         Seq()
 
-    val entrypoints = entryPointsFromPattern ++
-      ((extraEntrypoints ++ oneEntryPoint) map { case (klass, method) => makeEntrypoint(klass, method) })
+    val androidEntrypoints =
+      if (config.hasPath("wala.dependencies.apk")) {
+        val flags: util.HashSet[LocatorFlags] = HashSetFactory.make[LocatorFlags]
+        flags.add(LocatorFlags.INCLUDE_CALLBACKS)
+        flags.add(LocatorFlags.EP_HEURISTIC)
+        flags.add(LocatorFlags.CB_HEURISTIC)
+        new AndroidEntryPointLocator(flags).getEntryPoints(cha).asScala
+      } else Seq.empty[DefaultEntrypoint]
 
-    if (entrypoints.size == 0)
+    val entrypoints = entryPointsFromPattern ++
+      ((extraEntrypoints ++ oneEntryPoint) map { case (klass, method) => makeEntrypoint(klass, method) }) ++
+      androidEntrypoints
+
+    if (entrypoints.isEmpty)
       System.err.println("WARNING: no entrypoints")
 
     entrypoints
