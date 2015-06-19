@@ -2,6 +2,7 @@ package com.ibm.stringoid
 
 import com.typesafe.config.ConfigFactory
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
+//import com.ibm.wala.dalvik.test.callgraph.DalvikCallGraphTestBase
 
 object ApkSupergraph {
 
@@ -11,4 +12,5 @@ object ApkSupergraph {
       println(_)
     }
   }
+
 }
