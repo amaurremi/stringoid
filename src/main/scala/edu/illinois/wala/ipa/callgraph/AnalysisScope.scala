@@ -92,6 +92,12 @@ class AnalysisScope(jreLibPath: String, androidJarPathOpt: Option[String], exclu
   import AnalysisScope._
   import DependencyNature._
 
+  def this(jreLibPath: String, exclusions: String) = this(jreLibPath, None, exclusions, Seq())
+
+  initForJava()
+
+  addToScope(getLoader(Primordial), new JarFile(jreLibPath))
+
   androidJarPathOpt match {
     case Some(androidJarPath) =>
       addToScope(getLoader(Primordial), new JarFile(androidJarPathOpt.get))
@@ -100,12 +106,6 @@ class AnalysisScope(jreLibPath: String, androidJarPathOpt: Option[String], exclu
       if (dependencies.exists { case Dependency(_, Apk, _) => true })
         throw new Exception("The wala.android-jar path is missing in the config file.")
   }
-
-  def this(jreLibPath: String, exclusions: String) = this(jreLibPath, None, exclusions, Seq())
-
-  initForJava()
-
-  addToScope(getLoader(Primordial), new JarFile(jreLibPath))
 
   setExclusions(new FileOfClasses(new ByteArrayInputStream(exclusions.getBytes("UTF-8"))))
 
