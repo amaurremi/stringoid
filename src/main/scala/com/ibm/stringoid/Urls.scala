@@ -39,8 +39,7 @@ object Urls {
 
     // retrieving URL's using grep
     import scala.sys.process._
-    val path         = "src/test/resources/"
-    val dexdump      = Seq("dexdump", "-d", path + apkName + ".apk")
+    val dexdump      = Seq("dexdump", "-d", "src/test/resources/" + apkName + ".apk")
     val grep         = Seq("grep", "-iIohE", "\"https?://[^\" ]+")
     val cut          = Seq("cut", "-c", "2-")
     val cmd          = dexdump #| grep #| "sort" #| "uniq" #| cut
