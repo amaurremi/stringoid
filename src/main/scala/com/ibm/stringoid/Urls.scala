@@ -21,7 +21,7 @@ object Urls {
     System.err.println("Retrieving " + apkName + " URLs through WALA...")
     val walaUrls: WalaUrls = retrieveWalaUrls(apkName, apkDir)
 
-    System.err.println("Running grep...")
+    System.err.println("and through grep...")
     val grepUrls = retrieveGrepUrls(apkName, apkDir)
 
     new Urls(walaUrls, grepUrls.toSet)
@@ -36,14 +36,21 @@ object Urls {
   private[this] def retrieveWalaUrls(
     apkName: String,
     apkDir: String
-  ): WalaUrls = (for {
-    ir    <- getIr(apkName, apkDir)
-    table <- optTable(ir).toSeq
-    v     <- 1 to table.getMaxValueNumber
-    if table isStringConstant v
-    tryUrl = table getStringValue v
-    if tryUrl matches urlRegex
-  } yield tryUrl -> ir.getMethod.getName.toString)(breakOut)
+  ): WalaUrls = {
+    val urlMethodPairs: Set[(WalaUrl, String)] = (for {
+      ir    <- getIr(apkName, apkDir)
+      table <- optTable(ir).toSeq
+      v     <- 1 to table.getMaxValueNumber
+      if table isStringConstant v
+      tryUrl = table getStringValue v
+      if tryUrl matches urlRegex
+      m      = ir.getMethod
+    } yield tryUrl -> (m.getClass.getName + "." + m.getName.toString))(breakOut)
+    urlMethodPairs.foldLeft(Map.empty[WalaUrl, Set[String]]) {
+      case (prev, (wu, m)) =>
+        prev.updated(wu, prev.getOrElse(wu, Set.empty[String]) + m)
+    }
+  }
 
   private[this] def retrieveGrepUrls(apkName: String, apkDir: String): Set[String] = {
     import scala.sys.process._
@@ -74,13 +81,19 @@ object Urls {
  */
 case class Urls private(walaUrls: WalaUrls, grepUrls: Set[String]) {
 
+  private[this] def mkString(list: Iterable[(WalaUrl, Set[String])]): String =
+    list.foldLeft("") {
+      case (prev: String, (wu: WalaUrl, ms: Set[String])) =>
+        prev + "\n" + wu + "\n  in methods:\n" + ms.mkString("\n....")
+    }
+
   def stats: String =
     "Number of different URLs through WALA: " + walaUrls.size +
       "\nNumber of different URLs through grep: " + grepUrls.size +
-      "\nIn WALA but not in grep:\n" + walaNotGrep.mkString("\n") +
-      "\nIn grep but not in WALA:\n" + grepNotWala.mkString("\n") +
-      "\n\nURLs obtained through WALA:\n" + walaUrls +
-      "\n\nURLs obtained through grep:\n" + grepUrls
+      "\n\nIn WALA but not in grep:\n" + mkString(walaNotGrep.toList) +
+      "\n\nIn grep but not in WALA:\n" + grepNotWala.toList.sorted.mkString("\n") +
+      "\n\nURLs obtained through WALA:\n" + mkString(walaUrls) +
+      "\n\nURLs obtained through grep:\n" + grepUrls.mkString("\n")
 
   def walaNotGrep: WalaUrls = walaUrls filterNot {
       grepUrls contains _._1
