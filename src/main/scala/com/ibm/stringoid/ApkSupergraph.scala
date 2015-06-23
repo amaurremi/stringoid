@@ -6,5 +6,4 @@ object ApkSupergraph {
     val urls = Urls("cgeo.geocaching", distinct = true, nonEmptyCg = true)
     urls.print()
   }
-
 }

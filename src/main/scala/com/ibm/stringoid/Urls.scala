@@ -33,7 +33,7 @@ object Urls {
       if table.isStringConstant(v)
       tryUrl = Try(new URL(table.getStringValue(v)))
       if tryUrl.isSuccess
-      url = tryUrl.get
+      url    = tryUrl.get
       if !nonEmptyCg || url.getPath.nonEmpty
     } yield url.toString)(breakOut)
 
@@ -69,10 +69,20 @@ case class Urls private(cgUrls: Seq[String], grepUrls: Seq[String]) {
   def print(): Unit = {
     println("Number of URLs through WALA: " + cgUrls.size)
     println("Number of URLs through grep: " + grepUrls.size)
-    println("URLs obtained through WALA:\n")
+
+    println("\nIn WALA but not in grep:\n")
+    println(walaNotGrep)
+    println("\nIn grep but not in WALA:\n")
+    println(grepNotWala)
+
+    println("\nURLs obtained through WALA:\n")
     cgUrls foreach println
     println("\nURLs obtained through grep:\n")
     grepUrls foreach println
   }
+
+  def walaNotGrep = cgUrls diff grepUrls
+
+  def grepNotWala = grepUrls diff cgUrls
 }
 
