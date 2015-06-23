@@ -31,32 +31,31 @@ object Urls {
       table <- optTable(node).toSeq
       v     <- 1 to table.getMaxValueNumber
       if table.isStringConstant(v)
-      url = Try(new URL(table.getStringValue(v)))
-      if url.isSuccess
-    } yield url.get.toString)(breakOut)
+      tryUrl = Try(new URL(table.getStringValue(v)))
+      if tryUrl.isSuccess
+      url = tryUrl.get
+      if !nonEmptyCg || url.getPath.nonEmpty
+    } yield url.toString)(breakOut)
 
     // retrieving URL's using grep
     import scala.sys.process._
     // todo avoid absolute paths
     val absolutePath = "/Users/mrapopo/IBM/stringoid/src/test/resources/"
-    val dexdump = Seq("dexdump", "-d", absolutePath + apkName + ".apk")
-    val grep    = Seq("grep", "-iIohE", "\"https?://[^\" ]+")
-    val cut     = Seq("cut", "-c", "2-")
-    val cmd = dexdump #| grep #| "sort" #| "uniq" #| cut
-    val grepUrls = cmd.lineStream.toList
+    val dexdump      = Seq("dexdump", "-d", absolutePath + apkName + ".apk")
+    val grep         = Seq("grep", "-iIohE", "\"https?://[^\" ]+")
+    val cut          = Seq("cut", "-c", "2-")
+    val cmd          = dexdump #| grep #| "sort" #| "uniq" #| cut
+    val grepUrls     = cmd.lineStream.toList
 
-    def adjustUrls(urls: Seq[String]) = applyParams(urls, nonEmptyCg, distinct)
+    def adjustUrls(urls: Seq[String]) = applyParams(urls, distinct = distinct)
     new Urls(adjustUrls(cgUrls), adjustUrls(grepUrls))
   }
 
   private[this] def applyParams(
     urlStrings: Seq[String],
-    nonEmpty: Boolean,
     distinct: Boolean
-  ): Seq[String] = {
-    val maybeDistinct = if (distinct) urlStrings.distinct else urlStrings
-    if (nonEmpty) maybeDistinct filter { _.nonEmpty } else maybeDistinct
-  }
+  ): Seq[String] =
+    if (distinct) urlStrings.distinct else urlStrings
 
   private[this] def optTable(node: CGNode): Option[SymbolTable] =
     Option(node.getIR) flatMap {
