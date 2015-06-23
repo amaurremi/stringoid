@@ -64,20 +64,18 @@ object Urls {
 
 case class Urls private(cgUrls: Seq[String], grepUrls: Seq[String]) {
 
-  def print(): Unit = {
-    println("Number of URLs through WALA: " + cgUrls.size)
-    println("Number of URLs through grep: " + grepUrls.size)
-
-    println("\nIn WALA but not in grep:\n")
-    println(walaNotGrep)
-    println("\nIn grep but not in WALA:\n")
-    println(grepNotWala)
-
-    println("\nURLs obtained through WALA:\n")
-    cgUrls foreach println
-    println("\nURLs obtained through grep:\n")
-    grepUrls foreach println
-  }
+  def stats: Seq[String] =
+    Seq(
+      "Number of URLs through WALA: " + cgUrls.size,
+      "Number of URLs through grep: " + grepUrls.size,
+      "\nIn WALA but not in grep:\n") ++
+    walaNotGrep ++
+    Seq("\nIn grep but not in WALA:\n") ++
+    grepNotWala ++
+    Seq("\nURLs obtained through WALA:\n") ++
+    cgUrls ++
+    Seq("\nURLs obtained through grep:\n") ++
+    grepUrls
 
   def walaNotGrep = cgUrls diff grepUrls
 
