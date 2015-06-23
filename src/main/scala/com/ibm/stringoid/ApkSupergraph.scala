@@ -20,6 +20,7 @@ object ApkSupergraph {
   def write(file: Path, url: Urls): Unit = {
     val outDir = Directory("target/url_comparison")
     outDir.createDirectory()
-    File(outDir.toString + "/" + file.stripExtension + ".txt").writeAll(url.stats.mkString("\n"))
+    File(outDir.toString + "/" + file.stripExtension + ".txt").writeAll(url.stats)
+    System.err.println("")
   }
 }
