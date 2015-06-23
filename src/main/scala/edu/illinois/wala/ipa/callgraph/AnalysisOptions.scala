@@ -63,9 +63,7 @@ object AnalysisOptions {
     val androidEntrypoints =
       if (config.hasPath("wala.dependencies.apk")) {
         val flags: util.HashSet[LocatorFlags] = HashSetFactory.make[LocatorFlags]
-        flags.add(LocatorFlags.INCLUDE_CALLBACKS)
-        flags.add(LocatorFlags.EP_HEURISTIC)
-        flags.add(LocatorFlags.CB_HEURISTIC)
+        flags.addAll(LocatorFlags.values.toSeq)
         new AndroidEntryPointLocator(flags).getEntryPoints(cha).asScala
       } else Seq.empty[DefaultEntrypoint]
 

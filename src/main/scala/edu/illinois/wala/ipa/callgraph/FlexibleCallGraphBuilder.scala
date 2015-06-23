@@ -55,7 +55,7 @@ class FlexibleCallGraphBuilder(
   setContextSelector(cs)
   setInstanceKeys(instanceKeys)
 
-  val cg = makeCallGraph(options)
+  lazy val cg = makeCallGraph(options)
   val cache = _cache
 
   // expose implicits
