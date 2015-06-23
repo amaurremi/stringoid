@@ -4,7 +4,7 @@ import java.net.URL
 
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ssa.SymbolTable
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{ConfigFactory, ConfigValueFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
 import scala.collection.JavaConversions._
@@ -25,7 +25,7 @@ object Urls {
     distinct: Boolean = true
   ): Urls = {
     // retrieving URLs through WALA
-    implicit val config = ConfigFactory.load(apkName)
+    implicit val config = configWithApk(apkName)
     val cgUrls: Seq[String] = (for {
       node  <- new FlexibleCallGraphBuilder().getCallGraph
       table <- optTable(node).toSeq
@@ -39,7 +39,8 @@ object Urls {
 
     // retrieving URL's using grep
     import scala.sys.process._
-    val dexdump      = Seq("dexdump", "-d", "src/test/resources/" + apkName + ".apk")
+    val fileName     = if (apkName endsWith ".apk") apkName else apkName + ".apk"
+    val dexdump      = Seq("dexdump", "-d", "src/test/resources/" + fileName)
     val grep         = Seq("grep", "-iIohE", "\"https?://[^\" ]+")
     val cut          = Seq("cut", "-c", "2-")
     val cmd          = dexdump #| grep #| "sort" #| "uniq" #| cut
@@ -48,6 +49,11 @@ object Urls {
     def adjustUrls(urls: Seq[String]) = applyParams(urls, distinct = distinct)
     new Urls(adjustUrls(cgUrls), adjustUrls(grepUrls))
   }
+
+  private[this] def configWithApk(apkName: String, apkDir: String = "playdrone_apks/") =
+    ConfigFactory.load().withValue(
+      "wala.dependencies.apk",
+      ConfigValueFactory.fromIterable(Seq("/Users/mrapopo/IBM/stringoid/src/test/resources/" + apkDir + apkName)))
 
   private[this] def applyParams(
     urlStrings: Seq[String],
