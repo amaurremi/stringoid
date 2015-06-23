@@ -1,7 +1,5 @@
 package com.ibm.stringoid
 
-import java.io.File
-
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ssa.SymbolTable
 import com.typesafe.config.ConfigFactory
@@ -25,18 +23,15 @@ object Urls {
     distinct: Boolean = true
   ): Urls = {
     // retrieving URLs through WALA
-//    implicit val config = ConfigFactory.load(apkName)
-//    val urlStrings: Seq[String] = (for {
-//      node  <- new FlexibleCallGraphBuilder().getCallGraph
-//      table <- optTable(node).toSeq
-//      v     <- 1 to table.getMaxValueNumber
-//      if table.isStringConstant(v)
-//      url = Try(table.getStringValue(v))
-//      if url.isSuccess
-//    } yield url.get)(breakOut)
-//    val cgUrls = applyParams(urlStrings, nonEmptyCg, distinct)
-
-    lazy val cgUrls = ???
+    implicit val config = ConfigFactory.load(apkName)
+    val cgUrls: Seq[String] = (for {
+      node  <- new FlexibleCallGraphBuilder().getCallGraph
+      table <- optTable(node).toSeq
+      v     <- 1 to table.getMaxValueNumber
+      if table.isStringConstant(v)
+      url = Try(table.getStringValue(v))
+      if url.isSuccess
+    } yield url.get)(breakOut)
 
     // retrieving URL's using grep (_dexdump.sh script)
     import scala.sys.process._
@@ -44,12 +39,13 @@ object Urls {
     val absolutePath = "/Users/mrapopo/IBM/stringoid/src/test/resources/"
 //    val cmd = Seq(absolutePath + "/_dexdump.sh", absolutePath, absolutePath + "/grepoutputs", absolutePath + "/" + apkName).!
     val dexdump = Seq("dexdump", "-d", absolutePath + apkName + ".apk")
-    val grep    = Seq("grep", "-iIohE", """'\"https?://[^\" ]+'""")
+    val grep    = Seq("grep", "-iIohE", "\"https?://[^\" ]+")
     val cut     = Seq("cut", "-c", "2-")
-    val cmd = dexdump #| grep // #| "sort" #| "uniq" // #| cut
+    val cmd = dexdump #| grep #| "sort" #| "uniq" #| cut
+    val grepUrls = cmd.lineStream.toList
 
-    val lines = cmd.lineStream.toList
-    new Urls(cgUrls, lines)
+    def adjustUrls(urls: Seq[String]) = applyParams(urls, nonEmptyCg, distinct)
+    new Urls(adjustUrls(cgUrls), adjustUrls(grepUrls))
   }
 
   private[this] def applyParams(
@@ -68,5 +64,15 @@ object Urls {
     }
 }
 
-case class Urls(cgUrls: Seq[String], grepUrls: Seq[String])
+case class Urls private(cgUrls: Seq[String], grepUrls: Seq[String]) {
+
+  def print(): Unit = {
+    println("Number of URLs through WALA: " + cgUrls.size)
+    println("Number of URLs through grep: " + grepUrls.size)
+    println("URLs obtained through WALA:\n")
+    cgUrls foreach println
+    println("\nURLs obtained through grep:\n")
+    grepUrls foreach println
+  }
+}
 
