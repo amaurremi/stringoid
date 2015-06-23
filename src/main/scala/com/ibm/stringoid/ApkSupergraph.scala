@@ -21,6 +21,5 @@ object ApkSupergraph {
     val outDir = Directory("target/url_comparison")
     outDir.createDirectory()
     File(outDir.toString + "/" + file.stripExtension + ".txt").writeAll(url.stats.mkString("\n"))
-    println("")
   }
 }

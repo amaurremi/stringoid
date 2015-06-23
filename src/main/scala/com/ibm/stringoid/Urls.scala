@@ -1,12 +1,10 @@
 package com.ibm.stringoid
 
-import com.ibm.wala.ipa.callgraph.CGNode
-import com.ibm.wala.ssa.SymbolTable
+import com.ibm.wala.ssa.{IR, SymbolTable}
 import com.typesafe.config.{ConfigFactory, ConfigValueFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
 import scala.collection.JavaConversions._
-import scala.collection.breakOut
 
 object Urls {
 
@@ -19,34 +17,38 @@ object Urls {
     apkName: String,
     apkDir: String = ""
   ): Urls = {
-    System.err.println("Constructing " + apkName + " callgraph...")
-    val cgUrls: Seq[String] = retrieveCgUrls(apkName, apkDir)
+    System.err.println("Retrieving " + apkName + " URLs through WALA...")
+    val walaUrls: Seq[String] = retrieveCgUrls(apkName, apkDir)
 
     System.err.println("Running grep...")
     val grepUrls = retrieveGrepUrls(apkName, apkDir)
 
     def adjustUrls(urls: Seq[String]) = urls.distinct.sorted
-    new Urls(adjustUrls(cgUrls), adjustUrls(grepUrls))
+    new Urls(adjustUrls(walaUrls), adjustUrls(grepUrls))
   }
 
-  private[this] def getCallGraph(apkName: String, apkDir: String) = {
+  private[this] def getIr(apkName: String, apkDir: String): Seq[IR] = {
     implicit val config = configWithApk(apkName, apkDir)
-    val cg = new FlexibleCallGraphBuilder().getCallGraph
+    val cgBuilder = new FlexibleCallGraphBuilder()
+    val irs = for {
+      c <- cgBuilder.cha.iterator
+      m <- c.getAllMethods
+    } yield cgBuilder.cache.getIR(m)
     System.err.println("Retrieving URLs from callgraph...")
-    cg
+    irs.toSeq
   }
 
   private[this] def retrieveCgUrls(
     apkName: String,
     apkDir: String
-  ): Seq[String] = (for {
-    node  <- getCallGraph(apkName, apkDir)
-    table <- optTable(node).toSeq
+  ): Seq[String] = for {
+    ir    <- getIr(apkName, apkDir)
+    table <- optTable(ir).toSeq
     v     <- 1 to table.getMaxValueNumber
-    if table.isStringConstant(v)
+    if table isStringConstant v
     tryUrl = table getStringValue v
     if tryUrl matches urlRegex
-  } yield tryUrl)(breakOut)
+  } yield tryUrl
 
   private[this] def retrieveGrepUrls(apkName: String, apkDir: String) = {
     import scala.sys.process._
@@ -63,8 +65,8 @@ object Urls {
       "wala.dependencies.apk",
       ConfigValueFactory.fromIterable(Seq("/Users/mrapopo/IBM/stringoid/src/test/resources/" + apkDir + apkName)))
 
-  private[this] def optTable(node: CGNode): Option[SymbolTable] =
-    Option(node.getIR) flatMap {
+  private[this] def optTable(ir: IR): Option[SymbolTable] =
+    Option(ir) flatMap {
       ir =>
         Option(ir.getSymbolTable)
     }
