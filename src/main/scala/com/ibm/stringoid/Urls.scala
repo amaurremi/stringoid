@@ -39,9 +39,8 @@ object Urls {
 
     // retrieving URL's using grep
     import scala.sys.process._
-    // todo avoid absolute paths
-    val absolutePath = "/Users/mrapopo/IBM/stringoid/src/test/resources/"
-    val dexdump      = Seq("dexdump", "-d", absolutePath + apkName + ".apk")
+    val path         = "src/test/resources/"
+    val dexdump      = Seq("dexdump", "-d", path + apkName + ".apk")
     val grep         = Seq("grep", "-iIohE", "\"https?://[^\" ]+")
     val cut          = Seq("cut", "-c", "2-")
     val cmd          = dexdump #| grep #| "sort" #| "uniq" #| cut
