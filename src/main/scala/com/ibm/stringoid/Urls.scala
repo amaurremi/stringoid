@@ -1,5 +1,7 @@
 package com.ibm.stringoid
 
+import java.net.URL
+
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ssa.SymbolTable
 import com.typesafe.config.ConfigFactory
@@ -29,9 +31,9 @@ object Urls {
       table <- optTable(node).toSeq
       v     <- 1 to table.getMaxValueNumber
       if table.isStringConstant(v)
-      url = Try(table.getStringValue(v))
+      url = Try(new URL(table.getStringValue(v)))
       if url.isSuccess
-    } yield url.get)(breakOut)
+    } yield url.get.toString)(breakOut)
 
     // retrieving URL's using grep (_dexdump.sh script)
     import scala.sys.process._
