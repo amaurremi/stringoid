@@ -1,29 +1,64 @@
 package com.ibm.stringoid
 
-import com.ibm.wala.ipa.callgraph.{CGNode, CallGraph}
+import java.io.File
+
+import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ssa.SymbolTable
-import java.net.URL
-import scala.util.Try
+import com.typesafe.config.ConfigFactory
+import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
 import scala.collection.JavaConversions._
 import scala.collection.breakOut
+import scala.util.Try
 
-class Urls(cg: CallGraph) {
+object Urls {
 
-  def findStrings: Seq[String] = {
-    (for {
-      node  <- cg
-      table <- optTable(node).toSeq
-      v     <- 1 to table.getMaxValueNumber
-      if table.isStringConstant(v)
-    } yield {
-      table.getStringValue(v)
-    })(breakOut)
+  /**
+   * Retrieve the URLs for an APK file using WALA and using grep.
+   * @param apkName     Name of the APK file
+   * @param nonEmptyCg  Should URL prefixes (e.g. "http://") be included in the call-graph retrieval?
+   * @param distinct    Should only distinct URLs be returned?
+   */
+  def apply(
+    apkName: String,
+    nonEmptyCg: Boolean = false,
+    distinct: Boolean = true
+  ): Urls = {
+    // retrieving URLs through WALA
+//    implicit val config = ConfigFactory.load(apkName)
+//    val urlStrings: Seq[String] = (for {
+//      node  <- new FlexibleCallGraphBuilder().getCallGraph
+//      table <- optTable(node).toSeq
+//      v     <- 1 to table.getMaxValueNumber
+//      if table.isStringConstant(v)
+//      url = Try(table.getStringValue(v))
+//      if url.isSuccess
+//    } yield url.get)(breakOut)
+//    val cgUrls = applyParams(urlStrings, nonEmptyCg, distinct)
+
+    lazy val cgUrls = ???
+
+    // retrieving URL's using grep (_dexdump.sh script)
+    import scala.sys.process._
+    // todo avoid absolute paths
+    val absolutePath = "/Users/mrapopo/IBM/stringoid/src/test/resources/"
+//    val cmd = Seq(absolutePath + "/_dexdump.sh", absolutePath, absolutePath + "/grepoutputs", absolutePath + "/" + apkName).!
+    val dexdump = Seq("dexdump", "-d", absolutePath + apkName + ".apk")
+    val grep    = Seq("grep", "-iIohE", """'\"https?://[^\" ]+'""")
+    val cut     = Seq("cut", "-c", "2-")
+    val cmd = dexdump #| grep // #| "sort" #| "uniq" // #| cut
+
+    val lines = cmd.lineStream.toList
+    new Urls(cgUrls, lines)
   }
 
-  def findUrls: Seq[String] = findStrings filter {
-    str =>
-      Try(new URL(str)).isSuccess
+  private[this] def applyParams(
+    urlStrings: Seq[String],
+    nonEmpty: Boolean,
+    distinct: Boolean
+  ): Seq[String] = {
+    val maybeDistinct = if (distinct) urlStrings.distinct else urlStrings
+    if (nonEmpty) maybeDistinct filter { _.nonEmpty } else maybeDistinct
   }
 
   private[this] def optTable(node: CGNode): Option[SymbolTable] =
@@ -32,3 +67,6 @@ class Urls(cg: CallGraph) {
         Option(ir.getSymbolTable)
     }
 }
+
+case class Urls(cgUrls: Seq[String], grepUrls: Seq[String])
+
