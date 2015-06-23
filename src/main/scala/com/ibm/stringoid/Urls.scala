@@ -21,7 +21,7 @@ object Urls {
    */
   def apply(
     apkName: String,
-    nonEmptyCg: Boolean = false,
+    nonEmptyCg: Boolean = true,
     distinct: Boolean = true
   ): Urls = {
     // retrieving URLs through WALA
@@ -35,11 +35,10 @@ object Urls {
       if url.isSuccess
     } yield url.get.toString)(breakOut)
 
-    // retrieving URL's using grep (_dexdump.sh script)
+    // retrieving URL's using grep
     import scala.sys.process._
     // todo avoid absolute paths
     val absolutePath = "/Users/mrapopo/IBM/stringoid/src/test/resources/"
-//    val cmd = Seq(absolutePath + "/_dexdump.sh", absolutePath, absolutePath + "/grepoutputs", absolutePath + "/" + apkName).!
     val dexdump = Seq("dexdump", "-d", absolutePath + apkName + ".apk")
     val grep    = Seq("grep", "-iIohE", "\"https?://[^\" ]+")
     val cut     = Seq("cut", "-c", "2-")
