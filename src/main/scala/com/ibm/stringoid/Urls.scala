@@ -18,6 +18,7 @@ object Urls {
     apkName: String,
     apkDir: String = ""
   ): Urls = {
+    val apkNameNoExt = if (apkName endsWith ".apk") apkName drop 4 else apkName
     System.err.println("Retrieving " + apkName + " URLs through WALA...")
     val walaUrls: WalaUrls = retrieveWalaUrls(apkName, apkDir)
 
@@ -84,7 +85,7 @@ case class Urls private(walaUrls: WalaUrls, grepUrls: Set[String]) {
   private[this] def mkString(list: Iterable[(WalaUrl, Set[String])]): String =
     list.foldLeft("") {
       case (prev: String, (wu: WalaUrl, ms: Set[String])) =>
-        prev + "\n" + wu + "\n  in methods:\n" + ms.mkString("\n....")
+        prev + "\n" + wu + "\n  in methods:\n" + ms.toList.mkString("    ", "\n    ", "")
     }
 
   def stats: String =
