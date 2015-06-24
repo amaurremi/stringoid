@@ -16,11 +16,12 @@ object Urls {
    */
   def apply(
     apkName: String,
-    apkDir: String = ""
+    apkDir: String = "",
+    useCallGraph: Boolean
   ): Urls = {
     val apkNameNoExt = if (apkName endsWith ".apk") apkName drop 4 else apkName
     System.err.println("Retrieving " + apkName + " URLs through WALA...")
-    val walaUrls: WalaUrls = retrieveWalaUrls(apkName, apkDir)
+    val walaUrls: WalaUrls = retrieveWalaUrls(apkName, apkDir, useCallGraph)
 
     System.err.println("and through grep...")
     val grepUrls = retrieveGrepUrls(apkName, apkDir)
@@ -34,19 +35,30 @@ object Urls {
     irs.toSeq
   }
 
+  private[this] def getIrWithoutCallGraph(apkName: String, apkDir: String): Seq[IR] = {
+    implicit val config = configWithApk(apkName, apkDir)
+    val builder = new FlexibleCallGraphBuilder()
+    val irs = for {
+      c <- builder.cha.iterator()
+      m <- c.getAllMethods
+    } yield builder.cache.getIR(m)
+    irs.toSeq
+  }
+
   private[this] def retrieveWalaUrls(
     apkName: String,
-    apkDir: String
+    apkDir: String,
+    useCallGraph: Boolean
   ): WalaUrls = {
     val urlMethodPairs: Set[(WalaUrl, String)] = (for {
-      ir    <- getIr(apkName, apkDir)
+      ir    <- if (useCallGraph) getIr(apkName, apkDir) else getIrWithoutCallGraph(apkName, apkDir)
       table <- optTable(ir).toSeq
       v     <- 1 to table.getMaxValueNumber
       if table isStringConstant v
       tryUrl = table getStringValue v
       if tryUrl matches urlRegex
       m      = ir.getMethod
-    } yield tryUrl -> (m.getClass.getName + "." + m.getName.toString))(breakOut)
+    } yield tryUrl -> (m.getDeclaringClass.getName + "." + m.getName.toString))(breakOut)
     urlMethodPairs.foldLeft(Map.empty[WalaUrl, Set[String]]) {
       case (prev, (wu, m)) =>
         prev.updated(wu, prev.getOrElse(wu, Set.empty[String]) + m)
