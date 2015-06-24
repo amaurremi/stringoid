@@ -26,8 +26,9 @@ object Urls {
       retrieveWalaUrls(apkName, apkDir, useCallGraph)
     }
 
-    println("and through grep...")
-    val grepUrls = retrieveGrepUrls(apkName, apkDir)
+    val grepUrls = time("and through grep") {
+      retrieveGrepUrls(apkName, apkDir)
+    }
 
     new Urls(walaUrls, grepUrls.toSet)
   }
