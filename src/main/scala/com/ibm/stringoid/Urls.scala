@@ -22,7 +22,7 @@ object Urls {
   ): Urls = {
     val apkNameNoExt = if (apkName endsWith ".apk") apkName drop 4 else apkName
     val cgUsage = if (useCallGraph) "using CG" else "using CHA"
-    val walaUrls: WalaUrls = time("Retrieving " + apkName + " URLs through WALA " + cgUsage + "...") {
+    val walaUrls: WalaUrls = time("Retrieving " + apkName + " URLs through WALA " + cgUsage) {
       retrieveWalaUrls(apkName, apkDir, useCallGraph)
     }
 
