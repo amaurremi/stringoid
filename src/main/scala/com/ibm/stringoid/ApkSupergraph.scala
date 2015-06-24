@@ -8,7 +8,7 @@ object ApkSupergraph {
   val SEP = File.separator
 
   def main(args: Array[String]): Unit = {
-    runSingleApk("cgeo.geocaching.apk", useCallGraph = false)
+    runSingleApk("cgeo.geocaching.apk", useCallGraph = true)
   }
   
   def runPlaydroneApks(useCallGraph: Boolean = true) = {
@@ -25,8 +25,7 @@ object ApkSupergraph {
   }
 
   def runSingleApk(apk: String, dir: String = "", useCallGraph: Boolean = true): Unit = {
-    val apkDir = dirWithSep(dir)
-    write(File(RESOURCES_PATH + dir + apk), Urls(apk, dir, useCallGraph), useCallGraph)
+    write(File(RESOURCES_PATH + dir + apk), Urls(apk, dirWithSep(dir), useCallGraph), useCallGraph)
   }
 
   /**

@@ -6,6 +6,7 @@ import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
 import scala.collection.JavaConversions._
 import scala.collection.breakOut
+import util.Time.time
 
 object Urls {
 
@@ -20,10 +21,12 @@ object Urls {
     useCallGraph: Boolean
   ): Urls = {
     val apkNameNoExt = if (apkName endsWith ".apk") apkName drop 4 else apkName
-    System.err.println("Retrieving " + apkName + " URLs through WALA...")
-    val walaUrls: WalaUrls = retrieveWalaUrls(apkName, apkDir, useCallGraph)
+    val cgUsage = if (useCallGraph) "using CG" else "using CHA"
+    val walaUrls: WalaUrls = time("Retrieving " + apkName + " URLs through WALA " + cgUsage + "...") {
+      retrieveWalaUrls(apkName, apkDir, useCallGraph)
+    }
 
-    System.err.println("and through grep...")
+    println("and through grep...")
     val grepUrls = retrieveGrepUrls(apkName, apkDir)
 
     new Urls(walaUrls, grepUrls.toSet)
