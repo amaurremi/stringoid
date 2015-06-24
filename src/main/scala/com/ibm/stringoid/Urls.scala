@@ -1,12 +1,12 @@
 package com.ibm.stringoid
 
+import com.ibm.stringoid.util.Time.time
 import com.ibm.wala.ssa.{IR, SymbolTable}
 import com.typesafe.config.{ConfigFactory, ConfigValueFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
 import scala.collection.JavaConversions._
 import scala.collection.breakOut
-import util.Time.time
 
 object Urls {
 
