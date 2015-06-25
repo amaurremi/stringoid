@@ -8,7 +8,7 @@ object ApkSupergraph {
   val SEP = File.separator
 
   def main(args: Array[String]): Unit = {
-    runSingleApk("cgeo.geocaching.apk", useCallGraph = true)
+    runSingleApk("cgeo.geocaching.developer-build.apk", useCallGraph = true)
   }
   
   def runPlaydroneApks(useCallGraph: Boolean = true) = {

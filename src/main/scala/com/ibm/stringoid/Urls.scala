@@ -3,6 +3,7 @@ package com.ibm.stringoid
 import com.ibm.stringoid.util.Time.time
 import com.ibm.stringoid.util.Util
 import com.ibm.wala.classLoader.IMethod
+import com.ibm.wala.ipa.callgraph.CallGraph
 import com.ibm.wala.ssa.{IR, SymbolTable}
 import com.typesafe.config.{ConfigFactory, ConfigValueFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
@@ -23,7 +24,7 @@ object Urls {
     useCallGraph: Boolean
   ): Urls = {
 
-//    val x = cgReachableMethodsContaining("AbstractCachingPageViewCreator", apkName, apkDir)
+//    val x = cgReachableMethodsContaining("getDispatchedView", apkName, apkDir)
 
     val apkNameNoExt = if (apkName endsWith ".apk") apkName drop 4 else apkName
     val cgUsage = if (useCallGraph) "using CG" else "using CHA"
@@ -51,7 +52,9 @@ object Urls {
 
   private[this] def getIrs(apkName: String, apkDir: String): Seq[IR] = {
     implicit val config = configWithApk(apkName, apkDir)
-    val irs = new FlexibleCallGraphBuilder().cg map { _.getIR }
+    val cg: CallGraph = new FlexibleCallGraphBuilder().cg
+    scala.tools.nsc.io.File("target/cg.txt").writeAll(cg.mkString("\n"))
+    val irs = cg map { _.getIR }
     Util.filterOutNulls(irs.toSeq)
   }
 

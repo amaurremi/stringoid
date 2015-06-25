@@ -5,6 +5,7 @@ import java.util
 import com.ibm.wala.classLoader.ClassLoaderFactoryImpl
 import com.ibm.wala.dalvik.util.AndroidEntryPointLocator
 import com.ibm.wala.dalvik.util.AndroidEntryPointLocator.LocatorFlags
+import com.ibm.wala.ipa.callgraph.AnalysisOptions.ReflectionOptions
 import com.ibm.wala.ipa.callgraph.Entrypoint
 import com.ibm.wala.ipa.callgraph.impl.DefaultEntrypoint
 import com.ibm.wala.ipa.cha.ClassHierarchy
@@ -37,7 +38,9 @@ object AnalysisOptions {
 
     implicit val cha = ClassHierarchy.make(scope, classLoaderImpl)
 
-    new AnalysisOptions(scope, entrypoints(extraEntrypoints), cha, false) // !srcDep.isEmpty
+    val options = new AnalysisOptions(scope, entrypoints(extraEntrypoints), cha, false)
+    options.setReflectionOptions(ReflectionOptions.NONE)
+    options // !srcDep.isEmpty
   }
 
   def entrypoints(extraEntrypoints: Iterable[(String, String)] = Seq())(
@@ -63,7 +66,7 @@ object AnalysisOptions {
     val androidEntrypoints =
       if (config.hasPath("wala.dependencies.apk")) {
         val flags: util.HashSet[LocatorFlags] = HashSetFactory.make[LocatorFlags]
-        flags.addAll(LocatorFlags.values.toSeq)
+        flags.addAll(Seq(LocatorFlags.INCLUDE_CALLBACKS, LocatorFlags.EP_HEURISTIC, LocatorFlags.CB_HEURISTIC))
         new AndroidEntryPointLocator(flags).getEntryPoints(cha).asScala
       } else Seq.empty[DefaultEntrypoint]
 

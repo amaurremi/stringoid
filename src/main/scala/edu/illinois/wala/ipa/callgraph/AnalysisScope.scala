@@ -40,7 +40,6 @@ object AnalysisScope {
   val Application = com.ibm.wala.ipa.callgraph.AnalysisScope.APPLICATION
   val Synthetic = com.ibm.wala.ipa.callgraph.AnalysisScope.SYNTHETIC
   //  val Source = JavaSourceAnalysisScope.SOURCE.getName()
-  def apply(jreLibPath: String, exclusions: String) = new AnalysisScope(jreLibPath, exclusions)
 
   val allScopes = List(Application,
     //      Source, 
@@ -71,7 +70,11 @@ object AnalysisScope {
 
     val jreLibPath = config.getStringOption("wala.jre-lib-path").getOrElse(System.getenv().get("JAVA_HOME") + "/jre/lib/rt.jar")
 
-    new AnalysisScope(jreLibPath, config.getStringOption("wala.android-jar-path"), config.getString("wala.exclusions"), dependencies)
+    new AnalysisScope(
+      config.getStringList("wala.system-library-jars").toList,
+      config.getBoolean("wala.system-libraries-as-dex"),
+      config.getString("wala.exclusions"),
+      dependencies)
   }
 }
 
@@ -87,23 +90,30 @@ object Dependency {
 
 case class Dependency(file: String, nature: DependencyNature.DependencyNature, scope: Scope)
 
-class AnalysisScope(jreLibPath: String, androidJarPathOpt: Option[String], exclusions: String, dependencies: Iterable[Dependency]) extends com.ibm.wala.ipa.callgraph.AnalysisScope(Collections.singleton(Language.JAVA)) {
+class AnalysisScope(
+  systemLibraries: List[String],
+  systemLibrariesAsDex: Boolean,
+  exclusions: String,
+  dependencies: Iterable[Dependency]
+) extends com.ibm.wala.ipa.callgraph.AnalysisScope(Collections.singleton(Language.JAVA)) {
   val UNDER_ECLIPSE = false
+
   import AnalysisScope._
   import DependencyNature._
 
-  def this(jreLibPath: String, exclusions: String) = this(jreLibPath, None, exclusions, Seq())
-
   initForJava()
 
-  addToScope(getLoader(Primordial), new JarFile(jreLibPath))
-
-  androidJarPathOpt match {
-    case Some(androidJarPath) =>
-      addToScope(getLoader(Primordial), new JarFile(androidJarPathOpt.get))
-    case None                 =>
-      if (dependencies.exists { case Dependency(_, Apk, _) => true })
-        throw new Exception("The wala.android-jar path is missing in the config file.")
+  if (systemLibrariesAsDex) {
+    setLoaderImpl(ClassLoaderReference.Primordial, "com.ibm.wala.dalvik.classLoader.WDexClassLoaderImpl")
+    systemLibraries foreach {
+      lib =>
+        addToScope(getLoader(Primordial), DexFileModule.make(new File(lib)))
+    }
+  } else {
+    systemLibraries foreach {
+      lib =>
+        addToScope(getLoader(Primordial), new JarFile(lib))
+    }
   }
 
   setExclusions(new FileOfClasses(new ByteArrayInputStream(exclusions.getBytes("UTF-8"))))
