@@ -1,6 +1,8 @@
 package com.ibm.stringoid
 
 import com.ibm.stringoid.util.Time.time
+import com.ibm.stringoid.util.Util
+import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ssa.{IR, SymbolTable}
 import com.typesafe.config.{ConfigFactory, ConfigValueFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
@@ -20,6 +22,9 @@ object Urls {
     apkDir: String = "",
     useCallGraph: Boolean
   ): Urls = {
+
+//    val x = cgReachableMethodsContaining("AbstractCachingPageViewCreator", apkName, apkDir)
+
     val apkNameNoExt = if (apkName endsWith ".apk") apkName drop 4 else apkName
     val cgUsage = if (useCallGraph) "using CG" else "using CHA"
     val walaUrls: WalaUrls = time("Retrieving " + apkName + " URLs through WALA " + cgUsage) {
@@ -33,20 +38,31 @@ object Urls {
     new Urls(walaUrls, grepUrls.toSet)
   }
 
-  private[this] def getIr(apkName: String, apkDir: String): Seq[IR] = {
+  /**
+   * For debug purposes
+   */
+  private[this] def cgReachableMethodsContaining(string: String, apkName: String, apkDir: String): Iterable[IMethod] = {
     implicit val config = configWithApk(apkName, apkDir)
-    val irs = new FlexibleCallGraphBuilder().cg map { _.getIR }
-    irs.toSeq
+    new FlexibleCallGraphBuilder().cg collect {
+      case n if n.getMethod.toString.contains(string) =>
+        n.getMethod
+    }
   }
 
-  private[this] def getIrWithoutCallGraph(apkName: String, apkDir: String): Seq[IR] = {
+  private[this] def getIrs(apkName: String, apkDir: String): Seq[IR] = {
+    implicit val config = configWithApk(apkName, apkDir)
+    val irs = new FlexibleCallGraphBuilder().cg map { _.getIR }
+    Util.filterOutNulls(irs.toSeq)
+  }
+
+  private[this] def getIrsWithoutCallGraph(apkName: String, apkDir: String): Seq[IR] = {
     implicit val config = configWithApk(apkName, apkDir)
     val builder = new FlexibleCallGraphBuilder()
     val irs = for {
       c <- builder.cha.iterator()
       m <- c.getAllMethods
     } yield builder.cache.getIR(m)
-    irs.toSeq
+    Util.filterOutNulls(irs.toSeq)
   }
 
   private[this] def retrieveWalaUrls(
@@ -55,7 +71,7 @@ object Urls {
     useCallGraph: Boolean
   ): WalaUrls = {
     val urlMethodPairs: Set[(WalaUrl, String)] = (for {
-      ir    <- if (useCallGraph) getIr(apkName, apkDir) else getIrWithoutCallGraph(apkName, apkDir)
+      ir    <- if (useCallGraph) getIrs(apkName, apkDir) else getIrsWithoutCallGraph(apkName, apkDir)
       table <- optTable(ir).toSeq
       v     <- 1 to table.getMaxValueNumber
       if table isStringConstant v

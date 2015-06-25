@@ -101,7 +101,6 @@ class AnalysisScope(jreLibPath: String, androidJarPathOpt: Option[String], exclu
   androidJarPathOpt match {
     case Some(androidJarPath) =>
       addToScope(getLoader(Primordial), new JarFile(androidJarPathOpt.get))
-      setLoaderImpl(ClassLoaderReference.Application, "com.ibm.wala.dalvik.classLoader.WDexClassLoaderImpl")
     case None                 =>
       if (dependencies.exists { case Dependency(_, Apk, _) => true })
         throw new Exception("The wala.android-jar path is missing in the config file.")
@@ -193,5 +192,6 @@ class AnalysisScope(jreLibPath: String, androidJarPathOpt: Option[String], exclu
   def addApkDependency(file: String, scope: Scope = Application): Unit = {
     val make = DexFileModule.make(new File(file))
     addToScope(getLoader(scope), make)
+    setLoaderImpl(ClassLoaderReference.Application, "com.ibm.wala.dalvik.classLoader.WDexClassLoaderImpl")
   }
 }

@@ -33,9 +33,9 @@ object ApkSupergraph {
    */
   def write(file: Path, urls: Urls, useCallGraph: Boolean): Unit = {
     val outDir = Directory("target" + SEP + "url_comparison").createDirectory()
-    val cgUsage = if (useCallGraph) "_CG" else "_CHA"
-    File(dirWithSep(outDir.toString()) + file.stripExtension + cgUsage + ".txt").writeAll(urls.stats)
-    System.err.println("")
+    val cgUsage = if (useCallGraph) "CG" else "CHA"
+    File(dirWithSep(outDir.toString()) + file.stripExtension + "_" + cgUsage + ".txt").writeAll("Note: using " + cgUsage , urls.stats)
+    println("")
   }
   
   private[this] def dirWithSep(dir: String) =
