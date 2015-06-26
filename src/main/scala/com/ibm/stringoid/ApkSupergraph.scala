@@ -1,14 +1,14 @@
 package com.ibm.stringoid
 
-import scala.tools.nsc.io.{Path, Directory, File}
+import scala.tools.nsc.io.{Directory, File, Path}
 
 object ApkSupergraph {
 
-  private[this] val RESOURCES_PATH: String = "src/test/resources/"
   val SEP = File.separator
+  private[this] val RESOURCES_PATH: String =  Seq("src", "test", "resources").mkString("", SEP, SEP)
 
   def main(args: Array[String]): Unit = {
-    runPlaydroneApks(true)
+    runPlaydroneApks(useCallGraph = true)
 //    runSingleApk("cgeo.geocaching.developer-build.apk", useCallGraph = false)
   }
   

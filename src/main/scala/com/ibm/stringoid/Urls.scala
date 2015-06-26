@@ -10,10 +10,13 @@ import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
 import scala.collection.JavaConversions._
 import scala.collection.breakOut
+import scala.reflect.io.File
 
 object Urls {
 
   val urlRegex = "https?://[^\" ]+"
+
+  private[this] val testResourcesPath: WalaUrl = "src/test/resources/"
 
   /**
    * Retrieve the URLs for an APK file using WALA and using grep.
@@ -91,7 +94,7 @@ object Urls {
   private[this] def retrieveGrepUrls(apkName: String, apkDir: String): Set[String] = {
     import scala.sys.process._
     val fileName = apkDir + (if (apkName endsWith ".apk") apkName else apkName + ".apk")
-    val dexdump = Seq("dexdump", "-d", "src/test/resources/" + fileName)
+    val dexdump = Seq("dexdump", "-d", testResourcesPath + fileName)
     val grep = Seq("grep", "-iIohE", "\"" + urlRegex)
     val cut = Seq("cut", "-c", "2-")
     val cmd = dexdump #| grep #| cut
@@ -101,7 +104,7 @@ object Urls {
   private[this] def configWithApk(apkName: String, apkDir: String) =
     ConfigFactory.load().withValue(
       "wala.dependencies.apk",
-      ConfigValueFactory.fromIterable(Seq("/Users/mrapopo/IBM/stringoid/src/test/resources/" + apkDir + apkName)))
+      ConfigValueFactory.fromIterable(Seq(File(testResourcesPath + apkDir + apkName).toAbsolute.toString())))
 
   private[this] def optTable(ir: IR): Option[SymbolTable] =
     Option(ir) flatMap {
@@ -124,12 +127,21 @@ case class Urls private(walaUrls: WalaUrls, grepUrls: Set[String]) {
     }
 
   def stats: String =
-    "Number of different URLs through WALA: " + walaUrls.size +
-      "\nNumber of different URLs through grep: " + grepUrls.size +
-      "\n\nIn WALA but not in grep:\n" + mkString(walaNotGrep.toList) +
-      "\n\nIn grep but not in WALA:\n" + grepNotWala.toList.sorted.mkString("\n") +
-      "\n\nURLs obtained through WALA:\n" + mkString(walaUrls) +
-      "\n\nURLs obtained through grep:\n" + grepUrls.mkString("\n")
+    s"""Number of different URLs through WALA: ${walaUrls.size}
+       |Number of different URLs through grep: ${grepUrls.size}
+       |
+       |**** In WALA but not in grep ****
+       |${mkString(walaNotGrep.toList)}
+       |
+       |**** In grep but not in WALA ****
+       |${mkString(walaNotGrep.toList)}
+       |
+       |**** URLs obtained through WALA ****
+       |${mkString(walaUrls)}
+       |
+       |**** URLs obtained through grep ****
+       |${grepUrls.mkString("\n")}
+     """.stripMargin
 
   def walaNotGrep: WalaUrls = walaUrls filterNot {
       grepUrls contains _._1
