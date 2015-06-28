@@ -15,7 +15,7 @@ object GrepUrlRetriever extends UrlRetriever {
     val grep     = Seq("grep", "-iIohE", "\"" + URL_REGEX)
     val cut      = Seq("cut", "-c", "2-")
     val cmd      = dexdump #| grep #| cut
-    (cmd.lineStream map {
+    (cmd.lines map {
       _ -> Set.empty[String]
     })(breakOut)
   }

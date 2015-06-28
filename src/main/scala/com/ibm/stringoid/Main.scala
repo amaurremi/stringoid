@@ -1,6 +1,7 @@
 package com.ibm.stringoid
 
 import java.nio.file.{Files, Path, Paths}
+
 import scala.collection.JavaConversions._
 
 object Main {
@@ -36,6 +37,6 @@ object Main {
     val name2: String = comparison.a1Urls.analysisType.name
     val logName = "%s_%s_%s.txt".format(apkPath.getFileName.toString, name1, name2)
     val logPath = Paths.get(od.toString, logName)
-    Files.write(logPath, comparison.toString)
+    Files.write(logPath, Seq(comparison.toString))
   }
 }

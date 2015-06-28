@@ -1,6 +1,6 @@
 package com.ibm.stringoid.retrieve
 
-import java.nio.file.{Paths, Files, Path}
+import java.nio.file.{Files, Path, Paths}
 
 import com.ibm.stringoid.util.Util
 import com.ibm.wala.ipa.callgraph.CallGraph

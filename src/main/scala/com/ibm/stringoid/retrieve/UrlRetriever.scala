@@ -6,7 +6,6 @@ import com.ibm.stringoid._
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 
 import scala.collection.JavaConversions._
-import scala.reflect.io.File
 
 trait UrlRetriever {
 

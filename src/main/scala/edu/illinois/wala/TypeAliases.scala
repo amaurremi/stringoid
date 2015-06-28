@@ -1,11 +1,11 @@
 package edu.illinois.wala
 
 import com.ibm.wala.classLoader.{IClass, IField, IMethod}
-import com.ibm.wala.ipa.callgraph.{CGNode, CallGraph}
 import com.ibm.wala.ipa.callgraph.propagation.{InstanceKey, LocalPointerKey, PointerKey}
+import com.ibm.wala.ipa.callgraph.{CGNode, CallGraph}
 import com.ibm.wala.ipa.cfg.BasicBlockInContext
-import com.ibm.wala.ssa.{SSAInstruction, _}
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
+import com.ibm.wala.ssa.{SSAInstruction, _}
 
 trait TypeAliases {
   type N = CGNode
