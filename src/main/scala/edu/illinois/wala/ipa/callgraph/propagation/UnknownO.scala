@@ -1,7 +1,7 @@
 package edu.illinois.wala.ipa.callgraph.propagation
 
-import edu.illinois.wala.Facade._
 import com.ibm.wala.util.collections.EmptyIterator
+import edu.illinois.wala.Facade._
 
 object unknownO extends O {
   override def getConcreteType() = null

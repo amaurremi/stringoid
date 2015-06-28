@@ -1,9 +1,8 @@
 package edu.illinois.wala.ssa
 
-import com.ibm.wala.ssa.IR
-import com.ibm.wala.ssa.DefUse
-import edu.illinois.wala.Facade._
+import com.ibm.wala.ssa.{DefUse, IR}
 import com.ibm.wala.types.TypeReference
+import edu.illinois.wala.Facade._
 
 object V {
   implicit object theOrdering extends Ordering[V] {

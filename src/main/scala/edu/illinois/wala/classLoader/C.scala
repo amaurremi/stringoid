@@ -1,8 +1,7 @@
 package edu.illinois.wala.classLoader
 
 import edu.illinois.wala.Facade._
-import edu.illinois.wala.Named
-import edu.illinois.wala.PrettyPrintable
+import edu.illinois.wala.{Named, PrettyPrintable}
 
 object C {
   def unapply(c: C): Option[(String, String)] = {

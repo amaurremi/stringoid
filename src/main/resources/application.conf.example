@@ -1,0 +1,8 @@
+wala {
+  system-library-jars = [
+    "/path/.../to/.../rt.jar"
+    "/path/.../to/.../android.jar"
+  ]
+
+  system-libraries-as-dex = false
+}

@@ -1,10 +1,8 @@
 package edu.illinois.wala.classLoader
 
+import com.ibm.wala.classLoader.{NewSiteReference, ShrikeBTMethod}
 import edu.illinois.wala.Facade._
-import com.ibm.wala.classLoader.ShrikeBTMethod
 import edu.illinois.wala.ssa.IRNo
-import com.ibm.wala.ipa.callgraph.propagation.AllocationSiteInNode
-import com.ibm.wala.classLoader.NewSiteReference
 
 object M {
   def unapply(m: M): Option[(C, String)] = {

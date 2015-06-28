@@ -1,9 +1,10 @@
 package edu.illinois.wala.ipa.callgraph
 
-import scala.collection.JavaConverters._
-import scala.collection._
 import edu.illinois.wala.Facade._
 import edu.illinois.wala.S
+
+import scala.collection.JavaConverters._
+import scala.collection._
 
 trait ExtraFeatures { self: AbstractCallGraphBuilder =>
 

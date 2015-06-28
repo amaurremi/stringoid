@@ -4,9 +4,12 @@ version := "0.1"
 
 organization := "IBM T.J. Watson Research"
 
-scalaVersion := "2.11.1"
+scalaVersion := "2.10.5"
 
-resolvers += "Local Maven Repository" at "file:///"+Path.userHome.absolutePath+"/.m2/repository"
+resolvers ++= Seq(
+  "Local Maven Repository" at "file:///" + Path.userHome.absolutePath + "/.m2/repository",
+  Resolver.sonatypeRepo("public")
+)
 
 libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "0.5.+",
@@ -20,10 +23,10 @@ libraryDependencies ++= Seq(
 
   "junit" % "junit" % "4.+",
 
-  "org.scala-lang" % "scala-compiler" % "2.11.1",
-  "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test",
+  "org.scalatest" %% "scalatest" % "2.2.1" % "test",
   "org.scalamock" %% "scalamock-scalatest-support" % "3.2" % "test",
   "org.mockito" % "mockito-core" % "1.9.5",
-  "org.scalaz" %% "scalaz-core" % "7.1.0")
+  "org.scalaz" %% "scalaz-core" % "7.1.0",
+  "com.github.scopt" %% "scopt" % "3.3.0")
 
 org.scalastyle.sbt.ScalastylePlugin.Settings

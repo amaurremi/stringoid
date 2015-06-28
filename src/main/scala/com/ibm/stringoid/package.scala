@@ -3,7 +3,9 @@ package com.ibm
 package object stringoid {
 
   type GrepUrl = String
-  type WalaUrl = String
+  type Url = String
 
-  type WalaUrls = Map[WalaUrl, Set[String]]
+  type UrlWithSources = Map[Url, Set[String]]
+
+  case class RetrievedUrls(urlWithSources: UrlWithSources, analysisType: AnalysisType)
 }

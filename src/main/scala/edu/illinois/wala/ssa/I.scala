@@ -1,14 +1,10 @@
 package edu.illinois.wala.ssa
 
 import com.ibm.wala.ipa.cha.IClassHierarchy
-import com.ibm.wala.ssa.SSAFieldAccessInstruction
+import com.ibm.wala.ssa.{SSAArrayLengthInstruction, SSAArrayLoadInstruction, SSAGetInstruction, SSAInvokeInstruction}
+import com.ibm.wala.types.TypeReference
 import edu.illinois.wala.Facade._
 import edu.illinois.wala.classLoader.ArrayContents
-import com.ibm.wala.ssa.SSAGetInstruction
-import com.ibm.wala.types.TypeReference
-import com.ibm.wala.ssa.SSAInvokeInstruction
-import com.ibm.wala.ssa.SSAArrayLoadInstruction
-import com.ibm.wala.ssa.SSAArrayLengthInstruction
 
 class RichPutI(val i: PutI) extends AnyVal {
   def v = V(i.getVal())

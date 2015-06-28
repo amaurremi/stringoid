@@ -1,15 +1,13 @@
 package edu.illinois.wala.ipa.callgraph.propagation
 
-import com.ibm.wala.ssa.SSAPutInstruction
-import scala.collection.JavaConversions._
-import com.ibm.wala.ipa.callgraph.propagation.InstanceFieldKey
-import com.ibm.wala.ipa.callgraph.propagation.ArrayContentsKey
+import com.ibm.wala.ipa.callgraph.propagation.{AbstractFieldPointerKey, ArrayContentsKey, InstanceFieldKey}
 import com.ibm.wala.ipa.modref.ArrayLengthKey
-import com.ibm.wala.ipa.callgraph.propagation.PointerKey
-import com.ibm.wala.ipa.callgraph.propagation.AbstractFieldPointerKey
+import com.ibm.wala.ssa.SSAPutInstruction
+import edu.illinois.wala.Facade._
 import edu.illinois.wala.S
 import edu.illinois.wala.ssa.V
-import edu.illinois.wala.Facade._
+
+import scala.collection.JavaConversions._
 
 object P {
   def apply(n: N, v: Int) = {

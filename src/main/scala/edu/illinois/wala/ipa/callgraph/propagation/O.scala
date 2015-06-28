@@ -1,12 +1,9 @@
 package edu.illinois.wala.ipa.callgraph.propagation
 
-import com.ibm.wala.ipa.callgraph.propagation.AllocationSiteInNode
-import edu.illinois.wala.Facade._
-import com.ibm.wala.ipa.callgraph.propagation.InstanceKey
+import com.ibm.wala.ipa.callgraph.propagation.{AllocationSiteInNode, InstanceKey}
 import edu.illinois.wala.Facade._
 import edu.illinois.wala.S
-import edu.illinois.wala.classLoader.ProgramCounter
-import edu.illinois.wala.classLoader.CodeLocation
+import edu.illinois.wala.classLoader.{CodeLocation, ProgramCounter}
 
 object O {
   import edu.illinois.wala.Facade._
@@ -40,7 +37,6 @@ class RichStaticClassObject(val o: StaticClassObject) extends AnyVal {
 }
 
 class RichO(val o: InstanceKey) extends AnyVal {
-  import O._
   def prettyPrint: String = {
     (o match {
       case o: AllocationSiteInNode => o.prettyPrint

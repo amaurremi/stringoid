@@ -1,14 +1,12 @@
 package edu.illinois.wala.ipa.callgraph
 
-import com.ibm.wala.ipa.callgraph.Context
+import com.ibm.wala.ipa.callgraph.{CGNode, Context, ContextKey}
 import com.ibm.wala.ssa.IR
-import scala.collection.JavaConversions._
-import scala.collection.JavaConverters._
-import com.ibm.wala.ipa.callgraph.ContextKey
-import com.ibm.wala.ipa.callgraph.CGNode
+import edu.illinois.wala.Facade._
 import edu.illinois.wala.S
 import edu.illinois.wala.ssa.V
-import edu.illinois.wala.Facade._
+
+import scala.collection.JavaConverters._
 
 object N {
   def unapply(n: N): Option[(Context, M)] = {

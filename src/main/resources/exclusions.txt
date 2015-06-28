@@ -1,0 +1,14 @@
+java\/awt\/.*
+javax\/.*
+com\/sun\/.*
+com\/apple\/.*
+sun\/.*
+apple\/.*
+org\/eclipse\/.*
+apache\/.*
+dalvik\/.*
+java\/io\/ObjectStreamClass*
+com\/apple\/.*
+jdk\/.*
+org\/omg\/.*
+org\/w3c\/.*

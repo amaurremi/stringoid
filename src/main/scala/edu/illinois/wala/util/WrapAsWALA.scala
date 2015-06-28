@@ -1,10 +1,9 @@
 package edu.illinois.wala.util
 
 import com.ibm.wala.util.Predicate
-import com.ibm.wala.util.intset.IntSetAction
-import com.ibm.wala.util.intset.IntSet
-import com.ibm.wala.util.intset.SparseIntSet
-import collection.JavaConverters._
+import com.ibm.wala.util.intset.{IntSet, IntSetAction, SparseIntSet}
+
+import scala.collection.JavaConverters._
 
 trait Wrapper {
   implicit def makePredicateFromFunction[T](f: Function1[T, Boolean]) = new Predicate[T] {

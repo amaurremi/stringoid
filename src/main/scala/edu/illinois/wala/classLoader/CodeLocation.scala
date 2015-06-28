@@ -1,7 +1,7 @@
 package edu.illinois.wala.classLoader
 
-import edu.illinois.wala.Facade._
 import com.ibm.wala.classLoader.ShrikeBTMethod
+import edu.illinois.wala.Facade._
 import edu.illinois.wala.ssa.IRNo
 
 object CodeLocation {

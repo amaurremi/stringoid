@@ -1,8 +1,5 @@
 *.class
-myapp/bin/
-myapp/gen/
 out/
-local.properties
 .idea
 .idea_modules
 target/
