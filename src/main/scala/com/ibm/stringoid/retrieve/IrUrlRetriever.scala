@@ -22,15 +22,4 @@ trait IrUrlRetriever extends UrlRetriever {
     val irs = getIrsFromBuilder(new FlexibleCallGraphBuilder())
     irs filter { Option(_).isDefined }
   }
-
-  /**
-   * For debug purposes
-   */
-  final def cgReachableMethodsContaining(string: String, apkPath: Path): Iterable[IMethod] = {
-    implicit val config = configWithApk(apkPath)
-    new FlexibleCallGraphBuilder().cg collect {
-      case n if n.getMethod.toString.contains(string) =>
-        n.getMethod
-    }
-  }
 }

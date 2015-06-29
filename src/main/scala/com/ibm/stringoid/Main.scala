@@ -56,8 +56,8 @@ object Main {
         opts.copy(analysis1 = a1)
     } text s"first analysis type (${ analysisTypes })"
     opt[AnalysisType]("a2") required() valueName "<analysis2>" action {
-      (a1, opts) =>
-        opts.copy(analysis1 = a1)
+      (a2, opts) =>
+        opts.copy(analysis2 = a2)
     } text s"second analysis type (${ analysisTypes })"
     opt[Path]('o', "outdir") optional() valueName "<out dir>" action {
       (o, opts) =>
