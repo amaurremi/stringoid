@@ -6,7 +6,11 @@ import com.ibm.stringoid._
 
 import scala.collection.breakOut
 
-trait AllUrlsFromIrRetriever extends IrUrlRetriever {
+/**
+ * An analysis that is based on extracting the URL strings that appear as
+ * constants in an IR's symbol table.
+ */
+trait ConstantUrlsFromIrRetriever extends IrUrlRetriever {
 
   final def getUrlsWithSources(
     apkPath: Path

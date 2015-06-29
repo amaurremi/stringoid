@@ -7,6 +7,10 @@ import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 
 import scala.collection.JavaConversions._
 
+/**
+ * An analysis that retrieves the URLs that occur in a program, mapped to the set
+ * of enclosing methods in which the URLs occur.
+ */
 trait UrlRetriever {
 
   val TEST_RESOURCES = "src/test/resources/"

@@ -9,6 +9,10 @@ import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import scala.collection.JavaConversions._
 import scala.collection._
 
+/**
+ * A URL-retrieval analysis that is based on analyzing IRs independently from each other.
+ * The trait does not specify how to extract the URLs from an IR.
+ */
 trait IrUrlRetriever extends UrlRetriever {
 
   def getIrsFromBuilder(bulder: FlexibleCallGraphBuilder): Seq[IR]
