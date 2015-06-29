@@ -9,8 +9,6 @@ import scala.collection.JavaConversions._
 
 object Main {
 
-  private[this] val RESOURCES_PATH: Path = Paths.get("src", "test", "resources")
-
   def main(args: Array[String]): Unit =
     parser.parse(args, CmdOptions()) foreach { options =>
       runPlaydroneApks(options.analysis1, options.analysis2, options.files, options.outDir)
