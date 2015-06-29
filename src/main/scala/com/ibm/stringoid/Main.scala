@@ -1,5 +1,6 @@
 package com.ibm.stringoid
 
+import java.io.FileNotFoundException
 import java.nio.file.{Files, Path, Paths}
 
 import com.ibm.stringoid.AnalysisType._
@@ -26,10 +27,10 @@ object Main {
    * Write the output of Urls to specified file
    */
   def write(comparison: Compare, apkPath: Path, outDir: Path): Unit = {
+    import comparison._
     Files.createDirectories(outDir)
-    val name1: String = comparison.a1Urls.analysisType.toString
-    val name2: String = comparison.a2Urls.analysisType.toString
-    val logName = "%s_%s_%s.txt".format(apkPath.getFileName.toString, name1, name2)
+    def name(rs: RetrievedUrls) = rs.analysisType.toString
+    val logName = "%s_%s_%s.txt".format(apkPath.getFileName.toString, name(a1Urls), name(a2Urls))
     val logPath = Paths.get(outDir.toString, logName)
     Files.write(logPath, Seq(comparison.toString))
   }
@@ -44,8 +45,11 @@ object Main {
   val parser = new OptionParser[CmdOptions]("scopt") {
     implicit val pathRead: scopt.Read[Path] =
       Read.reads(
-        s =>
-          Paths.get(s, Seq.empty[String]: _*))
+        s => {
+          val path = Paths.get(s, Seq.empty[String]: _*)
+          if (!Files.exists(path)) throw new FileNotFoundException(s)
+          else path
+        })
 
     head("stringoid")
     opt[AnalysisType]("a1") required() valueName "<analysis1>" action {
