@@ -14,7 +14,7 @@ trait UrlRetriever {
 
   def getUrlsWithSources(apkPath: Path): UrlWithSources
 
-  def configWithApk(apkPath: Path): Config =
+  final def configWithApk(apkPath: Path): Config =
     ConfigFactory.load().withValue(
       "wala.dependencies.apk",
       ConfigValueFactory.fromIterable(Seq(apkPath.toString)))

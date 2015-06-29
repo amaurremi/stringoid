@@ -1,6 +1,6 @@
 package com.ibm.stringoid
 
-import java.nio.file.{Files, Path, Paths, InvalidPathException}
+import java.nio.file.{Files, InvalidPathException, Path, Paths}
 
 import com.ibm.stringoid.AnalysisType._
 import scopt.{OptionParser, Read}
