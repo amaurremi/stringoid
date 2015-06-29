@@ -25,7 +25,7 @@ trait AbstractCallGraphBuilder {
   Util.addDefaultBypassLogic(_options, _options.getAnalysisScope(), classOf[Util].getClassLoader(), _cha)
 
   // Hooks
-  def policy = { import ZeroXInstanceKeys._;  ALLOCATIONS }
+  def policy = { import ZeroXInstanceKeys._;  NONE }
   protected def cs: ContextSelector = new DefaultContextSelector(_options, _cha)
   protected def contextInterpreter = reflectionInterpreter // new DelegatingSSAContextInterpreter(defaultInterpreter, reflectionInterpreter)
   protected def instanceKeys = new ZeroXInstanceKeys(_options, _cha, theContextInterpreter, policy)
