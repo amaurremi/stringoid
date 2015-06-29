@@ -35,7 +35,7 @@ object Main {
     Files.write(logPath, Seq(comparison.toString))
   }
 
-  case class CmdOptions(
+  case class CmdOptions (
     analysis1: AnalysisType = Grep,
     analysis2: AnalysisType = CgIr,
     outDir: Path            = Paths.get("target", "url_comparison"),
@@ -70,5 +70,11 @@ object Main {
       (f, opts) =>
         opts.copy(files = opts.files :+ f)
     } text "APK files"
+    checkConfig {
+      opts =>
+        if (opts.analysis1 == opts.analysis2)
+          Left("Comparing equal analyses")
+        else Right(opts)
+    }
   }
 }
