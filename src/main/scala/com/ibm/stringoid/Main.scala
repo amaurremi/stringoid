@@ -51,15 +51,17 @@ object Main {
           else path
         })
 
+    private[this] val analysisTypes: String = AnalysisType.values mkString ", "
+
     head("stringoid")
     opt[AnalysisType]("a1") required() valueName "<analysis1>" action {
       (a1, opts) =>
         opts.copy(analysis1 = a1)
-    } text s"first analysis type (${AnalysisType.values.mkString(", ")})"
+    } text s"first analysis type (${ analysisTypes })"
     opt[AnalysisType]("a2") required() valueName "<analysis2>" action {
       (a1, opts) =>
         opts.copy(analysis1 = a1)
-    } text s"second analysis type (${AnalysisType.values.mkString(", ")})"
+    } text s"second analysis type (${ analysisTypes })"
     opt[Path]('o', "outdir") optional() valueName "<out dir>" action {
       (o, opts) =>
         opts.copy(outDir = o)
