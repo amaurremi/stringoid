@@ -13,7 +13,6 @@ import scala.collection.JavaConversions._
  */
 trait UrlRetriever {
 
-  val TEST_RESOURCES = "src/test/resources/"
   val URL_REGEX      = "https?://[^\" ]+"
 
   def getUrlsWithSources(apkPath: Path): UrlWithSources

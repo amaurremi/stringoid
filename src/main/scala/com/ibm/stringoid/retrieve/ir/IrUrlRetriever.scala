@@ -1,7 +1,8 @@
-package com.ibm.stringoid.retrieve
+package com.ibm.stringoid.retrieve.ir
 
 import java.nio.file.Path
 
+import com.ibm.stringoid.retrieve.UrlRetriever
 import com.ibm.wala.ssa.IR
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 

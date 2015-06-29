@@ -1,4 +1,4 @@
-package com.ibm.stringoid.retrieve
+package com.ibm.stringoid.retrieve.ir
 
 import java.nio.file.Path
 

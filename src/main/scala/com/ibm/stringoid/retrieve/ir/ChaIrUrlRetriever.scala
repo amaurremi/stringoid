@@ -1,4 +1,4 @@
-package com.ibm.stringoid.retrieve
+package com.ibm.stringoid.retrieve.ir
 
 import com.ibm.wala.ssa.IR
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
