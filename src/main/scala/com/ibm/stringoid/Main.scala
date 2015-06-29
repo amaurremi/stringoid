@@ -3,7 +3,7 @@ package com.ibm.stringoid
 import java.nio.file.{Files, Path, Paths}
 
 import com.ibm.stringoid.AnalysisType._
-import scopt.{Read, OptionParser}
+import scopt.{OptionParser, Read}
 
 import scala.collection.JavaConversions._
 
@@ -28,7 +28,7 @@ object Main {
   def write(comparison: Compare, apkPath: Path, outDir: Path): Unit = {
     Files.createDirectories(outDir)
     val name1: String = comparison.a1Urls.analysisType.toString
-    val name2: String = comparison.a1Urls.analysisType.toString
+    val name2: String = comparison.a2Urls.analysisType.toString
     val logName = "%s_%s_%s.txt".format(apkPath.getFileName.toString, name1, name2)
     val logPath = Paths.get(outDir.toString, logName)
     Files.write(logPath, Seq(comparison.toString))
@@ -51,11 +51,11 @@ object Main {
     opt[AnalysisType]("a1") required() valueName "<analysis1>" action {
       (a1, opts) =>
         opts.copy(analysis1 = a1)
-    } text s"first analysis type (${AnalysisType.values})"
+    } text s"first analysis type (${AnalysisType.values.mkString(", ")})"
     opt[AnalysisType]("a2") required() valueName "<analysis2>" action {
       (a1, opts) =>
         opts.copy(analysis1 = a1)
-    } text s"second analysis type (${AnalysisType.values})"
+    } text s"second analysis type (${AnalysisType.values.mkString(", ")})"
     opt[Path]('o', "outdir") optional() valueName "<out dir>" action {
       (o, opts) =>
         opts.copy(outDir = o)

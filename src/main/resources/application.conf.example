@@ -1,7 +1,7 @@
 wala {
   system-library-jars = [
     "/path/.../to/.../rt.jar"
-    "/path/.../to/.../android.jar"
+    "/path/.../to/.../android.jar" // absolute path to stringoid/src/main/resources/androidJars/android.jar
   ]
 
   system-libraries-as-dex = false
