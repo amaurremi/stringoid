@@ -26,14 +26,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.JarFile;
 
-public class AndroidRunner {
+public class WalaApkCallGraphBuilder {
 
     public static void main(String[] args) throws Exception {
         URI[] libs = new URI[] {
-                AndroidRunner.class.getClassLoader().getResource("androidJars/core.jar").toURI(),
-                AndroidRunner.class.getClassLoader().getResource("androidJars/framework.jar").toURI(),
-                AndroidRunner.class.getClassLoader().getResource("androidJars/framework2.jar").toURI(),
-                AndroidRunner.class.getClassLoader().getResource("androidJars/framework3.jar").toURI()
+                WalaApkCallGraphBuilder.class.getClassLoader().getResource("androidJars/core.jar").toURI(),
+                WalaApkCallGraphBuilder.class.getClassLoader().getResource("androidJars/framework.jar").toURI(),
+                WalaApkCallGraphBuilder.class.getClassLoader().getResource("androidJars/framework2.jar").toURI(),
+                WalaApkCallGraphBuilder.class.getClassLoader().getResource("androidJars/framework3.jar").toURI()
         };
         Pair<CallGraph, PointerAnalysis<InstanceKey>> pair = makeAPKCallGraph(
                 libs,
@@ -41,6 +41,7 @@ public class AndroidRunner {
                 "/Users/mrapopo/IBM/stringoid/src/test/resources/cgeo.geocaching.developer-build.apk",
                 new NullProgressMonitor(),
                 AnalysisOptions.ReflectionOptions.NONE);
+
         System.out.println(pair.fst.toString());
     }
 
@@ -84,14 +85,14 @@ public class AndroidRunner {
             return AndroidAnalysisScope.setUpAndroidAnalysisScope(
                     new File(dexFileName).toURI(),
                     "exclusions.txt",
-                    AndroidRunner.class.getClassLoader(),
+                    WalaApkCallGraphBuilder.class.getClassLoader(),
                     androidLibs);
 
         } else {
             AnalysisScope scope = AndroidAnalysisScope.setUpAndroidAnalysisScope(
                     new File(dexFileName).toURI(),
                     "exclusions.txt",
-                    AndroidRunner.class.getClassLoader());
+                    WalaApkCallGraphBuilder.class.getClassLoader());
 
             if (androidAPIJar != null) {
                 scope.addToScope(ClassLoaderReference.Primordial, new JarFileModule(new JarFile(androidAPIJar)));

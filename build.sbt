@@ -19,7 +19,7 @@ libraryDependencies ++= Seq(
   "com.ibm.wala" % "com.ibm.wala.util" % "1.3.7",
   "com.ibm.wala" % "com.ibm.wala.cast" % "1.3.8-SNAPSHOT",
 
-  "edu.illinois.wala" %% "walafacade" % "0.1.2",
+//  "edu.illinois.wala" %% "walafacade" % "0.1.2",
 
   "junit" % "junit" % "4.+",
 

@@ -1,6 +1,6 @@
 package com.ibm.stringoid.retrieve
 
-import java.nio.file.{Paths, Files, Path}
+import java.nio.file.Path
 
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ssa.IR
@@ -28,12 +28,5 @@ trait IrUrlRetriever extends UrlRetriever {
       case n if n.getMethod.toString.contains(string) =>
         n.getMethod
     }
-  }
-}
-
-trait AllIrFromCgRetriever extends IrUrlRetriever {
-
-  override final def getIrsFromBuilder(builder: FlexibleCallGraphBuilder): Seq[IR] = {
-    (builder.cg map { _.getIR })(breakOut)
   }
 }
