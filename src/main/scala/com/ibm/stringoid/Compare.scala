@@ -2,6 +2,8 @@ package com.ibm.stringoid
 
 import java.nio.file.Path
 
+import com.ibm.stringoid.AnalysisType._
+
 object Compare {
 
   /**
@@ -13,8 +15,8 @@ object Compare {
     apkPath: Path
   ): Compare = {
 
-    val urls1 = a1.retriever.getUrlsWithSources(apkPath)
-    val urls2 = a2.retriever.getUrlsWithSources(apkPath)
+    val urls1 = retriever(a1).getUrlsWithSources(apkPath)
+    val urls2 = retriever(a2).getUrlsWithSources(apkPath)
     new Compare(RetrievedUrls(urls1, a1), RetrievedUrls(urls2, a2))
   }
 }
@@ -32,8 +34,8 @@ case class Compare private(a1Urls: RetrievedUrls, a2Urls: RetrievedUrls) {
     }
 
   override def toString = {
-    val name1 = a1Urls.analysisType.name
-    val name2 = a2Urls.analysisType.name
+    val name1 = a1Urls.analysisType.toString
+    val name2 = a2Urls.analysisType.toString
     val urls1 = a1Urls.urlWithSources.keySet
     val urls2 = a2Urls.urlWithSources.keySet
     s"""Number of different URLs through $name1: ${urls1.size}

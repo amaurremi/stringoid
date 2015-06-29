@@ -5,7 +5,9 @@ import scopt.Read
 
 object AnalysisType extends Enumeration {
   type AnalysisType = Value
-  val CgIr, ChaIr, Grep = Value
+  val CgIr  = Value("CgIr")
+  val ChaIr = Value("ChaIr")
+  val Grep  = Value("Grep")
 
   def retriever(at: AnalysisType) = at match {
     case CgIr  =>
