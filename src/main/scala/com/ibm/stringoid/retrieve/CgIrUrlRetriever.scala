@@ -20,10 +20,6 @@ object CgIrUrlRetriever extends ConstantUrlsFromIrRetriever with AllIrFromCgRetr
 trait AllIrFromCgRetriever extends IrUrlRetriever {
 
   override final def getIrsFromBuilder(builder: FlexibleCallGraphBuilder): Seq[IR] = {
-    (Time.time("building call graph") {
-      val cg = builder.cg
-      println(cg)
-      cg
-    } map { _.getIR })(breakOut)
+    (Time.time("building call graph") { builder.cg } map { _.getIR })(breakOut)
   }
 }
