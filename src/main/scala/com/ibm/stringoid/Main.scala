@@ -1,7 +1,6 @@
 package com.ibm.stringoid
 
-import java.io.FileNotFoundException
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{Files, Path, Paths, InvalidPathException}
 
 import com.ibm.stringoid.AnalysisType._
 import scopt.{OptionParser, Read}
@@ -47,7 +46,7 @@ object Main {
       Read.reads(
         s => {
           val path = Paths.get(s, Seq.empty[String]: _*)
-          if (!Files.exists(path)) throw new FileNotFoundException(s)
+          if (!Files.exists(path)) throw new InvalidPathException(s, "does not exist")
           else path
         })
 
