@@ -13,11 +13,11 @@ import scala.collection.JavaConversions._
  */
 trait UrlRetriever {
 
-  val URL_REGEX      = "https?://[^\" ]+"
+  protected val URL_REGEX      = "https?://[^\" ]+"
 
   def getUrlsWithSources(apkPath: Path): UrlWithSources
 
-  final def configWithApk(apkPath: Path): Config =
+  protected final def configWithApk(apkPath: Path): Config =
     ConfigFactory.load().withValue(
       "wala.dependencies.apk",
       ConfigValueFactory.fromIterable(Seq(apkPath.toString)))

@@ -13,7 +13,7 @@ import scala.collection._
  */
 object CgIrUrlRetriever extends ConstantUrlsFromIrRetriever {
   
-  override final def getIrsFromBuilder(builder: FlexibleCallGraphBuilder): Seq[IR] = {
+  override protected final def getIrsFromBuilder(builder: FlexibleCallGraphBuilder): Seq[IR] = {
     (Time.time("building call graph") { builder.cg } map { _.getIR })(breakOut)
   }
 }

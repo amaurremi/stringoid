@@ -14,9 +14,9 @@ import scala.collection._
  */
 trait IrUrlRetriever extends UrlRetriever {
 
-  def getIrsFromBuilder(bulder: FlexibleCallGraphBuilder): Seq[IR]
+  protected def getIrsFromBuilder(builder: FlexibleCallGraphBuilder): Seq[IR]
 
-  final def getIrs(apkPath: Path): Seq[IR] = {
+  protected final def getIrs(apkPath: Path): Seq[IR] = {
     implicit val config = configWithApk(apkPath)
     val irs = getIrsFromBuilder(new FlexibleCallGraphBuilder())
     irs filter { Option(_).isDefined }

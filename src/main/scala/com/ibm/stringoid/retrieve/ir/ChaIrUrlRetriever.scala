@@ -7,7 +7,7 @@ import scala.collection.JavaConversions._
 
 object ChaIrUrlRetriever extends ConstantUrlsFromIrRetriever {
 
-  override def getIrsFromBuilder(builder: FlexibleCallGraphBuilder): Seq[IR] = {
+  override protected def getIrsFromBuilder(builder: FlexibleCallGraphBuilder): Seq[IR] = {
     val irs = for {
       c <- builder.cha.iterator()
       m <- c.getAllMethods

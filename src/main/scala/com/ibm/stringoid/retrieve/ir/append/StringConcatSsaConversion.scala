@@ -1,17 +1,26 @@
-package com.ibm.stringoid.retrieve.append
+package com.ibm.stringoid.retrieve.ir.append
 
 import com.ibm.wala.cast.ir.ssa.AbstractSSAConversion
-import com.ibm.wala.ssa.{SSACFG, SSAPhiInstruction, SSAInstruction}
+import com.ibm.wala.ssa._
 
-class StringConcatSsaConversion extends AbstractSSAConversion {
+class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SSAOptions) {
 
-  override def repairInstructionUses(inst: SSAInstruction, index: Int, newUses: Array[Int]): Unit = ???
+  override def repairInstructionUses(
+    inst: SSAInstruction,
+    index: Int,
+    newUses: Array[Int]
+  ): Unit = ???
 
   override def initializeVariables(): Unit = ???
 
   override def getNextNewValueNumber: Int = ???
 
-  override def repairInstructionDefs(inst: SSAInstruction, index: Int, newDefs: Array[Int], newUses: Array[Int]): Unit = ???
+  override def repairInstructionDefs(
+    inst: SSAInstruction,
+    index: Int,
+    newDefs: Array[Int],
+    newUses: Array[Int]
+  ): Unit = ???
 
   override def getMaxValueNumber: Int = ???
 
@@ -27,7 +36,12 @@ class StringConcatSsaConversion extends AbstractSSAConversion {
 
   override def getDef(inst: SSAInstruction, index: Int): Int = ???
 
-  override def repairPhiUse(BB: SSACFG#BasicBlock, phiIndex: Int, rvalIndex: Int, newRval: Int): Unit = ???
+  override def repairPhiUse(
+    BB: SSACFG#BasicBlock,
+    phiIndex: Int,
+    rvalIndex: Int,
+    newRval: Int
+  ): Unit = ???
 
   override def setPhi(B: SSACFG#BasicBlock, index: Int, inst: SSAPhiInstruction): Unit = ???
 
