@@ -6,7 +6,7 @@ package object stringoid {
 
   type Url = String
 
-  type UrlWithSources = Map[Url, Set[String]]
+  type UrlsWithSources = Map[Url, Set[String]]
 
-  case class RetrievedUrls(urlWithSources: UrlWithSources, analysisType: AnalysisType)
+  case class RetrievedUrls(urlWithSources: UrlsWithSources, analysisType: AnalysisType)
 }

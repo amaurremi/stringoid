@@ -9,6 +9,12 @@ import scala.collection.JavaConversions._
 
 object Main {
 
+  // Program arguments
+  // all apks:
+  // --a1 cha --a2 grep src/test/resources/playdrone_apks/com.facebook.katana-4947895.apk src/test/resources/playdrone_apks/com.google.android.apps.maps-804010103.apk src/test/resources/playdrone_apks/com.google.android.apps.plus-413339268.apk src/test/resources/playdrone_apks/com.google.android.gm-4900120.apk src/test/resources/playdrone_apks/com.google.android.gms-6183036.apk src/test/resources/playdrone_apks/com.google.android.googlequicksearchbox-300306150.apk src/test/resources/playdrone_apks/com.google.android.street-18102.apk src/test/resources/playdrone_apks/com.google.android.tts-210302120.apk src/test/resources/playdrone_apks/com.google.android.videos-33331.apk src/test/resources/playdrone_apks/com.google.android.youtube-51405300.apk
+  // those where grep > cg
+  // --a1 cha --a2 grep src/test/resources/playdrone_apks/com.google.android.apps.maps-804010103.apk rc/test/resources/playdrone_apks/com.google.android.gms-6183036.apk src/test/resources/playdrone_apks/com.google.android.googlequicksearchbox-300306150.apk src/test/resources/playdrone_apks/com.google.android.tts-210302120.apk src/test/resources/playdrone_apks/com.google.android.youtube-51405300.apk
+
   def main(args: Array[String]): Unit =
     parser.parse(args, CmdOptions()) foreach { options =>
       runPlaydroneApks(options.analysis1, options.analysis2, options.files, options.outDir)

@@ -26,7 +26,7 @@ object Compare {
  */
 case class Compare private(a1Urls: RetrievedUrls, a2Urls: RetrievedUrls) {
 
-  private[this] def mkString(urls: UrlWithSources): String =
+  private[this] def mkString(urls: UrlsWithSources): String =
     urls.foldLeft("") {
       case (prev: String, (wu: Url, ms: Set[String])) =>
         val inMethods = if (ms.isEmpty) "\n" else "\n  in methods:\n" + ms.toList.mkString("    ", "\n    ", "")

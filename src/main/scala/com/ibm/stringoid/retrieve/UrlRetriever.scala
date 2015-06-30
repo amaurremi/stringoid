@@ -15,7 +15,7 @@ trait UrlRetriever {
 
   protected val URL_REGEX      = "https?://[^\" ]+"
 
-  def getUrlsWithSources(apkPath: Path): UrlWithSources
+  def getUrlsWithSources(apkPath: Path): UrlsWithSources
 
   protected final def configWithApk(apkPath: Path): Config =
     ConfigFactory.load().withValue(

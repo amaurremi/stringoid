@@ -14,7 +14,7 @@ trait ConstantUrlsFromIrRetriever extends IrUrlRetriever {
 
   final def getUrlsWithSources(
     apkPath: Path
-  ): UrlWithSources = {
+  ): UrlsWithSources = {
     val urlMethodPairs: Set[(Url, String)] = (for {
       ir    <- getIrs(apkPath)
       table <- Option(ir.getSymbolTable).toSeq
