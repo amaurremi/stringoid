@@ -3,7 +3,7 @@ package com.ibm.stringoid.retrieve.ir.append
 import com.ibm.wala.cast.ir.ssa.AbstractSSAConversion
 import com.ibm.wala.ssa._
 
-import scala.collection.{breakOut, mutable}
+import scala.collection.mutable
 
 class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SSAOptions) {
 
@@ -71,8 +71,8 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
     val oldInstr = basicBlockToPhis(BB)(phiIndex)
     val oldUses1 = rvalIndex + 1 to oldInstr.getNumberOfUses map oldInstr.getUse
     val oldUses2 = 0 to rvalIndex map oldInstr.getUse
-    val newUses  = ((oldUses1 :+ newRval) ++ oldUses2)(breakOut)
-    basicBlockToPhis(BB)(phiIndex) setValues newUses
+    val newUses  = (oldUses1 :+ newRval) ++ oldUses2
+    basicBlockToPhis(BB)(phiIndex) setValues newUses.toArray[ValueNumber]
   }
 
   override def setPhi(B: SSACFG#BasicBlock, index: Int, inst: SSAPhiInstruction): Unit =
