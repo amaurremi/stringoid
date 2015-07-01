@@ -3,15 +3,17 @@ package com.ibm.stringoid.retrieve.ir.append
 import com.ibm.wala.cast.ir.ssa.AbstractSSAConversion
 import com.ibm.wala.ssa._
 
+import scala.collection.JavaConversions._
 import scala.collection.mutable
 
 class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SSAOptions) {
 
-  private[this] case class DefUse(df: Array[ValueNumber], uses: Array[ValueNumber])
+  case class DefUses(df: Array[ValueNumber], uses: Array[ValueNumber])
 
   private[this] val basicBlockToPhis =
     mutable.Map.empty[SSACFG#BasicBlock, Array[SSAPhiInstruction]] withDefaultValue Array.empty[SSAPhiInstruction]
-  private[this] val defUses          = mutable.Map.empty[SSAInstruction, DefUse]
+
+  private[this] val defUses          = initialDefUses(ir)
 
   private[this] var valNumIterator   = Iterator.from(getMaxValueNumber + 1)
 
@@ -31,6 +33,26 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
    */
   def isConcat(inst: SSAInstruction): Boolean = ???
 
+  def initialDefUses(ir: IR): mutable.Map[SSAInstruction, DefUses] = {
+    ir.iterateAllInstructions collect {
+      case instr: SSAInvokeInstruction if ??? => ???
+        // new StringBuilder:           invokespecial < Application, Ljava/lang/StringBuilder, <init>()V > 4 @7 exception:5
+        // new StringBuilder(string):   invokespecial < Application, Ljava/lang/StringBuilder, <init>(Ljava/lang/String;)V > 6,3 @16 exception:7
+                                    //  getUse(0) corresponds to "this" (and is what will be passed around if the SB gets appended)
+                                    //  getUse(1) corresponds to the passed argument
+        // sb.append(string)            9 = invokevirtual < Application, Ljava/lang/StringBuilder, append(Ljava/lang/String;)Ljava/lang/StringBuilder; > 4,3 @23 exception:8
+        // sb.append(SB)                1 = invokevirtual < Application, Ljava/lang/StringBuilder, append(Ljava/lang/CharSequence;)Ljava/lang/StringBuilder; > 6,4 @29 exception:10\
+                                    // getUse(0) corresponds to "this" (first SB)
+                                    // getUse(1) to argument
+
+//      case instr if isStringCreation(instr) =>
+//        instr -> DefUses(getStringCreationDef(instr), Array.empty[ValueNumber])
+//      case instr if isConcat(instr)         =>
+//        instr -> DefUses(getConcatDef(instr), getConcatUses(instr))
+    }
+    ???
+  }
+
   override def repairInstructionUses(
     inst: SSAInstruction,
     index: Int,
@@ -46,9 +68,9 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
     index: Int, // todo why does it have both the index and instruction?
     newDefs: Array[ValueNumber],
     newUses: Array[ValueNumber]
-  ): Unit = defUses += (instr -> DefUse(newDefs, newUses))
+  ): Unit = defUses += (instr -> DefUses(newDefs, newUses))
 
-  override def getMaxValueNumber = ir.getSymbolTable.getMaxValueNumber
+  override def getMaxValueNumber: ValueNumber = ???
 
   override def pushAssignment(inst: SSAInstruction, index: Int, newRhs: Int): Unit = {}
 

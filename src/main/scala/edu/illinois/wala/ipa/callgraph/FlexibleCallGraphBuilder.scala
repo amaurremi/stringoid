@@ -44,6 +44,7 @@ class FlexibleCallGraphBuilder(
   def this(options: AnalysisOptions) = {
     this(options.cha, options, if (options.getAnalysisScope.getModules(ClassLoaderReference.Application).asScala.exists {
       case _: DexFileModule => true
+      case _                => false
     }) new DexIRFactory() else new DefaultIRFactory())
   }
 
