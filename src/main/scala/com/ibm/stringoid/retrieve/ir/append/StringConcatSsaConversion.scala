@@ -4,18 +4,19 @@ import com.ibm.wala.cast.ir.ssa.AbstractSSAConversion
 import com.ibm.wala.ssa._
 
 import scala.collection.JavaConversions._
-import scala.collection.mutable
+import scala.collection.{breakOut, mutable}
 
 class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SSAOptions) {
 
-  case class DefUses(df: Array[ValueNumber], uses: Array[ValueNumber])
+  case class DefUses(defs: Array[ValueNumber], uses: Array[ValueNumber])
 
   private[this] val basicBlockToPhis =
     mutable.Map.empty[SSACFG#BasicBlock, Array[SSAPhiInstruction]] withDefaultValue Array.empty[SSAPhiInstruction]
 
   private[this] val defUses          = initialDefUses(ir)
 
-  private[this] var valNumIterator   = Iterator.from(getMaxValueNumber + 1)
+  private[this] val VAL_NUM_START    = 1
+  private[this] var newValNum        = Iterator.from(VAL_NUM_START)
 
   /**
    * Does this instruction correspond to the creation of a new string, StringBuilder, or StringBuffer?
@@ -32,25 +33,57 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
    * Does this instruction do string concatenation?
    */
   def isConcat(inst: SSAInstruction): Boolean = ???
+  
+  /**
+   * Does this instruction correspond to a new StringBuilder constructor invocation?
+   * If it does it returns a string whose prefix is the parameter type of the constructor.
+   * todo StringBuffer
+   */
+  private[this] def sbConstructor(instr: SSAInvokeInstruction): Option[String] = {
+    val string = instr.toString()
+    val prefix: String = "invokespecial < Application, Ljava/lang/StringBuilder, <init>("
+    if (string startsWith prefix)
+      Some(string substring prefix.length)
+    else None
+  }
 
-  def initialDefUses(ir: IR): mutable.Map[SSAInstruction, DefUses] = {
-    ir.iterateAllInstructions collect {
-      case instr: SSAInvokeInstruction if ??? => ???
-        // new StringBuilder:           invokespecial < Application, Ljava/lang/StringBuilder, <init>()V > 4 @7 exception:5
-        // new StringBuilder(string):   invokespecial < Application, Ljava/lang/StringBuilder, <init>(Ljava/lang/String;)V > 6,3 @16 exception:7
-                                    //  getUse(0) corresponds to "this" (and is what will be passed around if the SB gets appended)
-                                    //  getUse(1) corresponds to the passed argument
-        // sb.append(string)            9 = invokevirtual < Application, Ljava/lang/StringBuilder, append(Ljava/lang/String;)Ljava/lang/StringBuilder; > 4,3 @23 exception:8
-        // sb.append(SB)                1 = invokevirtual < Application, Ljava/lang/StringBuilder, append(Ljava/lang/CharSequence;)Ljava/lang/StringBuilder; > 6,4 @29 exception:10\
-                                    // getUse(0) corresponds to "this" (first SB)
-                                    // getUse(1) to argument
+  /**
+   * Does this instruction correspond to a StringBuilder.append() that takes exactly one argument?
+   * todo this means we currently don't support appending objects to specified parts of a string; only appending to the end
+   */
+  private[this] def sbAppend(instr: SSAInvokeInstruction): Boolean = {
+    instr.getNumberOfParameters == 2 && // one for 'this', one for argument
+      instr.toString.contains("invokevirtual < Application, Ljava/lang/StringBuilder, append(")
+  }
 
-//      case instr if isStringCreation(instr) =>
-//        instr -> DefUses(getStringCreationDef(instr), Array.empty[ValueNumber])
-//      case instr if isConcat(instr)         =>
-//        instr -> DefUses(getConcatDef(instr), getConcatUses(instr))
+  private[this] def getDefs(instr: SSAInvokeInstruction): Array[ValueNumber] =
+    // original value number: Array[ValueNumber](instr getUse 0)
+    defUses get instr match {
+      case Some(DefUses(defs, _)) => defs
+      case None                   => Array[ValueNumber](newValNum.next())
     }
-    ???
+
+  private[this] def getUses(instr: SSAInvokeInstruction): Array[ValueNumber] =
+  // original value number: Array[ValueNumber](instr getUse 1)
+    defUses get instr match {
+      case Some(DefUses(defs, _)) => defs
+      case None                   => Array[ValueNumber](newValNum.next())
+    }
+
+  private[this] def initialDefUses(ir: IR): mutable.Map[SSAInstruction, DefUses] = {
+    val tuples: Iterator[(SSAInvokeInstruction, DefUses)] = ir.iterateAllInstructions collect {
+      case instr: SSAInvokeInstruction if sbConstructor(instr).isDefined =>
+        val uses = sbConstructor(instr) match {
+          case Some(arg) if arg startsWith "L" =>   // new StringBuilder(String) or new StringBuilder(CharSequence)
+            getUses(instr)
+          case _                               =>   // new StringBuilder() or new StringBuilder(int)
+            Array.empty[ValueNumber]
+        }
+        instr -> DefUses(getDefs(instr), uses)
+      case instr: SSAInvokeInstruction if sbAppend(instr) =>
+        instr -> DefUses(getDefs(instr), getUses(instr))
+    }
+    mutable.Map(tuples.toSeq: _*)
   }
 
   override def repairInstructionUses(
@@ -61,7 +94,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
 
   override def initializeVariables(): Unit = {}
 
-  override def getNextNewValueNumber: ValueNumber = valNumIterator.next()
+  override def getNextNewValueNumber: ValueNumber = newValNum.next()
 
   override def repairInstructionDefs(
     instr: SSAInstruction,
@@ -82,7 +115,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
 
   override def isLive(Y: SSACFG#BasicBlock, V: ValueNumber): Boolean = true
 
-  override def getDef(inst: SSAInstruction, index: Int): Int = defUses(inst).df(index)
+  override def getDef(inst: SSAInstruction, index: Int): Int = defUses(inst).defs(index)
 
   override def repairPhiUse(
     BB: SSACFG#BasicBlock,
@@ -117,7 +150,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
 
   override def getNumberOfDefs(inst: SSAInstruction): Int =
     defUses get inst match {
-      case Some(defUse) => defUse.df.length
+      case Some(defUse) => defUse.defs.length
       case None         => ???
     }
 
