@@ -10,30 +10,14 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
 
   case class DefUses(defs: Array[ValueNumber], uses: Array[ValueNumber])
 
-  private[this] val basicBlockToPhis =
-    mutable.Map.empty[SSACFG#BasicBlock, Array[SSAPhiInstruction]] withDefaultValue Array.empty[SSAPhiInstruction]
-
-  private[this] val defUses          = initialDefUses(ir)
-
   private[this] val VAL_NUM_START    = 1
   private[this] var newValNum        = Iterator.from(VAL_NUM_START)
 
-  /**
-   * Does this instruction correspond to the creation of a new string, StringBuilder, or StringBuffer?
-   */
-  def isStringCreation(inst: SSAInstruction): Boolean =
-    inst match {
-      case i: SSAInvokeInstruction =>
-        val target = i.getDeclaredTarget
-        // todo: isInit, right params, string/stringbuilder/stringbuffer
-        ???
-    }
+  private[this] val basicBlockToPhis =
+    mutable.Map.empty[SSACFG#BasicBlock, Array[SSAPhiInstruction]] withDefaultValue Array.empty[SSAPhiInstruction]
+  private[this] val defUses          = initialDefUses(ir)
+  private[this] val vnToDef          = mutable.Map[ValueNumber, ValueNumber]()
 
-  /**
-   * Does this instruction do string concatenation?
-   */
-  def isConcat(inst: SSAInstruction): Boolean = ???
-  
   /**
    * Does this instruction correspond to a new StringBuilder constructor invocation?
    * If it does it returns a string whose prefix is the parameter type of the constructor.
@@ -60,7 +44,10 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
     // original value number: Array[ValueNumber](instr getUse 0)
     defUses get instr match {
       case Some(DefUses(defs, _)) => defs
-      case None                   => Array[ValueNumber](newValNum.next())
+      case None                   =>
+        val next = newValNum.next()
+        vnToDef += (next -> (instr getUse 0))
+        Array[ValueNumber](next)
     }
 
   private[this] def getUses(instr: SSAInvokeInstruction): Array[ValueNumber] =
@@ -86,14 +73,6 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
     mutable.Map(tuples.toSeq: _*)
   }
 
-  override def repairInstructionUses(
-    inst: SSAInstruction,
-    index: Int,
-    newUses: Array[ValueNumber]
-  ): Unit = {}
-
-  override def initializeVariables(): Unit = {}
-
   override def getNextNewValueNumber: ValueNumber = newValNum.next()
 
   override def repairInstructionDefs(
@@ -103,17 +82,11 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
     newUses: Array[ValueNumber]
   ): Unit = defUses += (instr -> DefUses(newDefs, newUses))
 
-  override def getMaxValueNumber: ValueNumber = ???
+  override def getMaxValueNumber: ValueNumber =
 
   override def pushAssignment(inst: SSAInstruction, index: Int, newRhs: Int): Unit = {}
 
   override def getPhi(B: SSACFG#BasicBlock, index: Int): SSAPhiInstruction = basicBlockToPhis(B)(index)
-
-  override def isAssignInstruction(inst: SSAInstruction): Boolean = false
-  
-  override def skip(vn: ValueNumber): Boolean = false
-
-  override def isLive(Y: SSACFG#BasicBlock, V: ValueNumber): Boolean = true
 
   override def getDef(inst: SSAInstruction, index: Int): Int = defUses(inst).defs(index)
 
@@ -160,11 +133,21 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
       case None         => ???
     }
 
+  override def getUse(inst: SSAInstruction, index: Int): Int = defUses(inst).uses(index)
+
+  override def isConstant(vn: ValueNumber): Boolean = symbolTable isStringConstant vnToDef(vn)
+
   override def repairExit(): Unit = {}
 
   override def popAssignment(inst: SSAInstruction, index: Int): Unit = {}
 
-  override def getUse(inst: SSAInstruction, index: Int): Int = defUses(inst).uses(index)
+  override def isAssignInstruction(inst: SSAInstruction): Boolean = false
 
-  override def isConstant(vn: ValueNumber): Boolean = ir.getSymbolTable isConstant vn
+  override def skip(vn: ValueNumber): Boolean = false
+
+  override def isLive(Y: SSACFG#BasicBlock, V: ValueNumber): Boolean = true
+
+  override def repairInstructionUses(inst: SSAInstruction, index: Int, newUses: Array[ValueNumber]): Unit = {}
+
+  override def initializeVariables(): Unit = {}
 }
