@@ -1,5 +1,6 @@
 package com.ibm.stringoid.retrieve.ir.append
 
+import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.wala.cast.ir.ssa.AbstractSSAConversion
 import com.ibm.wala.ssa._
 
@@ -16,45 +17,13 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
     mutable.Map.empty[SSACFG#BasicBlock, Array[SSAPhiInstruction]] withDefaultValue Array.empty[SSAPhiInstruction]
   private[this] val instrToDefUses   = initialDefUses(ir)
 
-  /**
-   * Does this instruction correspond to a new StringBuilder constructor invocation?
-   * If it does it returns a string whose prefix is the parameter type of the constructor.
-   * todo StringBuffer
-   */
-  private[this] def sbConstructor(instr: SSAInvokeInstruction): Option[String] = {
-    val string = instr.toString()
-    val prefix: String = "invokespecial < Application, Ljava/lang/StringBuilder, <init>("
-    if (string startsWith prefix)
-      Some(string substring prefix.length)
-    else None
-  }
-
-  /**
-   * Does this instruction correspond to a StringBuilder.append() that takes exactly one argument?
-   * todo this means we currently don't support appending objects to specified parts of a string; only appending to the end
-   */
-  private[this] def sbAppend(instr: SSAInvokeInstruction): Boolean = {
-    instr.getNumberOfParameters == 2 && // one for 'this', one for argument
-      (instr.toString() contains "invokevirtual < Application, Ljava/lang/StringBuilder, append(")
-  }
-
-  private[this] def getDefs(instr: SSAInvokeInstruction): Array[ValueNumber] =
-    Array[ValueNumber](instr getDef 0, instr getUse 0)
-
-  private[this] def getUses(instr: SSAInvokeInstruction): Array[ValueNumber] =
-    Array[ValueNumber](instr getUse 0, instr getUse 1)
-
   private[this] def initialDefUses(ir: IR): mutable.Map[SSAInstruction, DefUses] = {
     val tuples: Iterator[(SSAInvokeInstruction, DefUses)] = ir.iterateAllInstructions collect {
-      case instr: SSAInvokeInstruction if sbConstructor(instr).isDefined =>
-        val uses = sbConstructor(instr) match {
-          case Some(arg) if arg startsWith "L" =>   // new StringBuilder(String) or new StringBuilder(CharSequence)
-            getUses(instr)
-          case _                               =>   // new StringBuilder() or new StringBuilder(int)
-            Array.empty[ValueNumber]
-        }
+      case instr: SSAInvokeInstruction if isSbConstructor(instr) =>
+        val uses = if (isSbConstructorWithRefParam(instr)) getUses(instr)
+                   else Array.empty[ValueNumber]
         instr -> DefUses(getDefs(instr), uses)
-      case instr: SSAInvokeInstruction if sbAppend(instr) =>
+      case instr: SSAInvokeInstruction if isSbAppend(instr) =>
         instr -> DefUses(getDefs(instr), getUses(instr))
     }
     mutable.Map(tuples.toSeq: _*)

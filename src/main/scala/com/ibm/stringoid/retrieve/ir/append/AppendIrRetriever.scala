@@ -2,13 +2,14 @@ package com.ibm.stringoid.retrieve.ir.append
 
 import java.nio.file.Path
 
-import com.ibm.stringoid.{Url, UrlsWithSources}
 import com.ibm.stringoid.retrieve.ir.IrUrlRetriever
-import com.ibm.wala.ssa.{SSAInstruction, IR}
+import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
+import com.ibm.stringoid.{Url, UrlsWithSources}
+import com.ibm.wala.ssa.{SymbolTable, IR, SSAInvokeInstruction}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
 import scala.collection.JavaConversions._
-import scala.collection.{Seq, breakOut}
+import scala.collection.breakOut
 
 object AppendIrRetriever extends IrUrlRetriever {
 
@@ -16,25 +17,36 @@ object AppendIrRetriever extends IrUrlRetriever {
     (builder.cg map { _.getIR })(breakOut)
 
   override def getUrlsWithSources(apkPath: Path): UrlsWithSources = {
-    val empty = Map.empty[Url, Set[String]]
-    getIrs(apkPath).foldLeft(empty) {
-      case (prevMap1, ir) =>
-        val urlsWithSources = getUrlsWithSourcesForIr(ir)
-        (urlsWithSources.keySet ++ prevMap1.keySet).foldLeft(empty) {
-          case (prevMap2, url) =>
-            val emptyStrings: Set[String] = Set.empty[String]
-            val methods1 = prevMap1 getOrElse (url, emptyStrings)
-            val methods2 = prevMap2 getOrElse (url, emptyStrings)
-            prevMap1 updated (url, methods1 ++ methods2)
-        }
+    val allUrlsWithSources: Seq[(Url, Set[String])] =
+      for {
+        ir  <- getIrs(apkPath)
+        url <- getUrlsWithSourcesForIr(ir)
+      } yield (url, Set(ir.getMethod.toString))
+    allUrlsWithSources.foldLeft(Map.empty[Url, Set[String]]) {
+      case (prevMap, (url, strings)) =>
+        prevMap updated (url, (prevMap getOrElse(url, Set.empty[String])) ++ strings)
     }
   }
 
-  private[this] def getUrlsWithSourcesForIr(ir: IR): UrlsWithSources = {
-    val ssa = new StringConcatSsaConversion(ir)
-    for {
-      instr <- ir.getInstructions
+  private[this] def getUrlWithSourcesForInstr(
+    instr: SSAInvokeInstruction, 
+    ssa: StringConcatSsaConversion
+  ): (Url, Set[String]) = {
+    ???
+  }
 
+  private[this] def getUrlsWithSourcesForIr(ir: IR): Seq[Url] = {
+    val ssa = new StringConcatSsaConversion(ir)
+    val urls = ir.getInstructions collect {
+      case instr: SSAInvokeInstruction =>
+        for {
+          param <- isSbConstructorWithRefParam(instr)
+          table = ir.getSymbolTable
+          argVn = instr getUse 1
+          if table isStringConstant argVn
+          string = table getStringValue argVn
+          if string matches URL_REGEX
+        } yield string
     }
   }
 }
