@@ -39,20 +39,10 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
   }
 
   private[this] def getDefs(instr: SSAInvokeInstruction): Array[ValueNumber] =
-    // original value number: Array[ValueNumber](instr getUse 0)
-    instrToDefUses get instr match {
-      case Some(DefUses(defs, _)) =>
-        defs
-      case None                   => // todo insert to instrToDefUses
-        Array[ValueNumber](instr getDef 0, instr getUse 1)
-    }
+    Array[ValueNumber](instr getUse 1)
 
-  private[this] def getUses(instr: SSAInvokeInstruction): Array[ValueNumber] = // todo insert to instrToDefUses
-  // original value number: Array[ValueNumber](instr getUse 1)
-    instrToDefUses get instr match {
-      case Some(DefUses(defs, _)) => defs
-      case None                   => Array[ValueNumber](newValNum.next())
-    }
+  private[this] def getUses(instr: SSAInvokeInstruction): Array[ValueNumber] =
+    Array[ValueNumber](instr getUse 1)
 
   private[this] def initialDefUses(ir: IR): mutable.Map[SSAInstruction, DefUses] = {
     val tuples: Iterator[(SSAInvokeInstruction, DefUses)] = ir.iterateAllInstructions collect {
@@ -105,7 +95,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
     val params: Array[ValueNumber] = Array[ValueNumber](CFG getPredNodeCount Y)
     0 to params.length foreach { params(_) = value }
 
-    val phi     = new SSAPhiInstruction(SSAInstruction.NO_INDEX, value, params) // todo is no index correct?
+    val phi     = new SSAPhiInstruction(SSAInstruction.NO_INDEX, value, params)
     val oldPhis = basicBlockToPhis(Y)
     val newPhis = new Array[SSAPhiInstruction](oldPhis.length + 1)
     oldPhis copyToArray newPhis
@@ -114,7 +104,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
   }
 
   override def repairPhiDefs(phi: SSAPhiInstruction, newDefs: Array[ValueNumber]): SSAPhiInstruction =
-    phi.copyForSSA(ir.getMethod.getDeclaringClass.getClassLoader.getInstructionFactory, newDefs, null).asInstanceOf[SSAPhiInstruction] // todo correct?
+    phi.copyForSSA(ir.getMethod.getDeclaringClass.getClassLoader.getInstructionFactory, newDefs, null).asInstanceOf[SSAPhiInstruction]
 
   override def getNumberOfDefs(inst: SSAInstruction): Int =
     instrToDefUses get inst match {
