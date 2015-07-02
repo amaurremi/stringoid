@@ -11,7 +11,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
   case class DefUses(defs: Array[ValueNumber], uses: Array[ValueNumber])
 
   private[this] val VAL_NUM_START    = 1
-  private[this] var newValNum        = Iterator.from(VAL_NUM_START)
+  private[this] val newValNum        = Iterator.from(VAL_NUM_START)
 
   private[this] val basicBlockToPhis =
     mutable.Map.empty[SSACFG#BasicBlock, Array[SSAPhiInstruction]] withDefaultValue Array.empty[SSAPhiInstruction]
