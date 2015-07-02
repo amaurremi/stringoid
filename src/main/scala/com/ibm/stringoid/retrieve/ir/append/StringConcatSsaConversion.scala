@@ -53,7 +53,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
    */
   private[this] def sbAppend(instr: SSAInvokeInstruction): Boolean = {
     instr.getNumberOfParameters == 2 && // one for 'this', one for argument
-      instr.toString.contains("invokevirtual < Application, Ljava/lang/StringBuilder, append(")
+      (instr.toString() contains "invokevirtual < Application, Ljava/lang/StringBuilder, append(")
   }
 
   private[this] def getDefs(instr: SSAInvokeInstruction): Array[ValueNumber] =
