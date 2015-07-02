@@ -37,8 +37,6 @@ object AppendIrRetriever extends IrUrlRetriever {
     // todo all instructions?
     // inits are the instructions that creat new Strings/StringBuilders/StringBuffers
     // appends are the instructions that do string concatenation
-    val inits = ir.iterateAllInstructions filter ssa.isStringCreation
-    val appends = ir.iterateAllInstructions filter ssa.isConcat
     ???
   }
 

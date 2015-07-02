@@ -4,19 +4,17 @@ import com.ibm.wala.cast.ir.ssa.AbstractSSAConversion
 import com.ibm.wala.ssa._
 
 import scala.collection.JavaConversions._
-import scala.collection.{breakOut, mutable}
+import scala.collection.mutable
 
 class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SSAOptions) {
 
-  case class DefUses(defs: Array[ValueNumber], uses: Array[ValueNumber])
+  case class DefUses(defs: Array[ValueNumber], uses: Array[ValueNumber]) // todo replace array with value number?
 
-  private[this] val VAL_NUM_START    = 1
-  private[this] val newValNum        = Iterator.from(VAL_NUM_START)
+  private[this] val newValNum        = Iterator.from(getMaxValueNumber + 1)
 
   private[this] val basicBlockToPhis =
     mutable.Map.empty[SSACFG#BasicBlock, Array[SSAPhiInstruction]] withDefaultValue Array.empty[SSAPhiInstruction]
-  private[this] val defUses          = initialDefUses(ir)
-  private[this] val vnToDef          = mutable.Map[ValueNumber, ValueNumber]()
+  private[this] val instrToDefUses   = initialDefUses(ir)
 
   /**
    * Does this instruction correspond to a new StringBuilder constructor invocation?
@@ -42,17 +40,16 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
 
   private[this] def getDefs(instr: SSAInvokeInstruction): Array[ValueNumber] =
     // original value number: Array[ValueNumber](instr getUse 0)
-    defUses get instr match {
-      case Some(DefUses(defs, _)) => defs
-      case None                   =>
-        val next = newValNum.next()
-        vnToDef += (next -> (instr getUse 0))
-        Array[ValueNumber](next)
+    instrToDefUses get instr match {
+      case Some(DefUses(defs, _)) =>
+        defs
+      case None                   => // todo insert to instrToDefUses
+        Array[ValueNumber](instr getDef 0, instr getUse 1)
     }
 
-  private[this] def getUses(instr: SSAInvokeInstruction): Array[ValueNumber] =
+  private[this] def getUses(instr: SSAInvokeInstruction): Array[ValueNumber] = // todo insert to instrToDefUses
   // original value number: Array[ValueNumber](instr getUse 1)
-    defUses get instr match {
+    instrToDefUses get instr match {
       case Some(DefUses(defs, _)) => defs
       case None                   => Array[ValueNumber](newValNum.next())
     }
@@ -80,15 +77,13 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
     index: Int, // todo why does it have both the index and instruction?
     newDefs: Array[ValueNumber],
     newUses: Array[ValueNumber]
-  ): Unit = defUses += (instr -> DefUses(newDefs, newUses))
+  ): Unit = instrToDefUses += (instr -> DefUses(newDefs, newUses))
 
-  override def getMaxValueNumber: ValueNumber =
-
-  override def pushAssignment(inst: SSAInstruction, index: Int, newRhs: Int): Unit = {}
+  override def getMaxValueNumber: ValueNumber = symbolTable.getMaxValueNumber
 
   override def getPhi(B: SSACFG#BasicBlock, index: Int): SSAPhiInstruction = basicBlockToPhis(B)(index)
 
-  override def getDef(inst: SSAInstruction, index: Int): Int = defUses(inst).defs(index)
+  override def getDef(inst: SSAInstruction, index: Int): Int = instrToDefUses(inst).defs(index)
 
   override def repairPhiUse(
     BB: SSACFG#BasicBlock,
@@ -122,20 +117,20 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
     phi.copyForSSA(ir.getMethod.getDeclaringClass.getClassLoader.getInstructionFactory, newDefs, null).asInstanceOf[SSAPhiInstruction] // todo correct?
 
   override def getNumberOfDefs(inst: SSAInstruction): Int =
-    defUses get inst match {
+    instrToDefUses get inst match {
       case Some(defUse) => defUse.defs.length
-      case None         => ???
+      case None         => 0
     }
 
   override def getNumberOfUses(inst: SSAInstruction): Int =
-    defUses get inst match {
+    instrToDefUses get inst match {
       case Some(defUse) => defUse.uses.length
-      case None         => ???
+      case None         => 0
     }
 
-  override def getUse(inst: SSAInstruction, index: Int): Int = defUses(inst).uses(index)
+  override def getUse(inst: SSAInstruction, index: Int): Int = instrToDefUses(inst).uses(index)
 
-  override def isConstant(vn: ValueNumber): Boolean = symbolTable isStringConstant vnToDef(vn)
+  override def isConstant(vn: ValueNumber): Boolean = symbolTable isConstant vn
 
   override def repairExit(): Unit = {}
 
@@ -148,6 +143,8 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
   override def isLive(Y: SSACFG#BasicBlock, V: ValueNumber): Boolean = true
 
   override def repairInstructionUses(inst: SSAInstruction, index: Int, newUses: Array[ValueNumber]): Unit = {}
+
+  override def pushAssignment(inst: SSAInstruction, index: Int, newRhs: Int): Unit = {}
 
   override def initializeVariables(): Unit = {}
 }
