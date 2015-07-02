@@ -39,10 +39,10 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
   }
 
   private[this] def getDefs(instr: SSAInvokeInstruction): Array[ValueNumber] =
-    Array[ValueNumber](instr getUse 1)
+    Array[ValueNumber](instr getDef 0, instr getUse 0)
 
   private[this] def getUses(instr: SSAInvokeInstruction): Array[ValueNumber] =
-    Array[ValueNumber](instr getUse 1)
+    Array[ValueNumber](instr getUse 0, instr getUse 1)
 
   private[this] def initialDefUses(ir: IR): mutable.Map[SSAInstruction, DefUses] = {
     val tuples: Iterator[(SSAInvokeInstruction, DefUses)] = ir.iterateAllInstructions collect {

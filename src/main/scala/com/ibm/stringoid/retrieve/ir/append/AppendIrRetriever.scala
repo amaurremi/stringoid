@@ -22,27 +22,19 @@ object AppendIrRetriever extends IrUrlRetriever {
         val urlsWithSources = getUrlsWithSourcesForIr(ir)
         (urlsWithSources.keySet ++ prevMap1.keySet).foldLeft(empty) {
           case (prevMap2, url) =>
-            val emptryStrings: Set[String] = Set.empty[String]
-            val methods1 = prevMap1 getOrElse (url, emptryStrings)
-            val methods2 = prevMap2 getOrElse (url, emptryStrings)
+            val emptyStrings: Set[String] = Set.empty[String]
+            val methods1 = prevMap1 getOrElse (url, emptyStrings)
+            val methods2 = prevMap2 getOrElse (url, emptyStrings)
             prevMap1 updated (url, methods1 ++ methods2)
         }
     }
   }
 
-  // todo handle phi nodes
   private[this] def getUrlsWithSourcesForIr(ir: IR): UrlsWithSources = {
     val ssa = new StringConcatSsaConversion(ir)
-    val empty = Seq.empty[SSAInstruction]
-    // todo all instructions?
-    // inits are the instructions that creat new Strings/StringBuilders/StringBuffers
-    // appends are the instructions that do string concatenation
-    ???
-  }
+    for {
+      instr <- ir.getInstructions
 
-  /**
-   * A directed acyclic graph representing the assembly of a string through StringBuilder (StringBuffer) concatenation.
-   * Each path in the DAG corresponds to one possible concatenation of a string.
-   */
-  private type StringDag = Map[ValueNumber, Set[ValueNumber]]
+    }
+  }
 }
