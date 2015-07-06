@@ -22,21 +22,21 @@ object AppendIrRetriever extends IrUrlRetriever {
     (builder.cg map { _.getIR })(breakOut)
 
   override def apply(apkPath: Path): UrlsWithSources = {
-    val allUrlsWithSources: Seq[(Url, Set[String])] =
+    val allUrlsWithSources: Seq[(Url, Set[Method])] =
       for {
         ir  <- getIrs(apkPath)
         url <- getUrlsWithSourcesForIr(ir)
       } yield (url, Set(ir.getMethod.toString))
-    UrlsWithSources(allUrlsWithSources.foldLeft(Map.empty[Url, Set[String]]) {
+    UrlsWithSources(allUrlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
       case (prevMap, (url, strings)) =>
-        prevMap updated (url, (prevMap getOrElse(url, Set.empty[String])) ++ strings)
+        prevMap updated (url, (prevMap getOrElse(url, Set.empty[Method])) ++ strings)
     })
   }
 
   private[this] def getConcatenatedString(
     instr: SSAInvokeInstruction,
     ssa: StringConcatSsaConversion
-  ): (Url, Set[String]) = {
+  ): (Url, Set[Method]) = {
     ???
   }
 
