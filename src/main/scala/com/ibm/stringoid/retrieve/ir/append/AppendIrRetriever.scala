@@ -4,7 +4,7 @@ import java.nio.file.Path
 
 import com.ibm.stringoid.retrieve.ir.IrUrlRetriever
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
-import com.ibm.wala.ssa.{IR, SSAInvokeInstruction}
+import com.ibm.wala.ssa.{IR, SSAInstruction, SSAInvokeInstruction}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
 import scala.collection.JavaConversions._
@@ -40,25 +40,26 @@ object AppendIrRetriever extends IrUrlRetriever {
 
   private[this] def getConcatenatedString(
     instr: SSAInvokeInstruction,
-    ssa: StringConcatSsaConversion
-  ): (Url, Set[Method]) = {
+    vn: ValueNumber,
+    defUses: Map[SSAInstruction, DefUses],
+    ir: IR
+  ): Url = {
+    // todo cycles!
+//    if ir.getSymbolTable isConstant
     ???
   }
 
+  private[this] def isUrl(concatString: Seq[UrlPart]): Boolean = ???
+
   private[this] def getUrlsWithSourcesForIr(ir: IR): Seq[Url] = {
-    val ssa = new StringConcatSsaConversion(ir)
-    val appendUrls = ir.getInstructions collect {
-      case instr: SSAInvokeInstruction if isSbConstructorWithRefParam(instr) =>
-          val table = ir.getSymbolTable
-          val argVn = instr getUse 1
-          if (table isStringConstant argVn) {
-            val string = table getStringValue argVn
-            if (string matches URL_REGEX) Seq(UrlString(string))
-            else Seq.empty[UrlPart]
-          } else Seq.empty[UrlPart]
-      case instr: SSAInvokeInstruction if isSbAppend(instr)                  =>
-        ???
+    val defUses = new StringConcatSsaConversion(ir).defUses
+    ir.getInstructions flatMap {
+      case instr: SSAInvokeInstruction if isSbAppend(instr) =>
+        // todo it should be enough to get URLs for only one of the defs, right?
+        val concatString = getConcatenatedString(instr, defUses(instr).defs(0), defUses, ir)
+        if (isUrl(concatString))
+          Some(concatString)
+        else None
     }
-    ???
   }
 }
