@@ -20,20 +20,20 @@ object Main {
       runPlaydroneApks(options.analysis1, options.analysis2, options.files, options.outDir)
     }
 
-  def runPlaydroneApks(a1: AnalysisType, a2: AnalysisType, apkFiles: Seq[Path], outDir: Path) =
+  def runPlaydroneApks(a1: AnalysisType, a2: AnalysisType, apkFiles: Seq[Path], outDir: Path) = {
     apkFiles foreach {
       file =>
-        write(Compare(a1, a2, file), file, outDir)
+        write(PrintableResult(a1, a2, file), file, outDir)
     }
+  }
 
   /**
    * Write the output of Urls to specified file
    */
-  def write(comparison: Compare, apkPath: Path, outDir: Path): Unit = {
+  def write(comparison: PrintableResult, apkPath: Path, outDir: Path): Unit = {
     import comparison._
     Files.createDirectories(outDir)
-    def name(rs: RetrievedUrls) = rs.analysisType.toString
-    val logName = "%s_%s_%s.txt".format(apkPath.getFileName.toString, name(a1Urls), name(a2Urls))
+    val logName = "%s_%s_%s.txt".format(apkPath.getFileName.toString, a1, a2)
     val logPath = Paths.get(outDir.toString, logName)
     Files.write(logPath, Seq(comparison.toString))
   }

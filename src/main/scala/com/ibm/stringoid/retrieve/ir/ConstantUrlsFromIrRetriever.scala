@@ -12,10 +12,12 @@ import scala.collection.breakOut
  */
 trait ConstantUrlsFromIrRetriever extends IrUrlRetriever {
 
-  final def getUrlsWithSources(
+  override type Url = String
+
+  final override def apply(
     apkPath: Path
   ): UrlsWithSources = {
-    val urlMethodPairs: Set[(Url, String)] = (for {
+    val urlMethodPairs: Set[(Url, Method)] = (for {
       ir    <- getIrs(apkPath)
       table <- Option(ir.getSymbolTable).toSeq
       v     <- 1 to table.getMaxValueNumber
@@ -24,9 +26,9 @@ trait ConstantUrlsFromIrRetriever extends IrUrlRetriever {
       if tryUrl matches URL_REGEX
       m      = ir.getMethod
     } yield tryUrl -> (m.getDeclaringClass.getName + "." + m.getName.toString))(breakOut)
-    urlMethodPairs.foldLeft(Map.empty[Url, Set[String]]) {
+    UrlsWithSources(urlMethodPairs.foldLeft(Map.empty[Url, Set[Method]]) {
       case (prev, (wu, m)) =>
-        prev.updated(wu, prev.getOrElse(wu, Set.empty[String]) + m)
-    }
+        prev.updated(wu, prev.getOrElse(wu, Set.empty[Method]) + m)
+    })
   }
 }
