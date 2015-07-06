@@ -24,9 +24,14 @@ object AppendIrRetriever extends IrUrlRetriever {
   override def apply(apkPath: Path): UrlsWithSources = {
     val allUrlsWithSources: Seq[(Url, Set[Method])] =
       for {
-        ir  <- getIrs(apkPath)
-        url <- getUrlsWithSourcesForIr(ir)
-      } yield (url, Set(ir.getMethod.toString))
+        ir           <- getIrs(apkPath)
+        constantUrls  = getUrlMethodPairsFromIr(ir) map {
+          u =>
+            Seq(UrlString(u))
+        }
+        allUrlParts   = constantUrls ++ getUrlsWithSourcesForIr(ir)
+        url          <- allUrlParts
+      } yield url -> Set(ir.getMethod.toString)
     UrlsWithSources(allUrlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
       case (prevMap, (url, strings)) =>
         prevMap updated (url, (prevMap getOrElse(url, Set.empty[Method])) ++ strings)
@@ -42,7 +47,7 @@ object AppendIrRetriever extends IrUrlRetriever {
 
   private[this] def getUrlsWithSourcesForIr(ir: IR): Seq[Url] = {
     val ssa = new StringConcatSsaConversion(ir)
-    ir.getInstructions collect {
+    val appendUrls = ir.getInstructions collect {
       case instr: SSAInvokeInstruction if isSbConstructorWithRefParam(instr) =>
           val table = ir.getSymbolTable
           val argVn = instr getUse 1
@@ -54,5 +59,6 @@ object AppendIrRetriever extends IrUrlRetriever {
       case instr: SSAInvokeInstruction if isSbAppend(instr)                  =>
         ???
     }
+    ???
   }
 }

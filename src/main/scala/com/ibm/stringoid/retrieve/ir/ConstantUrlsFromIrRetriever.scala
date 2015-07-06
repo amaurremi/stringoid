@@ -19,19 +19,17 @@ trait ConstantUrlsFromIrRetriever extends IrUrlRetriever {
   final override def apply(
     apkPath: Path
   ): UrlsWithSources = {
-    val urlMethodPairs = getIrs(apkPath) flatMap getUrlMethodPairsFromIr
+    val urlMethodPairs: Seq[(Url, Method)] = getIrs(apkPath) flatMap {
+      ir =>
+        getUrlMethodPairsFromIr(ir) map {
+          url =>
+            val method = ir.getMethod
+            url -> (method.getDeclaringClass.getName + "." + method.getName.toString)
+        }
+    }
     UrlsWithSources(urlMethodPairs.foldLeft(Map.empty[Url, Set[Method]]) {
       case (prev, (wu, m)) =>
         prev.updated(wu, prev.getOrElse(wu, Set.empty[Method]) + m)
     })
-  }
-
-  def getUrlMethodPairsFromIr(ir: IR): Set[(Url, Method)] = {
-    val table = ir.getSymbolTable
-    (1 to table.getMaxValueNumber collect {
-      case v if (table isStringConstant v) && (table getStringValue v matches URL_REGEX) =>
-        val method = ir.getMethod
-        (table getStringValue v) -> (method.getDeclaringClass.getName + "." + method.getName.toString)
-    })(breakOut)
   }
 }

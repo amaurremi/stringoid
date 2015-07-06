@@ -21,4 +21,12 @@ trait IrUrlRetriever extends UrlRetriever {
     val irs = getIrsFromBuilder(new FlexibleCallGraphBuilder())
     irs filter { Option(_).isDefined }
   }
+
+  def getUrlMethodPairsFromIr(ir: IR): Seq[String] = {
+    val table = ir.getSymbolTable
+    (1 to table.getMaxValueNumber collect {
+      case v if (table isStringConstant v) && (table getStringValue v matches URL_REGEX) =>
+        table getStringValue v
+    })(breakOut)
+  }
 }
