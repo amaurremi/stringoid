@@ -3,7 +3,7 @@ package com.ibm.stringoid
 import java.nio.file.Path
 
 import com.ibm.stringoid.AnalysisType._
-import com.ibm.stringoid.retrieve.{StringMap, UrlRetriever}
+import com.ibm.stringoid.retrieve.StringMap
 
 object PrintableResult {
 

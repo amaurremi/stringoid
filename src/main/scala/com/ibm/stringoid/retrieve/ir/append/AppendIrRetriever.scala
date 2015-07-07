@@ -4,8 +4,7 @@ import java.nio.file.Path
 
 import com.ibm.stringoid.retrieve.ir.IrUrlRetriever
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
-import com.ibm.stringoid.retrieve.ir.append._
-import com.ibm.wala.ssa.{IR, SSAInstruction, SSAInvokeInstruction}
+import com.ibm.wala.ssa.{IR, SSAInvokeInstruction}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
 import scala.collection.JavaConversions._

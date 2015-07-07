@@ -2,8 +2,8 @@ package edu.illinois.wala.ipa.callgraph
 
 import com.ibm.wala.analysis.pointers.HeapGraph
 import com.ibm.wala.analysis.reflection.ReflectionContextInterpreter
-import com.ibm.wala.ipa.callgraph.impl.{DefaultContextSelector, ContextInsensitiveSelector, Util}
-import com.ibm.wala.ipa.callgraph.propagation.cfa.{DelegatingSSAContextInterpreter, DefaultSSAInterpreter, ZeroXInstanceKeys}
+import com.ibm.wala.ipa.callgraph.impl.{DefaultContextSelector, Util}
+import com.ibm.wala.ipa.callgraph.propagation.cfa.{DefaultSSAInterpreter, DelegatingSSAContextInterpreter, ZeroXInstanceKeys}
 import com.ibm.wala.ipa.callgraph.{AnalysisCache, CallGraph, ContextSelector}
 import com.ibm.wala.ipa.cha.{ClassHierarchy, IClassHierarchy}
 

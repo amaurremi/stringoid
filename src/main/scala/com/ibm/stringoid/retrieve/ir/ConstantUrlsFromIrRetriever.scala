@@ -2,12 +2,6 @@ package com.ibm.stringoid.retrieve.ir
 
 import java.nio.file.Path
 
-import com.ibm.stringoid._
-import com.ibm.wala.classLoader.IMethod
-import com.ibm.wala.ssa.{SymbolTable, IR}
-
-import scala.collection.breakOut
-
 /**
  * An analysis that is based on extracting the URL strings that appear as
  * constants in an IR's symbol table.
