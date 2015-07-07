@@ -41,21 +41,23 @@ object AppendIrRetriever extends IrUrlRetriever {
   private[this] def getConcatenatedString(
     instr: SSAInvokeInstruction,
     ir: IR,
-    instrToDefUses: Map[SSAInvokeInstruction, DefUses],
-    defInstr: Map[ValueNumber, SSAInvokeInstruction]
+    ssa: StringConcatSsaConversion
   ): Url = {
     // todo cycles!
-    (instrToDefUses(instr).uses flatMap {
+    (ssa.instrToDefUsesMap(instr).uses flatMap {
       use =>
-        defInstr get use match {
+        ssa.defToInstruction get use match {
           case Some(di) =>
-            getConcatenatedString(di, ir, instrToDefUses, defInstr)
+            getConcatenatedString(di, ir, ssa)
           case None     =>
             val table = ir.getSymbolTable
-            if (table isConstant use)
-              Seq(UrlString((table getConstantValue use).toString)) // todo more refined types, not just string?
-            else
-              Seq(UrlPlaceHolder)
+            ssa.getOldVals(use) map {
+              oldVal =>
+                if (table isConstant oldVal)
+                  UrlString((table getConstantValue oldVal).toString) // todo more refined types, not just string?
+                else
+                  UrlPlaceHolder
+            }
         }
     })(breakOut)
   }
@@ -69,11 +71,9 @@ object AppendIrRetriever extends IrUrlRetriever {
 
   private[this] def getUrlsWithSourcesForIr(ir: IR): Seq[Url] = {
     val ssa: StringConcatSsaConversion = new StringConcatSsaConversion(ir)
-    val defs = ssa.defToInstruction
-    val instrToDefUses = ssa.instrToDefUsesMap
     ir.getInstructions flatMap {
       case instr: SSAInvokeInstruction if isSbAppend(instr) =>
-        val concatString = getConcatenatedString(instr, ir, instrToDefUses, defs)
+        val concatString = getConcatenatedString(instr, ir, ssa)
         if (isUrl(concatString))
           Some(concatString)
         else None
