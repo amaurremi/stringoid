@@ -36,12 +36,14 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
   /**
    * Maps newly created value numbers back to the original value numbers
    */
-  private[this] val newValToOldVal = mutable.Map.empty[ValueNumber, ValueNumber] withDefault { _ } // todo correct?
+  private[this] val newValToOldVal = mutable.Map.empty[ValueNumber, ValueNumber] withDefault identity[ValueNumber] // todo correct?
 
   /**
    * Maps the def of a newly created phi to the original value numbers corresponding to that phi's uses
    */
   private[this] val phiDefToOldVals = mutable.Map.empty[ValueNumber, Set[ValueNumber]]
+
+  private[this] val INVOKE_INSTR_MSG = "String concatenation SSA conversion handles only invoke instructions"
 
   /**
    * The instruction in which a value number was defined
@@ -67,7 +69,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
   /**
    * The immutable publicly visible result of instructions with its new defs and uses
    */
-  def instrToDefUsesMap: Map[SSAInvokeInstruction, DefUses] = instrToDefUses.toMap
+  def instrToDefUsesMap = instrToDefUses.toMap[SSAInvokeInstruction, DefUses]
 
   /**
    * Get the original value number corresponding to a value number created by this SSA conversion.
@@ -77,7 +79,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
   def getOldVals(newVal: ValueNumber): Set[ValueNumber] =
     phiDefToOldVals getOrElse (newVal, Set(newValToOldVal(newVal))) // todo correct?
 
-  private[this] def initialDefUses(ir: IR): mutable.Map[SSAInstruction, DefUses] = {
+  private[this] def initialDefUses(ir: IR): mutable.Map[SSAInvokeInstruction, DefUses] = {
     val tuples: Iterator[(SSAInvokeInstruction, DefUses)] = ir.iterateAllInstructions collect {
       case instr: SSAInvokeInstruction if isSbConstructor(instr) =>
         val uses = if (isSbConstructorWithRefParam(instr)) getUses(instr)
@@ -106,16 +108,22 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
         }
         updateVals(getDefs(i), newDefs)
         updateVals(getUses(i), newUses)
-        instrToDefUses += (instr -> DefUses(newDefs, newUses))
+        instrToDefUses += (i -> DefUses(newDefs, newUses))
       case _                       =>
-        throw new UnsupportedOperationException("String concatenation SSA conversion handles only invoke instructions")
+        throw new UnsupportedOperationException(INVOKE_INSTR_MSG)
     }
 
   protected override def getMaxValueNumber: ValueNumber = symbolTable.getMaxValueNumber
 
   protected override def getPhi(B: SSACFG#BasicBlock, index: Int): SSAPhiInstruction = basicBlockToPhis(B)(index)
 
-  protected override def getDef(inst: SSAInstruction, index: Int): Int = instrToDefUses(inst).defs(index)
+  protected override def getDef(inst: SSAInstruction, index: Int): Int =
+    inst match {
+      case i: SSAInvokeInstruction =>
+        instrToDefUses(i).defs(index)
+      case _                       =>
+        throw new UnsupportedOperationException(INVOKE_INSTR_MSG)
+    }
 
   override def repairPhiUse(
     BB: SSACFG#BasicBlock,
@@ -152,18 +160,34 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
     phi.copyForSSA(ir.getMethod.getDeclaringClass.getClassLoader.getInstructionFactory, newDefs, null).asInstanceOf[SSAPhiInstruction]
 
   protected override def getNumberOfDefs(inst: SSAInstruction): Int =
-    instrToDefUses get inst match {
-      case Some(defUse) => defUse.defs.length
-      case None         => 0
+    inst match {
+      case i: SSAInvokeInstruction =>
+        instrToDefUses get i match {
+          case Some(defUse) => defUse.defs.length
+          case None         => 0
+        }
+      case _                       =>
+        throw new UnsupportedOperationException(INVOKE_INSTR_MSG)
     }
 
   protected override def getNumberOfUses(inst: SSAInstruction): Int =
-    instrToDefUses get inst match {
-      case Some(defUse) => defUse.uses.length
-      case None         => 0
+    inst match {
+      case i: SSAInvokeInstruction =>
+        instrToDefUses get i match {
+          case Some(defUse) => defUse.uses.length
+          case None         => 0
+        }
+      case _                       =>
+        throw new UnsupportedOperationException(INVOKE_INSTR_MSG)
     }
 
-  protected override def getUse(inst: SSAInstruction, index: Int): Int = instrToDefUses(inst).uses(index)
+  protected override def getUse(inst: SSAInstruction, index: Int): Int =
+    inst match {
+      case i: SSAInvokeInstruction =>
+        instrToDefUses(i).uses(index)
+      case _                       =>
+        throw new UnsupportedOperationException(INVOKE_INSTR_MSG)
+    }
 
   protected override def isConstant(vn: ValueNumber): Boolean = symbolTable isConstant vn
 
