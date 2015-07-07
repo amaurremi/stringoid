@@ -73,11 +73,12 @@ object AppendIrRetriever extends IrUrlRetriever {
     val instrToDefUses = ssa.instrToDefUsesMap
     ir.getInstructions flatMap {
       case instr: SSAInvokeInstruction if isSbAppend(instr) =>
-        // todo it should be enough to get URLs for only one of the defs, right?
         val concatString = getConcatenatedString(instr, ir, instrToDefUses, defs)
         if (isUrl(concatString))
           Some(concatString)
         else None
+      case _                                                =>
+        None
     }
   }
 }
