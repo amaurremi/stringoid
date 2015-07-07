@@ -30,9 +30,9 @@ object StringConcatUtil {
     instr.getNumberOfParameters == 2 && // one for 'this', one for argument
       (instr.toString() contains SB_APPEND_PREFIX)
 
-  def getDefs(instr: SSAInvokeInstruction): Array[ValueNumber] =
-    Array[ValueNumber](instr getDef 0, instr getUse 0)
+  def getDefs(instr: SSAInvokeInstruction): Array[WalaValueNumber] =
+    Array[WalaValueNumber](instr getDef 0, instr getUse 0)
 
-  def getUses(instr: SSAInvokeInstruction): Array[ValueNumber] =
-    Array[ValueNumber](instr getUse 0, instr getUse 1)
+  def getUses(instr: SSAInvokeInstruction): Array[WalaValueNumber] =
+    Array[WalaValueNumber](instr getUse 0, instr getUse 1)
 }
