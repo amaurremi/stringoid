@@ -5,32 +5,77 @@ import com.ibm.wala.cast.ir.ssa.AbstractSSAConversion
 import com.ibm.wala.ssa._
 
 import scala.collection.JavaConversions._
-import scala.collection.mutable
+import scala.collection.{breakOut, mutable}
 
+/**
+ * For a given instruction, what are its def and use value numbers?
+ */
 case class DefUses(defs: Array[ValueNumber], uses: Array[ValueNumber])
 
+/**
+ * Creates an SSA IR value numbering that is based on string concatenation
+ */
 class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SSAOptions) {
 
-  private[this] val newValNum        = Iterator.from(getMaxValueNumber + 1)
+  /**
+   * Generate a new value number, used by the the SSA builder
+   */
+  private[this] val newValNum  = Iterator.from(getMaxValueNumber + 1)
 
+  /**
+   * Associates basic blocks with the new phi nodes created by the SSA builder
+   */
   private[this] val basicBlockToPhis =
     mutable.Map.empty[SSACFG#BasicBlock, Array[SSAPhiInstruction]] withDefaultValue Array.empty[SSAPhiInstruction]
-  private[this] val instrToDefUses   = initialDefUses(ir)
-  private[this] val newValToOldVal   = mutable.Map.empty[ValueNumber, ValueNumber]
-  private[this] val phiDefToUses        = mutable.Map.empty[ValueNumber, Set[ValueNumber]]
 
-  def defUses: Map[SSAInstruction, DefUses] = instrToDefUses.toMap
+  /**
+   * Maps instructions to its new defs and uses
+   */
+  private[this] val instrToDefUses = initialDefUses(ir)
+
+  /**
+   * Maps newly created value numbers back to the original value numbers
+   */
+  private[this] val newValToOldVal = mutable.Map.empty[ValueNumber, ValueNumber] withDefault { _ } // todo correct?
+
+  /**
+   * Maps the def of a newly created phi to the original value numbers corresponding to that phi's uses
+   */
+  private[this] val phiDefToOldVals = mutable.Map.empty[ValueNumber, Set[ValueNumber]]
+
+  /**
+   * The instruction in which a value number was defined
+   */
+  def defToInstruction: Map[ValueNumber, SSAInvokeInstruction] =
+    (instrToDefUses flatMap {
+      case (instr: SSAInvokeInstruction, DefUses(defs, _)) =>
+        defs map { _ -> instr }
+    })(breakOut)
+
+  /**
+   * The instructions in which a value number was used. Currently this method is not used anywhere.
+   */
+  def useToInstructions: Map[ValueNumber, Set[SSAInvokeInstruction]] =
+    instrToDefUses.foldLeft(Map.empty[ValueNumber, Set[SSAInvokeInstruction]]) {
+      case (prevMap, (instr: SSAInvokeInstruction, DefUses(_, uses))) =>
+        uses.foldLeft(prevMap) {
+          case (prevMap2, use) =>
+            prevMap2 updated (use, (prevMap2 getOrElse (use, Set.empty[SSAInvokeInstruction])) + instr)
+        }
+    }
+
+  /**
+   * The immutable publicly visible result of instructions with its new defs and uses
+   */
+  def instrToDefUsesMap: Map[SSAInvokeInstruction, DefUses] = instrToDefUses.toMap
 
   /**
    * Get the original value number corresponding to a value number created by this SSA conversion.
    * If the new value number is a phi instruction, returns all the original value numbers that
    * appear as the instruction's uses.
    */
-  def getOldVals(newVal: ValueNumber): Set[ValueNumber] = {
-    if (phiDefToUses contains newVal)
-      phiDefToUses(newVal) flatMap getOldVals
-    else Set(newValToOldVal(newVal))
-  }
+  def getOldVals(newVal: ValueNumber): Set[ValueNumber] =
+    phiDefToOldVals getOrElse (newVal, Set(newValToOldVal(newVal))) // todo correct?
 
   private[this] def initialDefUses(ir: IR): mutable.Map[SSAInstruction, DefUses] = {
     val tuples: Iterator[(SSAInvokeInstruction, DefUses)] = ir.iterateAllInstructions collect {
@@ -78,11 +123,13 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
     rvalIndex: Int,
     newRval: ValueNumber
   ): Unit = {
-    val oldInstr = basicBlockToPhis(BB)(phiIndex)
+    val phiInstruction = basicBlockToPhis(BB)(phiIndex)
+    val oldInstr = phiInstruction
     val oldUses1 = rvalIndex + 1 to oldInstr.getNumberOfUses map oldInstr.getUse
     val oldUses2 = 0 to rvalIndex map oldInstr.getUse
     val newUses  = (oldUses1 :+ newRval) ++ oldUses2
-    basicBlockToPhis(BB)(phiIndex) setValues newUses.toArray[ValueNumber]
+    phiInstruction setValues newUses.toArray[ValueNumber]
+    phiDefToOldVals += (phiInstruction.getDef -> getOldVals(newRval)) // todo correct?
   }
 
   protected override def setPhi(B: SSACFG#BasicBlock, index: Int, inst: SSAPhiInstruction): Unit =
@@ -98,6 +145,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
     oldPhis copyToArray newPhis
 
     basicBlockToPhis += (Y -> newPhis)
+    phiDefToOldVals  += (value -> getOldVals(value)) // todo correct?
   }
 
   protected override def repairPhiDefs(phi: SSAPhiInstruction, newDefs: Array[ValueNumber]): SSAPhiInstruction =

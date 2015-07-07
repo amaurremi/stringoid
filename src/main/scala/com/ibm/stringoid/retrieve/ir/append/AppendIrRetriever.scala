@@ -4,6 +4,7 @@ import java.nio.file.Path
 
 import com.ibm.stringoid.retrieve.ir.IrUrlRetriever
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
+import com.ibm.stringoid.retrieve.ir.append._
 import com.ibm.wala.ssa.{IR, SSAInstruction, SSAInvokeInstruction}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
@@ -40,23 +41,41 @@ object AppendIrRetriever extends IrUrlRetriever {
 
   private[this] def getConcatenatedString(
     instr: SSAInvokeInstruction,
-    vn: ValueNumber,
-    defUses: Map[SSAInstruction, DefUses],
-    ir: IR
+    ir: IR,
+    instrToDefUses: Map[SSAInvokeInstruction, DefUses],
+    defInstr: Map[ValueNumber, SSAInvokeInstruction]
   ): Url = {
     // todo cycles!
-//    if ir.getSymbolTable isConstant
-    ???
+    (instrToDefUses(instr).uses flatMap {
+      use =>
+        defInstr get use match {
+          case Some(di) =>
+            getConcatenatedString(di, ir, instrToDefUses, defInstr)
+          case None     =>
+            val table = ir.getSymbolTable
+            if (table isConstant use)
+              Seq(UrlString((table getConstantValue use).toString)) // todo more refined types, not just string?
+            else
+              Seq(UrlPlaceHolder)
+        }
+    })(breakOut)
   }
 
-  private[this] def isUrl(concatString: Seq[UrlPart]): Boolean = ???
+  private[this] def isUrl(concatString: Url): Boolean =
+    concatString.nonEmpty &&
+      (concatString.head match {
+        case UrlString(string) => string matches URL_REGEX  // todo shouldn't accept "empty" URLs (e.g. "http:")
+        case UrlPlaceHolder    => false
+      })
 
   private[this] def getUrlsWithSourcesForIr(ir: IR): Seq[Url] = {
-    val defUses = new StringConcatSsaConversion(ir).defUses
+    val ssa: StringConcatSsaConversion = new StringConcatSsaConversion(ir)
+    val defs = ssa.defToInstruction
+    val instrToDefUses = ssa.instrToDefUsesMap
     ir.getInstructions flatMap {
       case instr: SSAInvokeInstruction if isSbAppend(instr) =>
         // todo it should be enough to get URLs for only one of the defs, right?
-        val concatString = getConcatenatedString(instr, defUses(instr).defs(0), defUses, ir)
+        val concatString = getConcatenatedString(instr, ir, instrToDefUses, defs)
         if (isUrl(concatString))
           Some(concatString)
         else None
