@@ -186,7 +186,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
           case None         => 0
         }
       case _                       =>
-        throw new UnsupportedOperationException(INVOKE_INSTR_MSG)
+        0
     }
 
   protected override def getUse(inst: SSAInstruction, index: Int): Int =
