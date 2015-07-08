@@ -158,6 +158,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
     val oldPhis = basicBlockToPhis(Y)
     val newPhis = new Array[SSAPhiInstruction](oldPhis.length + 1)
     oldPhis copyToArray newPhis
+    newPhis(oldPhis.length) = phi
 
     basicBlockToPhis += (Y -> newPhis)
     val phiDef = SSVN(value)
