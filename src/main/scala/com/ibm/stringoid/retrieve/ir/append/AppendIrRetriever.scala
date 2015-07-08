@@ -20,7 +20,9 @@ object AppendIrRetriever extends IrUrlRetriever {
   }
 
   sealed trait UrlPart
-  case class UrlString(string: String) extends UrlPart
+  case class UrlString(string: String) extends UrlPart {
+    override def toString = string
+  }
   case object UrlPlaceHolder extends UrlPart
   case object UrlWithCycle extends UrlPart
 
