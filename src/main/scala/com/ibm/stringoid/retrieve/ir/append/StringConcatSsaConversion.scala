@@ -185,7 +185,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
     val phi     = new SSAPhiInstruction(SSAInstruction.NO_INDEX, value, params)
     val oldPhis = basicBlockToPhis(Y)
     val newPhis = new Array[SSAPhiInstruction](oldPhis.length + 1)
-    oldPhis copyToArray (newPhis, 1)
+    oldPhis copyToArray (newPhis, 1)  // todo why do we put the new phi at the beginning? (saw in the other SSA implementation)
     newPhis(0) = phi
 
     basicBlockToPhis += (Y -> newPhis)
@@ -196,8 +196,8 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
   protected override def repairPhiDefs(phi: SSAPhiInstruction, newDefs: Array[Int]): SSAPhiInstruction =
     phi.copyForSSA(ir.getMethod.getDeclaringClass.getClassLoader.getInstructionFactory, newDefs, null).asInstanceOf[SSAPhiInstruction]
 
-  protected override def getNumberOfDefs(inst: SSAInstruction): Int =
-    inst match {
+  protected override def getNumberOfDefs(instr: SSAInstruction): Int =
+    instr match {
       case i: SSAInvokeInstruction =>
         normalInstrToDefUses get i match {
           case Some(defUse) => defUse.defs.length
@@ -209,8 +209,8 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
         0
     }
 
-  protected override def getNumberOfUses(inst: SSAInstruction): Int =
-    inst match {
+  protected override def getNumberOfUses(instr: SSAInstruction): Int =
+    instr match {
       case i: SSAInvokeInstruction =>
         normalInstrToDefUses get i match {
           case Some(defUse) => defUse.uses.length
@@ -222,8 +222,8 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
         0
     }
 
-  protected override def getUse(inst: SSAInstruction, index: Int): Int =
-    inst match {
+  protected override def getUse(instr: SSAInstruction, index: Int): Int =
+    instr match {
       case i: SSAInvokeInstruction =>
         normalInstrToDefUses(i).uses(index).vn
       case p: SSAPhiInstruction    =>
@@ -236,7 +236,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
 
   protected override def repairExit(): Unit = {}
 
-  protected override def popAssignment(inst: SSAInstruction, index: Int): Unit = {}
+  protected override def popAssignment(instr: SSAInstruction, index: Int): Unit = {}
 
   protected override def isAssignInstruction(inst: SSAInstruction): Boolean = false
 
@@ -244,9 +244,9 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
 
   protected override def isLive(Y: SSACFG#BasicBlock, V: Int): Boolean = true
 
-  protected override def repairInstructionUses(inst: SSAInstruction, index: Int, newUses: Array[Int]): Unit = {}
+  protected override def repairInstructionUses(instr: SSAInstruction, index: Int, newUses: Array[Int]): Unit = {}
 
-  protected override def pushAssignment(inst: SSAInstruction, index: Int, newRhs: Int): Unit = {}
+  protected override def pushAssignment(instr: SSAInstruction, index: Int, newRhs: Int): Unit = {}
 
   protected override def initializeVariables(): Unit = {}
 }
