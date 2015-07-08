@@ -1,6 +1,7 @@
 package com.ibm.stringoid.retrieve.ir.append
 
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
+import com.ibm.stringoid.retrieve.ir.append._
 import com.ibm.wala.cast.ir.ssa.AbstractSSAConversion
 import com.ibm.wala.ssa._
 
@@ -25,7 +26,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
   /**
    * Generate a new value number, used by the the SSA builder
    */
-  private[this] val newValNum  = Iterator.from(getMaxValueNumber + 1)
+  private[this] val newValNum = Iterator.from(getMaxValueNumber + 1)
 
   /**
    * Associates basic blocks with the new phi nodes created by the SSA builder
@@ -36,7 +37,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
   /**
    * Maps instructions to its new defs and uses
    */
-  private[this] val instrToDefUses = initialDefUses(ir)
+  private[this] val normalInstrToDefUses: mutable.Map[SSAInvokeInstruction, DefUses] = initialDefUses(ir)
 
   /**
    * Maps newly created value numbers back to the original value numbers
@@ -53,28 +54,53 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
   /**
    * The instruction in which a value number was defined
    */
-  def defToInstruction: Map[StringSsaValueNumber, SSAInvokeInstruction] =
-    (instrToDefUses flatMap {
+  def defToInstruction: Map[StringSsaValueNumber, SSAInstruction] = {
+    val normal: Map[StringSsaValueNumber, SSAInvokeInstruction] = (normalInstrToDefUses flatMap {
       case (instr: SSAInvokeInstruction, DefUses(defs, _)) =>
-        defs map { _ -> instr }
+        defs map {
+          _ -> instr
+        }
     })(breakOut)
+    val phi: Map[StringSsaValueNumber, SSAPhiInstruction] =
+      (for {
+        phis <- basicBlockToPhis.values
+        phi  <- phis
+      } yield SSVN(phi.getDef) -> phi)(breakOut)
+    // assuming SSA works correctly and def value numbers are always different
+    normal ++ phi
+  }
 
   /**
    * The instructions in which a value number was used. Currently this method is not used anywhere.
    */
-  def useToInstructions: Map[StringSsaValueNumber, Set[SSAInvokeInstruction]] =
-    instrToDefUses.foldLeft(Map.empty[StringSsaValueNumber, Set[SSAInvokeInstruction]]) {
-      case (prevMap, (instr: SSAInvokeInstruction, DefUses(_, uses))) =>
-        uses.foldLeft(prevMap) {
-          case (prevMap2, use) =>
-            prevMap2 updated (use, (prevMap2 getOrElse (use, Set.empty[SSAInvokeInstruction])) + instr)
-        }
+  def useToInstructions: Map[StringSsaValueNumber, Set[SSAInstruction]] = {
+    val instructions = normalInstrToDefUses.keys ++ basicBlockToPhis.keys
+
+    def createUseMap(
+      prevMap: Map[StringSsaValueNumber, Set[SSAInstruction]],
+      uses: Array[StringSsaValueNumber],
+      instr: SSAInstruction
+    ) = uses.foldLeft(prevMap) {
+      case (prevMap2, use) =>
+        val oldInstructions = prevMap2 getOrElse(use, Set.empty[SSAInstruction])
+        prevMap2 updated(use, oldInstructions + instr)
     }
+
+    instructions.foldLeft(Map.empty[StringSsaValueNumber, Set[SSAInstruction]]) {
+      case (prevMap, instr: SSAInvokeInstruction) =>
+        createUseMap(prevMap, normalInstrToDefUses(instr).uses, instr)
+      case (prevMap, instr: SSAPhiInstruction)    =>
+        val uses = 0 until instr.getNumberOfUses map instr.getUse
+        createUseMap(prevMap, (uses map SSVN.apply)(breakOut), instr)
+      case _                                      =>
+        throw new UnsupportedOperationException(INVOKE_INSTR_MSG)
+    }
+  }
 
   /**
    * The immutable publicly visible result of instructions with its new defs and uses
    */
-  def instrToDefUsesMap = instrToDefUses.toMap[SSAInvokeInstruction, DefUses]
+  def normalInstrToDefUsesMap = normalInstrToDefUses.toMap[SSAInvokeInstruction, DefUses]
 
   /**
    * Get the original value number corresponding to a value number created by this SSA conversion.
@@ -115,7 +141,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
         }
         updateVals(getDefs(i), newDefVns)
         updateVals(getUses(i), newUseVns)
-        instrToDefUses += (i -> DefUses(newDefVns, newUseVns))
+        normalInstrToDefUses += (i -> DefUses(newDefVns, newUseVns))
       case _                       =>
         throw new UnsupportedOperationException(INVOKE_INSTR_MSG)
     }
@@ -127,7 +153,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
   protected override def getDef(inst: SSAInstruction, index: Int): Int =
     inst match {
       case i: SSAInvokeInstruction =>
-        instrToDefUses(i).defs(index).vn
+        normalInstrToDefUses(i).defs(index).vn
       case _                       =>
         throw new UnsupportedOperationException(INVOKE_INSTR_MSG)
     }
@@ -150,15 +176,15 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
   protected override def setPhi(B: SSACFG#BasicBlock, index: Int, inst: SSAPhiInstruction): Unit =
     basicBlockToPhis(B)(index) = inst
 
-  protected override def placeNewPhiAt(value: Int, Y: SSACFG#BasicBlock): Unit = {
+  protected override def placeNewPhiAt(value: Int, Y: SSACFG#BasicBlock): Unit = { // todo it's confusing that value doesn't indicate the position in the phi array, given the method name
     val params = Array[WalaValueNumber](CFG getPredNodeCount Y)
-    0 until params.length foreach { params(_) = value }
+    params.indices foreach { params(_) = value }
 
     val phi     = new SSAPhiInstruction(SSAInstruction.NO_INDEX, value, params)
     val oldPhis = basicBlockToPhis(Y)
     val newPhis = new Array[SSAPhiInstruction](oldPhis.length + 1)
-    oldPhis copyToArray newPhis
-    newPhis(oldPhis.length) = phi
+    oldPhis copyToArray (newPhis, 1)
+    newPhis(0) = phi
 
     basicBlockToPhis += (Y -> newPhis)
     val phiDef = SSVN(value)
@@ -171,10 +197,12 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
   protected override def getNumberOfDefs(inst: SSAInstruction): Int =
     inst match {
       case i: SSAInvokeInstruction =>
-        instrToDefUses get i match {
+        normalInstrToDefUses get i match {
           case Some(defUse) => defUse.defs.length
           case None         => 0
         }
+      case p: SSAPhiInstruction    =>
+        p.getDef
       case _                       =>
         0
     }
@@ -182,10 +210,12 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
   protected override def getNumberOfUses(inst: SSAInstruction): Int =
     inst match {
       case i: SSAInvokeInstruction =>
-        instrToDefUses get i match {
+        normalInstrToDefUses get i match {
           case Some(defUse) => defUse.uses.length
           case None         => 0
         }
+      case p: SSAPhiInstruction    =>
+        p.getNumberOfUses
       case _                       =>
         0
     }
@@ -193,7 +223,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
   protected override def getUse(inst: SSAInstruction, index: Int): Int =
     inst match {
       case i: SSAInvokeInstruction =>
-        instrToDefUses(i).uses(index).vn
+        normalInstrToDefUses(i).uses(index).vn
       case p: SSAPhiInstruction    =>
         p getUse index  // todo correct?
       case _                       =>

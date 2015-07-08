@@ -52,10 +52,10 @@ object AppendIrRetriever extends IrUrlRetriever {
     ssa: StringConcatSsaConversion,
     seenVns: Set[StringSsaValueNumber]
   ): Seq[UrlPart] =
-    (ssa.instrToDefUsesMap(instr).uses flatMap {
+    (ssa.normalInstrToDefUsesMap(instr).uses flatMap { // todo also for phi instructions?
       case use if !(seenVns contains use) =>
         ssa.defToInstruction get use match {
-          case Some(di) =>
+          case Some(di: SSAInvokeInstruction) =>
             getConcatenatedString(di, ir, ssa, seenVns + use)
           case None     =>
             val table = ir.getSymbolTable
