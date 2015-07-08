@@ -154,6 +154,8 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
     inst match {
       case i: SSAInvokeInstruction =>
         normalInstrToDefUses(i).defs(index).vn
+      case p: SSAPhiInstruction    =>
+        p.getDef(index)
       case _                       =>
         throw new UnsupportedOperationException(INVOKE_INSTR_MSG)
     }
@@ -166,8 +168,8 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
   ): Unit = {
     val phiInstruction = basicBlockToPhis(BB)(phiIndex)
     val oldInstr = phiInstruction
-    val oldUses1 = rvalIndex + 1 until oldInstr.getNumberOfUses map oldInstr.getUse
-    val oldUses2 = 0 until rvalIndex map oldInstr.getUse
+    val oldUses1 = 0 until rvalIndex map oldInstr.getUse
+    val oldUses2 = rvalIndex until oldInstr.getNumberOfUses map oldInstr.getUse
     val newUses  = (oldUses1 :+ newRval) ++ oldUses2
     phiInstruction setValues newUses.toArray[WalaValueNumber]
     phiDefToOldVals += (SSVN(phiInstruction.getDef) -> getOldVals(SSVN(newRval))) // todo correct?
