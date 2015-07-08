@@ -46,6 +46,8 @@ object AppendIrRetriever extends IrUrlRetriever {
     })
   }
 
+  def oldval(i: Int, ssa: StringConcatSsaConversion) = ssa.getOldVals(SSVN(i))
+
   private[this] def getConcatenatedString(
     instr: SSAInvokeInstruction,
     ir: IR,
@@ -74,12 +76,12 @@ object AppendIrRetriever extends IrUrlRetriever {
   private[this] def isUrl(concatString: Url): Boolean =
     concatString.url.nonEmpty &&
       (concatString.url.head match {
-        case UrlString(string) => string matches URL_REGEX  // todo shouldn't accept "empty" URLs (e.g. "http:")
-        case UrlPlaceHolder    => false
+        case UrlString(string)             => string matches URL_REGEX  // todo shouldn't accept "empty" URLs (e.g. "http:")
+        case UrlPlaceHolder | UrlWithCycle => false
       })
 
   private[this] def getUrlsWithSourcesForIr(ir: IR): Seq[Url] = {
-    val ssa: StringConcatSsaConversion = new StringConcatSsaConversion(ir)
+    val ssa: StringConcatSsaConversion = new StringConcatSsaConversion(ir)()
     ir.getInstructions flatMap {
       case instr: SSAInvokeInstruction if isSbAppend(instr) =>
         val concatString = UrlSeq(getConcatenatedString(instr, ir, ssa, Set.empty[StringSsaValueNumber]))

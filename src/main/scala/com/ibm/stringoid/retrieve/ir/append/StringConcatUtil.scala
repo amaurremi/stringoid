@@ -31,7 +31,9 @@ object StringConcatUtil {
       (instr.toString() contains SB_APPEND_PREFIX)
 
   def getDefs(instr: SSAInvokeInstruction): Array[WalaValueNumber] =
-    Array[WalaValueNumber](instr getDef 0, instr getUse 0)
+    if (isSbAppend(instr))
+      Array[WalaValueNumber](instr getDef 0, instr getUse 0)
+    else Array[WalaValueNumber](instr getUse 0)
 
   def getUses(instr: SSAInvokeInstruction): Array[WalaValueNumber] =
     Array[WalaValueNumber](instr getUse 0, instr getUse 1)

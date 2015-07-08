@@ -17,6 +17,11 @@ case class DefUses(defs: Array[StringSsaValueNumber], uses: Array[StringSsaValue
  */
 class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SSAOptions) {
 
+  def apply(): StringConcatSsaConversion = {
+    perform()
+    this
+  }
+
   /**
    * Generate a new value number, used by the the SSA builder
    */
@@ -170,7 +175,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
           case None         => 0
         }
       case _                       =>
-        throw new UnsupportedOperationException(INVOKE_INSTR_MSG)
+        0
     }
 
   protected override def getNumberOfUses(inst: SSAInstruction): Int =
