@@ -140,8 +140,8 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
   ): Unit = {
     val phiInstruction = basicBlockToPhis(BB)(phiIndex)
     val oldInstr = phiInstruction
-    val oldUses1 = rvalIndex + 1 to oldInstr.getNumberOfUses map oldInstr.getUse
-    val oldUses2 = 0 to rvalIndex map oldInstr.getUse
+    val oldUses1 = rvalIndex + 1 until oldInstr.getNumberOfUses map oldInstr.getUse
+    val oldUses2 = 0 until rvalIndex map oldInstr.getUse
     val newUses  = (oldUses1 :+ newRval) ++ oldUses2
     phiInstruction setValues newUses.toArray[WalaValueNumber]
     phiDefToOldVals += (SSVN(phiInstruction.getDef) -> getOldVals(SSVN(newRval))) // todo correct?
@@ -152,7 +152,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
 
   protected override def placeNewPhiAt(value: Int, Y: SSACFG#BasicBlock): Unit = {
     val params = Array[WalaValueNumber](CFG getPredNodeCount Y)
-    0 to params.length foreach { params(_) = value }
+    0 until params.length foreach { params(_) = value }
 
     val phi     = new SSAPhiInstruction(SSAInstruction.NO_INDEX, value, params)
     val oldPhis = basicBlockToPhis(Y)
