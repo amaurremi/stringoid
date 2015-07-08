@@ -12,11 +12,17 @@ import scala.collection.breakOut
 
 object AppendIrRetriever extends IrUrlRetriever {
 
-  override type Url = Seq[UrlPart]
+  override type Url = UrlSeq
+
+  case class UrlSeq(url: Seq[UrlPart]) {
+    override def toString =
+      url mkString " + "
+  }
 
   sealed trait UrlPart
   case class UrlString(string: String) extends UrlPart
   case object UrlPlaceHolder extends UrlPart
+  case object UrlWithCycle extends UrlPart
 
   protected def getIrsFromBuilder(builder: FlexibleCallGraphBuilder): Seq[IR] =
     (builder.cg map { _.getIR })(breakOut)
@@ -27,7 +33,7 @@ object AppendIrRetriever extends IrUrlRetriever {
         ir           <- getIrs(apkPath)
         constantUrls  = getUrlMethodPairsFromIr(ir) map {
           u =>
-            Seq(UrlString(u))
+            UrlSeq(Seq(UrlString(u)))
         }
         allUrlParts   = constantUrls ++ getUrlsWithSourcesForIr(ir)
         url          <- allUrlParts
@@ -41,14 +47,14 @@ object AppendIrRetriever extends IrUrlRetriever {
   private[this] def getConcatenatedString(
     instr: SSAInvokeInstruction,
     ir: IR,
-    ssa: StringConcatSsaConversion
-  ): Url = {
-    // todo cycles!
+    ssa: StringConcatSsaConversion,
+    seenVns: Set[StringSsaValueNumber]
+  ): Seq[UrlPart] =
     (ssa.instrToDefUsesMap(instr).uses flatMap {
-      use =>
+      case use if !(seenVns contains use) =>
         ssa.defToInstruction get use match {
           case Some(di) =>
-            getConcatenatedString(di, ir, ssa)
+            getConcatenatedString(di, ir, ssa, seenVns + use)
           case None     =>
             val table = ir.getSymbolTable
             ssa.getOldVals(use) map {
@@ -59,12 +65,13 @@ object AppendIrRetriever extends IrUrlRetriever {
                   UrlPlaceHolder
             }
         }
+      case _                              =>
+        Seq.empty[UrlPart]
     })(breakOut)
-  }
 
   private[this] def isUrl(concatString: Url): Boolean =
-    concatString.nonEmpty &&
-      (concatString.head match {
+    concatString.url.nonEmpty &&
+      (concatString.url.head match {
         case UrlString(string) => string matches URL_REGEX  // todo shouldn't accept "empty" URLs (e.g. "http:")
         case UrlPlaceHolder    => false
       })
@@ -73,7 +80,7 @@ object AppendIrRetriever extends IrUrlRetriever {
     val ssa: StringConcatSsaConversion = new StringConcatSsaConversion(ir)
     ir.getInstructions flatMap {
       case instr: SSAInvokeInstruction if isSbAppend(instr) =>
-        val concatString = getConcatenatedString(instr, ir, ssa)
+        val concatString = UrlSeq(getConcatenatedString(instr, ir, ssa, Set.empty[StringSsaValueNumber]))
         if (isUrl(concatString))
           Some(concatString)
         else None
