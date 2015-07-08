@@ -48,7 +48,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
    */
   private[this] val phiDefToOldVals = mutable.Map.empty[StringSsaValueNumber, Set[WalaValueNumber]]
 
-  private[this] val INVOKE_INSTR_MSG = "String concatenation SSA conversion handles only invoke instructions"
+  private[this] val INVOKE_INSTR_MSG = "String concatenation SSA conversion handles only invoke and phi instructions"
 
   /**
    * The instruction in which a value number was defined
@@ -194,6 +194,8 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
     inst match {
       case i: SSAInvokeInstruction =>
         instrToDefUses(i).uses(index).vn
+      case p: SSAPhiInstruction    =>
+        p getUse index  // todo correct?
       case _                       =>
         throw new UnsupportedOperationException(INVOKE_INSTR_MSG)
     }
