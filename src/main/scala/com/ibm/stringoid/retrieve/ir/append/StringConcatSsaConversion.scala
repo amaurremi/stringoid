@@ -204,7 +204,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
           case None         => 0
         }
       case p: SSAPhiInstruction    =>
-        p.getDef
+        p.getNumberOfDefs
       case _                       =>
         0
     }
