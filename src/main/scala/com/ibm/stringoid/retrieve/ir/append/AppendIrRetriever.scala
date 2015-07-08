@@ -46,8 +46,6 @@ object AppendIrRetriever extends IrUrlRetriever {
     })
   }
 
-  def oldval(i: Int, ssa: StringConcatSsaConversion) = ssa.getOldVals(SSVN(i))
-
   private[this] def getConcatenatedString(
     instr: SSAInvokeInstruction,
     ir: IR,
