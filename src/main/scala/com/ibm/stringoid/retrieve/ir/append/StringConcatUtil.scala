@@ -33,8 +33,12 @@ object StringConcatUtil {
   def getDefs(instr: SSAInvokeInstruction): Array[WalaValueNumber] =
     if (isSbAppend(instr))
       Array[WalaValueNumber](instr getDef 0, instr getUse 0)
-    else Array[WalaValueNumber](instr getUse 0)
+    else
+      Array[WalaValueNumber](instr getUse 0)
 
   def getUses(instr: SSAInvokeInstruction): Array[WalaValueNumber] =
-    Array[WalaValueNumber](instr getUse 0, instr getUse 1)
+    if (isSbConstructorWithStringParam(instr) || isSbAppend(instr))
+      Array[WalaValueNumber](instr getUse 0, instr getUse 1)
+    else
+      Array.empty[WalaValueNumber]
 }
