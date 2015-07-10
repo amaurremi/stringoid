@@ -36,7 +36,7 @@ abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSACo
   /**
    * Maps newly created value numbers back to the original value numbers
    */
-  private[this] val newValToOldVal = mutable.Map.empty[StringSsaValueNumber, WalaValueNumber] withDefault { _.vn } // todo correct?
+  private[this] val newValToOldVal = mutable.Map.empty[StringSsaValueNumber, WalaValueNumber] withDefault { _.vn } // todo replace newValToOldVal with valueMap?
 
   /**
    * Maps the def of a newly created phi to the original value numbers corresponding to that phi's uses
@@ -49,7 +49,7 @@ abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSACo
    * appear as the instruction's uses.
    */
   def getOldVals(newVal: StringSsaValueNumber): Set[WalaValueNumber] =
-    phiDefToOldVals getOrElse (newVal, Set(newValToOldVal(newVal))) // todo correct?
+    phiDefToOldVals getOrElse (newVal, Set(newValToOldVal(newVal))) // todo correct? replace newValToOldVal with valueMap?
 
   private[this] def initialDefUses(ir: IR): mutable.Map[SSAInvokeInstruction, DefUses] = {
     val tuples: Iterator[(SSAInvokeInstruction, DefUses)] = ir.iterateAllInstructions collect {
@@ -128,8 +128,11 @@ abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSACo
     val phi     = new SSAPhiInstruction(SSAInstruction.NO_INDEX, value, params)
     val oldPhis = basicBlockToPhis(Y)
     val newPhis = new Array[SSAPhiInstruction](oldPhis.length + 1)
-    oldPhis copyToArray (newPhis, 1)  // todo why do we put the new phi at the beginning? (saw in the other SSA implementation)
-    newPhis(0) = phi
+
+    oldPhis copyToArray newPhis
+    newPhis(oldPhis.length) = phi
+//    oldPhis copyToArray (newPhis, 1)
+//    newPhis(0) = phi
 
     basicBlockToPhis += (Y -> newPhis)
     val phiDef = SSVN(value)
