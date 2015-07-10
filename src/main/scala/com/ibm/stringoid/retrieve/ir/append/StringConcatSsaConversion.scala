@@ -195,9 +195,9 @@ abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSACo
 
   protected override def initializeVariables(): Unit = // todo correct?
     for {
-      DefUses(defs, _) <- normalInstrToDefUses.values
-      d                <- defs
-      vn                = d.vn
+      DefUses(defs, uses) <- normalInstrToDefUses.values
+      v                <- defs ++ uses
+      vn                = v.vn
     } {
       S(vn).push(vn)
       valueMap(vn) = vn
