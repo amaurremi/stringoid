@@ -193,5 +193,13 @@ abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSACo
 
   protected override def pushAssignment(instr: SSAInstruction, index: Int, newRhs: Int): Unit = {}
 
-  protected override def initializeVariables(): Unit = {}
+  protected override def initializeVariables(): Unit = // todo correct?
+    for {
+      DefUses(defs, _) <- normalInstrToDefUses.values
+      d                <- defs
+      vn                = d.vn
+    } {
+      S(vn).push(vn)
+      valueMap(vn) = vn
+    }
 }
