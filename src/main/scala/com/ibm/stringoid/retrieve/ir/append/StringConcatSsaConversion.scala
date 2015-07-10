@@ -56,8 +56,10 @@ abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSACo
   private[this] def initialDefUses(ir: IR): mutable.Map[SSAInvokeInstruction, DefUses] = {
     val tuples: Iterator[(SSAInvokeInstruction, DefUses)] = ir.iterateAllInstructions collect {
       case instr: SSAInvokeInstruction if isSbConstructor(instr) =>
-        val uses = if (isSbConstructorWithRefParam(instr)) getUses(instr) map SSVN.apply
-                   else Array.empty[StringSsaValueNumber]
+        val uses = if (isSbConstructorWithStringParam(instr))
+                     getUses(instr) map SSVN.apply
+                   else
+                     Array.empty[StringSsaValueNumber]
         instr -> DefUses(getDefs(instr) map SSVN.apply, uses)
       case instr: SSAInvokeInstruction if isSbAppend(instr) =>
         instr -> DefUses(getDefs(instr) map SSVN.apply, getUses(instr) map SSVN.apply)
@@ -96,7 +98,7 @@ abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSACo
   protected override def getDef(inst: SSAInstruction, index: Int): Int =
     inst match {
       case i: SSAInvokeInstruction =>
-        normalInstrToDefUses(i).defs(index).vn
+        (normalInstrToDefUses(i) defs index).vn
       case p: SSAPhiInstruction    =>
         p.getDef(index)
       case _                       =>

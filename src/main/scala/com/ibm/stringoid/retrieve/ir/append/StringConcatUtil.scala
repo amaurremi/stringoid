@@ -12,7 +12,7 @@ object StringConcatUtil {
    * that takes a String or CharSequence as a parameter?
    * todo StringBuffer
    */
-  def isSbConstructorWithRefParam(instr: SSAInvokeInstruction): Boolean =
+  def isSbConstructorWithStringParam(instr: SSAInvokeInstruction): Boolean =
     instr.toString() startsWith SB_CONSTRUCTOR_PREFIX + "L"
 
   /**
