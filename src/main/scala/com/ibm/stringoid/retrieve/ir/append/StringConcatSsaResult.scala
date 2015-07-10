@@ -12,6 +12,11 @@ class StringConcatSsaResult private(ir: IR) extends StringConcatSsaConversion(ir
   }
 
   /**
+   * The immutable publicly visible result of instructions with their new defs and uses
+   */
+  def normalInstrToDefUsesMap = normalInstrToDefUses.toMap[SSAInvokeInstruction, DefUses]
+
+  /**
    * The instruction in which a value number was defined
    */
   def defToInstruction: Map[StringSsaValueNumber, SSAInstruction] = {

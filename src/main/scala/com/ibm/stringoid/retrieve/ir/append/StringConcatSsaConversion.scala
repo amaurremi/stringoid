@@ -29,7 +29,7 @@ abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSACo
     mutable.Map.empty[SSACFG#BasicBlock, Array[SSAPhiInstruction]] withDefaultValue Array.empty[SSAPhiInstruction]
 
   /**
-   * Maps instructions to its new defs and uses
+   * Maps instructions to their new defs and uses
    */
   protected val normalInstrToDefUses: mutable.Map[SSAInvokeInstruction, DefUses] = initialDefUses(ir)
 
@@ -44,11 +44,6 @@ abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSACo
   private[this] val phiDefToOldVals = mutable.Map.empty[StringSsaValueNumber, Set[WalaValueNumber]]
 
   protected val INVOKE_INSTR_MSG = "String concatenation SSA conversion handles only invoke and phi instructions"
-
-  /**
-   * The immutable publicly visible result of instructions with its new defs and uses
-   */
-  def normalInstrToDefUsesMap = normalInstrToDefUses.toMap[SSAInvokeInstruction, DefUses]
 
   /**
    * Get the original value number corresponding to a value number created by this SSA conversion.
