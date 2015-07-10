@@ -15,12 +15,7 @@ case class DefUses(defs: Array[StringSsaValueNumber], uses: Array[StringSsaValue
 /**
  * Creates an SSA IR value numbering that is based on string concatenation
  */
-class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SSAOptions) {
-
-  def apply(): StringConcatSsaConversion = {
-    perform()
-    this
-  }
+abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSAConversion(ir, new SSAOptions) {
 
   /**
    * Generate a new value number, used by the the SSA builder
@@ -30,13 +25,13 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
   /**
    * Associates basic blocks with the new phi nodes created by the SSA builder
    */
-  private[this] val basicBlockToPhis =
+  protected val basicBlockToPhis =
     mutable.Map.empty[SSACFG#BasicBlock, Array[SSAPhiInstruction]] withDefaultValue Array.empty[SSAPhiInstruction]
 
   /**
    * Maps instructions to its new defs and uses
    */
-  private[this] val normalInstrToDefUses: mutable.Map[SSAInvokeInstruction, DefUses] = initialDefUses(ir)
+  protected val normalInstrToDefUses: mutable.Map[SSAInvokeInstruction, DefUses] = initialDefUses(ir)
 
   /**
    * Maps newly created value numbers back to the original value numbers
@@ -48,53 +43,7 @@ class StringConcatSsaConversion(ir: IR) extends AbstractSSAConversion(ir, new SS
    */
   private[this] val phiDefToOldVals = mutable.Map.empty[StringSsaValueNumber, Set[WalaValueNumber]]
 
-  private[this] val INVOKE_INSTR_MSG = "String concatenation SSA conversion handles only invoke and phi instructions"
-
-  /**
-   * The instruction in which a value number was defined
-   */
-  def defToInstruction: Map[StringSsaValueNumber, SSAInstruction] = {
-    val normal: Map[StringSsaValueNumber, SSAInvokeInstruction] = (normalInstrToDefUses flatMap {
-      case (instr: SSAInvokeInstruction, DefUses(defs, _)) =>
-        defs map {
-          _ -> instr
-        }
-    })(breakOut)
-    val phi: Map[StringSsaValueNumber, SSAPhiInstruction] =
-      (for {
-        phis <- basicBlockToPhis.values
-        phi  <- phis
-      } yield SSVN(phi.getDef) -> phi)(breakOut)
-    // assuming SSA works correctly and def value numbers are always different
-    normal ++ phi
-  }
-
-  /**
-   * The instructions in which a value number was used. Currently this method is not used anywhere.
-   */
-  def useToInstructions: Map[StringSsaValueNumber, Set[SSAInstruction]] = {
-    val instructions = normalInstrToDefUses.keys ++ basicBlockToPhis.keys
-
-    def createUseMap(
-      prevMap: Map[StringSsaValueNumber, Set[SSAInstruction]],
-      uses: Array[StringSsaValueNumber],
-      instr: SSAInstruction
-    ) = uses.foldLeft(prevMap) {
-      case (prevMap2, use) =>
-        val oldInstructions = prevMap2 getOrElse(use, Set.empty[SSAInstruction])
-        prevMap2 updated(use, oldInstructions + instr)
-    }
-
-    instructions.foldLeft(Map.empty[StringSsaValueNumber, Set[SSAInstruction]]) {
-      case (prevMap, instr: SSAInvokeInstruction) =>
-        createUseMap(prevMap, normalInstrToDefUses(instr).uses, instr)
-      case (prevMap, instr: SSAPhiInstruction)    =>
-        val uses = 0 until instr.getNumberOfUses map instr.getUse
-        createUseMap(prevMap, (uses map SSVN.apply)(breakOut), instr)
-      case _                                      =>
-        throw new UnsupportedOperationException(INVOKE_INSTR_MSG)
-    }
-  }
+  protected val INVOKE_INSTR_MSG = "String concatenation SSA conversion handles only invoke and phi instructions"
 
   /**
    * The immutable publicly visible result of instructions with its new defs and uses

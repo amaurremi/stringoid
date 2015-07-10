@@ -49,7 +49,7 @@ object AppendIrRetriever extends IrUrlRetriever {
   private[this] def getConcatenatedString(
     instr: SSAInvokeInstruction,
     ir: IR,
-    ssa: StringConcatSsaConversion,
+    ssa: StringConcatSsaResult,
     seenVns: Set[StringSsaValueNumber]
   ): Seq[UrlPart] =
     (ssa.normalInstrToDefUsesMap(instr).uses flatMap { // todo also for phi instructions?
@@ -79,7 +79,7 @@ object AppendIrRetriever extends IrUrlRetriever {
       })
 
   private[this] def getUrlsWithSourcesForIr(ir: IR): Seq[Url] = {
-    val ssa: StringConcatSsaConversion = new StringConcatSsaConversion(ir)()
+    val ssa = StringConcatSsaResult(ir)
     ir.getInstructions flatMap {
       case instr: SSAInvokeInstruction if isSbAppend(instr) =>
         val concatString = UrlSeq(getConcatenatedString(instr, ir, ssa, Set.empty[StringSsaValueNumber]))
