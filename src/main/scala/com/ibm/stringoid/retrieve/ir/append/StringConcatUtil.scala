@@ -7,6 +7,8 @@ object StringConcatUtil {
   private val SB_CONSTRUCTOR_PREFIX = "invokespecial < Application, Ljava/lang/StringBuilder, <init>("
   private val SB_APPEND_PREFIX      = "invokevirtual < Application, Ljava/lang/StringBuilder, append("
 
+  val INVOKE_INSTR_MSG = "String concatenation SSA conversion handles only invoke and phi instructions"
+
   /**
    * Does this instruction correspond to a new StringBuilder constructor invocation
    * that takes a String or CharSequence as a parameter?

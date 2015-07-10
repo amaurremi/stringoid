@@ -4,7 +4,7 @@ import java.nio.file.Path
 
 import com.ibm.stringoid.retrieve.ir.IrUrlRetriever
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
-import com.ibm.wala.ssa.{IR, SSAInvokeInstruction}
+import com.ibm.wala.ssa.{IR, SSAInvokeInstruction, SSAPhiInstruction}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
 import scala.collection.JavaConversions._
@@ -23,6 +23,7 @@ object AppendIrRetriever extends IrUrlRetriever {
   case class UrlString(string: String) extends UrlPart {
     override def toString = string
   }
+  case class UrlPhi(urls: Set[Url]) extends UrlPart
   case object UrlPlaceHolder extends UrlPart
   case object UrlWithCycle extends UrlPart
 
@@ -52,29 +53,59 @@ object AppendIrRetriever extends IrUrlRetriever {
     ssa: StringConcatSsaResult,
     seenVns: Set[StringSsaValueNumber]
   ): Seq[UrlPart] =
-    (ssa.normalInstrToDefUsesMap(instr).uses flatMap { // todo also for phi instructions?
-      case use if !(seenVns contains use) =>
-        ssa.defToInstruction get use match {
-          case Some(di: SSAInvokeInstruction) =>
-            getConcatenatedString(di, ir, ssa, seenVns + use)
-          case None     =>
-            val table = ir.getSymbolTable
-            ssa.getOldVals(use) map {
-              oldVal =>
-                if (table isConstant oldVal)
-                  UrlString((table getConstantValue oldVal).toString) // todo more refined types, not just string?
-                else
-                  UrlPlaceHolder
-            }
-        }
-      case _                              =>
-        Seq.empty[UrlPart]
+    (ssa.normalInstrToDefUsesMap(instr).uses flatMap {
+      use =>
+        getConcatenatedStringForUse(use, instr, ir, ssa, seenVns)
     })(breakOut)
+
+  private[this] def getConcatenatedStringForUse(
+    use: StringSsaValueNumber,
+    instr: SSAInvokeInstruction,
+    ir: IR,
+    ssa: StringConcatSsaResult,
+    seenVns: Set[StringSsaValueNumber]
+  ): Seq[UrlPart] = { // todo also for phi instructions?
+    if (!(seenVns contains use))
+      ssa.defToInstruction get use match {
+        case Some(di: SSAInvokeInstruction) =>
+          getConcatenatedString(di, ir, ssa, seenVns + use)
+        case Some(pi: SSAPhiInstruction)    =>
+          val distinctUses: Set[StringSsaValueNumber] = (0 until pi.getNumberOfUses map {
+            useNr =>
+              SSVN(pi.getUse(useNr))
+          })(breakOut)
+          val urls: Set[Url] = distinctUses map {
+            phiUse =>
+              UrlSeq(getConcatenatedStringForUse(phiUse, instr, ir, ssa, seenVns + use))
+          }
+          Seq(UrlPhi(urls))
+        case None                           =>
+          val table = ir.getSymbolTable
+          val results: Set[UrlPart] = ssa.getOldVals(use) map {
+            oldVal =>
+              if (table isConstant oldVal)
+                UrlString((table getConstantValue oldVal).toString) // todo more refined types, not just string?
+              else
+                UrlPlaceHolder
+          }
+          if (results.size == 1)
+            Seq(results.head)
+          else
+            Seq(UrlPhi(results map {
+              result =>
+                UrlSeq(Seq(result))
+            }))
+        case _                              =>
+          throw new UnsupportedOperationException(INVOKE_INSTR_MSG)
+      }
+    else Seq.empty[UrlPart]
+  }
 
   private[this] def isUrl(concatString: Url): Boolean =
     concatString.url.nonEmpty &&
       (concatString.url.head match {
         case UrlString(string)             => string matches URL_REGEX  // todo shouldn't accept "empty" URLs (e.g. "http:")
+        case UrlPhi(phis)                  => phis exists isUrl
         case UrlPlaceHolder | UrlWithCycle => false
       })
 

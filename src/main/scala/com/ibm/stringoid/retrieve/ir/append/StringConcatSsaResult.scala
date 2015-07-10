@@ -58,7 +58,7 @@ class StringConcatSsaResult private(ir: IR) extends StringConcatSsaConversion(ir
         val uses = 0 until instr.getNumberOfUses map instr.getUse
         createUseMap(prevMap, (uses map SSVN.apply)(breakOut), instr)
       case _                                      =>
-        throw new UnsupportedOperationException(INVOKE_INSTR_MSG)
+        throw new UnsupportedOperationException(StringConcatUtil.INVOKE_INSTR_MSG)
     }
   }
 }

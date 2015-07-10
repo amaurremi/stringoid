@@ -43,8 +43,6 @@ abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSACo
    */
   private[this] val phiDefToOldVals = mutable.Map.empty[StringSsaValueNumber, Set[WalaValueNumber]]
 
-  protected val INVOKE_INSTR_MSG = "String concatenation SSA conversion handles only invoke and phi instructions"
-
   /**
    * Get the original value number corresponding to a value number created by this SSA conversion.
    * If the new value number is a phi instruction, returns all the original value numbers that
@@ -124,7 +122,7 @@ abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSACo
     basicBlockToPhis(B)(index) = inst
 
   protected override def placeNewPhiAt(value: Int, Y: SSACFG#BasicBlock): Unit = { // todo it's confusing that value doesn't indicate the position in the phi array, given the method name
-    val params = Array[WalaValueNumber](CFG getPredNodeCount Y)
+    val params = new Array[WalaValueNumber](CFG getPredNodeCount Y)
     params.indices foreach { params(_) = value }
 
     val phi     = new SSAPhiInstruction(SSAInstruction.NO_INDEX, value, params)
@@ -194,12 +192,18 @@ abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSACo
   protected override def pushAssignment(instr: SSAInstruction, index: Int, newRhs: Int): Unit = {}
 
   protected override def initializeVariables(): Unit = // todo correct?
-    for {
-      DefUses(defs, uses) <- normalInstrToDefUses.values
-      v                <- defs ++ uses
-      vn                = v.vn
-    } {
-      S(vn).push(vn)
-      valueMap(vn) = vn
+  // todo since valueMap should be sparse, maybe that's wrong
+    1 to getMaxValueNumber foreach {
+      v =>
+        S(v) push v
+        valueMap(v) = v
     }
+//    for {
+//      DefUses(defs, uses) <- normalInstrToDefUses.values
+//      v                <- defs ++ uses
+//      vn                = v.vn
+//    } {
+//      S(vn).push(vn)
+//      valueMap(vn) = vn
+//    }
 }
