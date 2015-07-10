@@ -5,7 +5,7 @@ import com.ibm.wala.cast.ir.ssa.AbstractSSAConversion
 import com.ibm.wala.ssa._
 
 import scala.collection.JavaConversions._
-import scala.collection.{breakOut, mutable}
+import scala.collection.mutable
 
 /**
  * For a given instruction, what are its def and use value numbers?
