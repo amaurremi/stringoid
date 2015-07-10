@@ -66,5 +66,5 @@ class StringConcatSsaResult private(ir: IR) extends StringConcatSsaConversion(ir
 object StringConcatSsaResult {
 
   def apply(ir: IR): StringConcatSsaResult =
-    new StringConcatSsaResult(ir)
+    new StringConcatSsaResult(ir)()
 }
