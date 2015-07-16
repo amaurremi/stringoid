@@ -1,9 +1,10 @@
-package com.ibm.stringoid.retrieve.ir.append
+package com.ibm.stringoid.retrieve.ir.append.ssa
 
 import java.nio.file.Path
 
 import com.ibm.stringoid.retrieve.ir.IrUrlRetriever
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
+import com.ibm.stringoid.retrieve.ir.append._
 import com.ibm.wala.ssa.{IR, SSAInvokeInstruction, SSAPhiInstruction}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 

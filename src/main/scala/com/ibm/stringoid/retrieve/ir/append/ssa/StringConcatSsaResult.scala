@@ -1,5 +1,6 @@
-package com.ibm.stringoid.retrieve.ir.append
+package com.ibm.stringoid.retrieve.ir.append.ssa
 
+import com.ibm.stringoid.retrieve.ir.append._
 import com.ibm.wala.ssa.{IR, SSAInstruction, SSAInvokeInstruction, SSAPhiInstruction}
 
 import scala.collection.breakOut

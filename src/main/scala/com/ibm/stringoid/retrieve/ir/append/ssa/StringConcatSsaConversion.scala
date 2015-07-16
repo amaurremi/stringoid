@@ -1,6 +1,7 @@
-package com.ibm.stringoid.retrieve.ir.append
+package com.ibm.stringoid.retrieve.ir.append.ssa
 
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
+import com.ibm.stringoid.retrieve.ir.append._
 import com.ibm.wala.cast.ir.ssa.AbstractSSAConversion
 import com.ibm.wala.ssa._
 
