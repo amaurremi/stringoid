@@ -7,7 +7,6 @@ import com.ibm.stringoid.retrieve.ir.append.AppendUrl
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ssa.IR
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
-import scala.collection.breakOut
 
 object FixedpointAppendIrRetriever extends IrUrlRetriever with AppendUrl {
 
