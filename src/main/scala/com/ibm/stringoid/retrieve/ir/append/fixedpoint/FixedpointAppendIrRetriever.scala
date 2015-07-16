@@ -4,7 +4,6 @@ import java.nio.file.Path
 
 import com.ibm.stringoid.retrieve.ir.IrUrlRetriever
 import com.ibm.stringoid.retrieve.ir.append.AppendUrl
-import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ssa.IR
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
