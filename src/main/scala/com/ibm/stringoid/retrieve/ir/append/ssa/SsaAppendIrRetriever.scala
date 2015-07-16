@@ -11,22 +11,9 @@ import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import scala.collection.JavaConversions._
 import scala.collection.breakOut
 
-object AppendIrRetriever extends IrUrlRetriever {
+object SsaAppendIrRetriever extends IrUrlRetriever with AppendUrl {
 
   override type Url = UrlSeq
-
-  case class UrlSeq(url: Seq[UrlPart]) {
-    override def toString =
-      url mkString " + "
-  }
-
-  sealed trait UrlPart
-  case class UrlString(string: String) extends UrlPart {
-    override def toString = string
-  }
-  case class UrlPhi(urls: Set[Url]) extends UrlPart
-  case object UrlPlaceHolder extends UrlPart
-  case object UrlWithCycle extends UrlPart
 
   protected def getIrsFromBuilder(builder: FlexibleCallGraphBuilder): Seq[IR] =
     (builder.cg map { _.getIR })(breakOut)

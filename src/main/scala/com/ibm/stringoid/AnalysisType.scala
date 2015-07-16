@@ -1,7 +1,7 @@
 package com.ibm.stringoid
 
 import com.ibm.stringoid.retrieve._
-import com.ibm.stringoid.retrieve.ir.append.ssa.AppendIrRetriever
+import com.ibm.stringoid.retrieve.ir.append.ssa.SsaAppendIrRetriever
 import com.ibm.stringoid.retrieve.ir.{CgIrUrlRetriever, ChaIrUrlRetriever}
 import scopt.Read
 
@@ -18,7 +18,7 @@ object AnalysisType extends Enumeration {
     case ChaIr =>
       ChaIrUrlRetriever
     case AppendIr =>
-      AppendIrRetriever
+      SsaAppendIrRetriever
     case Grep  =>
       GrepUrlRetriever
   }
