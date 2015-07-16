@@ -18,7 +18,7 @@ object FixedpointAppendIrRetriever extends IrUrlRetriever with AppendUrl {
     } yield url -> ir.getMethod.toString
     val urlWithSourcesMap = urlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
       case (prevMap, (url, method)) =>
-        val prevMethods: Set[Method] = prevMap getOrElse (url, Set.empty[Method])
+        val prevMethods = prevMap getOrElse (url, Set.empty[Method])
         prevMap updated (url, prevMethods + method)
     }
     UrlsWithSources(urlWithSourcesMap)
