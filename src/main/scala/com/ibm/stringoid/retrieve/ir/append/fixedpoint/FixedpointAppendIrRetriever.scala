@@ -13,13 +13,13 @@ object FixedpointAppendIrRetriever extends IrUrlRetriever with AppendUrl {
   override type Url = UrlSeq
 
   override def apply(apkPath: Path): UrlsWithSources = {
-    val urlsWithSources: Seq[(Url, IMethod)] = for {
+    val urlsWithSources: Seq[(Url, Method)] = for {
       ir  <- getIrs(apkPath)
       url <- getUrlsForIr(ir)
-    } yield url -> ir.getMethod
+    } yield url -> ir.getMethod.toString
     val urlWithSourcesMap = urlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
       case (prevMap, (url, method)) =>
-        val prevMethods = prevMap getOrElse (url, Set.empty[Method])
+        val prevMethods: Set[Method] = prevMap getOrElse (url, Set.empty[Method])
         prevMap updated (url, prevMethods + method)
     }
     UrlsWithSources(urlWithSourcesMap)
