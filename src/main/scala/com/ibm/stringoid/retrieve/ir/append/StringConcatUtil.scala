@@ -1,6 +1,6 @@
 package com.ibm.stringoid.retrieve.ir.append
 
-import com.ibm.wala.ssa.SSAInvokeInstruction
+import com.ibm.wala.ssa.{SSAPhiInstruction, SSAInvokeInstruction}
 
 object StringConcatUtil {
 
@@ -38,9 +38,17 @@ object StringConcatUtil {
     else
       Array[WalaValueNumber](instr getUse 0)
 
+  def getFirstSecondAppendDef(instr: SSAInvokeInstruction): (WalaValueNumber, WalaValueNumber) = {
+    assert(isSbAppend(instr))
+    (instr getDef 0, instr getUse 0)
+  }
+
   def getUses(instr: SSAInvokeInstruction): Array[WalaValueNumber] =
     if (isSbConstructorWithStringParam(instr) || isSbAppend(instr))
       Array[WalaValueNumber](instr getUse 0, instr getUse 1)
     else
       Array.empty[WalaValueNumber]
+
+  def getPhiUses(instr: SSAPhiInstruction): Seq[WalaValueNumber] =
+    1 to instr.getNumberOfUses map instr.getUse
 }
