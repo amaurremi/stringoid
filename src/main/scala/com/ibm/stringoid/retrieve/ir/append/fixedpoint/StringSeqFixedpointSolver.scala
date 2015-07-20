@@ -1,5 +1,8 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
-class StringSeqFixedpointSolver {
+trait StringSeqFixedpointSolver extends AbstractStringBuilderCreator {
 
+  object Solver {
+
+  }
 }
