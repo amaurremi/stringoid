@@ -1,14 +1,14 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
+import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.WalaValueNumber
-import com.ibm.wala.dataflow.graph.{AbstractMeetOperator, BitVectorFramework, BitVectorSolver, ITransferFunctionProvider}
+import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{BitVectorVariable, UnaryOperator}
-import com.ibm.wala.ssa.{SSAInvokeInstruction, SSAPhiInstruction, IR}
+import com.ibm.wala.ssa.{IR, SSAInvokeInstruction, SSAPhiInstruction}
 import com.ibm.wala.util.collections.ObjectArrayMapping
 import com.ibm.wala.util.graph.Graph
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph
 import com.ibm.wala.util.intset.OrdinalSetMapping
-import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 
 import scala.collection.JavaConversions._
 
@@ -69,15 +69,17 @@ trait AbstractStringBuilderCreatorModule {
 
     private[this] def transferFunctions = new ITransferFunctionProvider[WalaValueNumber, BitVectorVariable] {
 
-      override def getMeetOperator: AbstractMeetOperator[BitVectorVariable] = ???
+      override def getMeetOperator: AbstractMeetOperator[BitVectorVariable] =
+        BitVectorUnion.instance
 
       override def hasEdgeTransferFunctions: Boolean = false
 
       override def getNodeTransferFunction(node: WalaValueNumber): UnaryOperator[BitVectorVariable] = ???
 
-      override def getEdgeTransferFunction(src: WalaValueNumber, dst: WalaValueNumber): UnaryOperator[BitVectorVariable] = ???
+      override def getEdgeTransferFunction(src: WalaValueNumber, dst: WalaValueNumber): UnaryOperator[BitVectorVariable] =
+        throw new UnsupportedOperationException("No edge transfer functions in abstract StringBuilder fixed-point iteration")
 
-      override def hasNodeTransferFunctions: Boolean = ???
+      override def hasNodeTransferFunctions: Boolean = true
     }
   }
 }
