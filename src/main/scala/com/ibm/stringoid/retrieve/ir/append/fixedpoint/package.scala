@@ -18,4 +18,6 @@ package object fixedpoint {
    * to by many value numbers.
    */
   case class AbstractStringBuilderObject(n: Int) extends AnyVal
+
+  type ASBO = AbstractStringBuilderObject
 }

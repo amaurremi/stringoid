@@ -8,20 +8,56 @@ import com.ibm.wala.ssa.{IR, SSAInvokeInstruction, SSAPhiInstruction}
 import com.ibm.wala.util.collections.ObjectArrayMapping
 import com.ibm.wala.util.graph.Graph
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph
-import com.ibm.wala.util.intset.OrdinalSetMapping
+import com.ibm.wala.util.intset.{IntSet, OrdinalSetMapping}
 
 import scala.collection.JavaConversions._
+import scala.collection.breakOut
 
-trait AbstractStringBuilderCreatorModule {
+trait AbstractStringBuilderModule {
   
-  class AbstractStringBuilderCreator(ir: IR) {
+  type AsboMapping = OrdinalSetMapping[ASBO]
 
-    def solver: BitVectorSolver[WalaValueNumber] = {
-      val framework = new BitVectorFramework[WalaValueNumber, Set[AbstractStringBuilderObject]](
+  def valNumToAbstractStringBuilder(ir: IR): Map[WalaValueNumber, Set[ASBO]] = {
+    val numbering = createAbstractObjectNumbering(ir)
+    val solver = new AbstractStringBuilderFixedPointSolver(ir, numbering)
+    val result = solver.result
+    (solver.valueNumberGraph map {
+      vn: WalaValueNumber =>
+        val intSet = result.getOut(vn).getValue
+        vn -> intSetToAbstractStringBuilders(intSet, numbering)
+    })(breakOut)
+  }
+
+  private[this] def intSetToAbstractStringBuilders(intSet: IntSet, numbering: AsboMapping): Set[ASBO] = {
+    val walaIterator = intSet.intIterator
+    val set = new Iterator {
+      override def hasNext: Boolean = walaIterator.hasNext
+      override def next(): Int = walaIterator.next()
+    }.toSet[WalaValueNumber]
+    set map numbering.getMappedObject 
+  }
+
+  private[this] def createAbstractObjectNumbering(ir: IR): AsboMapping = {
+    val abstractObjects = ir.iterateNormalInstructions collect {
+      case inv: SSAInvokeInstruction if isSbConstructor(inv) =>
+        AbstractStringBuilderObject(inv getDef 0)
+    }
+    new ObjectArrayMapping[ASBO](abstractObjects.toArray[ASBO])
+  }
+
+  private[this] class AbstractStringBuilderFixedPointSolver(
+    ir: IR,
+    abstractObjectNumbering: AsboMapping
+  ) {
+
+    def result: BitVectorSolver[WalaValueNumber] = {
+      val framework = new BitVectorFramework[WalaValueNumber, ASBO](
         valueNumberGraph,
         transferFunctions,
         abstractObjectNumbering)
-      new BitVectorSolver[WalaValueNumber](framework)
+      val solver = new BitVectorSolver[WalaValueNumber](framework)
+      solver.solve(null)
+      solver
     }
 
     /**
@@ -35,7 +71,7 @@ trait AbstractStringBuilderCreatorModule {
      * there will be a graph
      * 1 -> 2 -> 4 -> 5 <- 7
      */
-    private[this] def valueNumberGraph: Graph[WalaValueNumber] = {
+    def valueNumberGraph: Graph[WalaValueNumber] = {
       val graph = new SlowSparseNumberedGraph[WalaValueNumber](1)
       def addNode(vn: WalaValueNumber) = if (!(graph containsNode vn)) graph addNode vn
       ir.iterateAllInstructions foreach {
@@ -55,16 +91,6 @@ trait AbstractStringBuilderCreatorModule {
           }
       }
       graph
-    }
-
-    private[this] def abstractObjectNumbering: OrdinalSetMapping[Set[AbstractStringBuilderObject]] = createAbstractObjectNumbering
-
-    private[this] def createAbstractObjectNumbering: OrdinalSetMapping[Set[AbstractStringBuilderObject]] = {
-      val abstractObjects = ir.iterateNormalInstructions collect {
-        case inv: SSAInvokeInstruction if isSbConstructor(inv) =>
-          Set(AbstractStringBuilderObject(inv getDef 0))
-      }
-      new ObjectArrayMapping[Set[AbstractStringBuilderObject]](abstractObjects.toArray[Set[AbstractStringBuilderObject]])
     }
 
     private[this] def transferFunctions = new ITransferFunctionProvider[WalaValueNumber, BitVectorVariable] {
