@@ -51,7 +51,7 @@ trait AbstractStringBuilderCreatorModule {
           getPhiUses(phi) foreach {
             use =>
               addNode(use)
-              graph addEdge(use, phiDef)
+              graph addEdge (use, phiDef)
           }
       }
       graph
@@ -74,7 +74,8 @@ trait AbstractStringBuilderCreatorModule {
 
       override def hasEdgeTransferFunctions: Boolean = false
 
-      override def getNodeTransferFunction(node: WalaValueNumber): UnaryOperator[BitVectorVariable] = ???
+      override def getNodeTransferFunction(node: WalaValueNumber): UnaryOperator[BitVectorVariable] =
+        BitVectorIdentity.instance()
 
       override def getEdgeTransferFunction(src: WalaValueNumber, dst: WalaValueNumber): UnaryOperator[BitVectorVariable] =
         throw new UnsupportedOperationException("No edge transfer functions in abstract StringBuilder fixed-point iteration")
