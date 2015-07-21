@@ -2,12 +2,11 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
 import java.nio.file.Path
 
-import com.ibm.stringoid.retrieve.ir.IrUrlRetriever
 import com.ibm.stringoid.retrieve.ir.append.AppendUrl
+import com.ibm.stringoid.retrieve.ir.{IrFromBuilderRetriever, IrUrlRetriever}
 import com.ibm.wala.ssa.IR
-import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
-object FixedpointAppendIrRetriever extends IrUrlRetriever with AppendUrl with AbstractStringBuilderModule {
+object FixedpointAppendIrRetriever extends IrUrlRetriever with AppendUrl with AbstractStringBuilderModule with IrFromBuilderRetriever {
 
   override type Url = UrlSeq
 
@@ -23,8 +22,6 @@ object FixedpointAppendIrRetriever extends IrUrlRetriever with AppendUrl with Ab
     }
     UrlsWithSources(urlWithSourcesMap)
   }
-
-  override protected def getIrsFromBuilder(builder: FlexibleCallGraphBuilder): Seq[IR] = ???
 
   private[this] def getUrlsForIr(ir: IR): Seq[Url] = {
     val valNumToAsbo = valNumToAbstractStringBuilder(ir)

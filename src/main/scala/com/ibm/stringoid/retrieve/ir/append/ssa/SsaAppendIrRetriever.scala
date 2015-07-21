@@ -2,21 +2,16 @@ package com.ibm.stringoid.retrieve.ir.append.ssa
 
 import java.nio.file.Path
 
-import com.ibm.stringoid.retrieve.ir.IrUrlRetriever
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append._
+import com.ibm.stringoid.retrieve.ir.{IrFromBuilderRetriever, IrUrlRetriever}
 import com.ibm.wala.ssa.{IR, SSAInvokeInstruction, SSAPhiInstruction}
-import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
-import scala.collection.JavaConversions._
 import scala.collection.breakOut
 
-object SsaAppendIrRetriever extends IrUrlRetriever with AppendUrl {
+object SsaAppendIrRetriever extends IrUrlRetriever with AppendUrl with IrFromBuilderRetriever {
 
   override type Url = UrlSeq
-
-  protected def getIrsFromBuilder(builder: FlexibleCallGraphBuilder): Seq[IR] =
-    (builder.cg map { _.getIR })(breakOut)
 
   override def apply(apkPath: Path): UrlsWithSources = {
     val allUrlsWithSources: Seq[(Url, Set[Method])] =

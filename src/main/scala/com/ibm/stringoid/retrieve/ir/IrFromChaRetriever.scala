@@ -5,7 +5,7 @@ import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
 import scala.collection.JavaConversions._
 
-object ChaIrUrlRetriever extends ConstantUrlsFromIrRetriever {
+object IrFromChaRetriever extends ConstantUrlsFromIrRetriever {
 
   override protected def getIrsFromBuilder(builder: FlexibleCallGraphBuilder): Seq[IR] = {
     val irs = for {
