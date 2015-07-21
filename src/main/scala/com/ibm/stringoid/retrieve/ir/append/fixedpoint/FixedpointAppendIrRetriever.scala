@@ -7,7 +7,7 @@ import com.ibm.stringoid.retrieve.ir.append.AppendUrl
 import com.ibm.wala.ssa.IR
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
-object FixedpointAppendIrRetriever extends IrUrlRetriever with AppendUrl {
+object FixedpointAppendIrRetriever extends IrUrlRetriever with AppendUrl with AbstractStringBuilderModule {
 
   override type Url = UrlSeq
 
@@ -26,5 +26,8 @@ object FixedpointAppendIrRetriever extends IrUrlRetriever with AppendUrl {
 
   override protected def getIrsFromBuilder(builder: FlexibleCallGraphBuilder): Seq[IR] = ???
 
-  private[this] def getUrlsForIr(ir: IR): Seq[Url] = ???
+  private[this] def getUrlsForIr(ir: IR): Seq[Url] = {
+    val valNumToAsbo = valNumToAbstractStringBuilder(ir)
+    ???
+  }
 }
