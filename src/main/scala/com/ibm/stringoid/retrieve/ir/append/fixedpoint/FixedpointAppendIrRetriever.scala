@@ -2,11 +2,11 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
 import java.nio.file.Path
 
+import com.ibm.stringoid.retrieve.ir.IrFromBuilderRetriever
 import com.ibm.stringoid.retrieve.ir.append.AppendUrl
-import com.ibm.stringoid.retrieve.ir.{IrFromBuilderRetriever, IrUrlRetriever}
 import com.ibm.wala.ssa.IR
 
-object FixedpointAppendIrRetriever extends IrUrlRetriever with AppendUrl with AbstractStringBuilderModule with IrFromBuilderRetriever {
+object FixedpointAppendIrRetriever extends IrFromBuilderRetriever with AppendUrl with AbstractStringBuilderModule {
 
   override type Url = UrlSeq
 

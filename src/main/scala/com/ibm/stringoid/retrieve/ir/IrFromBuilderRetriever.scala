@@ -6,7 +6,7 @@ import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import scala.collection.JavaConversions._
 import scala.collection.breakOut
 
-trait IrFromBuilderRetriever { this: IrUrlRetriever =>
+trait IrFromBuilderRetriever extends IrUrlRetriever {
 
   override protected def getIrsFromBuilder(builder: FlexibleCallGraphBuilder): Seq[IR] =
     (builder.cg map { _.getIR })(breakOut)

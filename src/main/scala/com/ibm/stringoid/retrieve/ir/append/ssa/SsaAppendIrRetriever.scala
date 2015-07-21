@@ -9,7 +9,7 @@ import com.ibm.wala.ssa.{IR, SSAInvokeInstruction, SSAPhiInstruction}
 
 import scala.collection.breakOut
 
-object SsaAppendIrRetriever extends IrUrlRetriever with AppendUrl with IrFromBuilderRetriever {
+object SsaAppendIrRetriever extends IrFromBuilderRetriever with AppendUrl {
 
   override type Url = UrlSeq
 
