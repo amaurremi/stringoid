@@ -37,19 +37,19 @@ abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSACo
   /**
    * Maps newly created value numbers back to the original value numbers
    */
-  private[this] val newValToOldVal = mutable.Map.empty[StringSsaValueNumber, WalaValueNumber] withDefault { _.vn } // todo replace newValToOldVal with valueMap?
+  private[this] val newValToOldVal = mutable.Map.empty[StringSsaValueNumber, ValueNumber] withDefault { _.vn } // todo replace newValToOldVal with valueMap?
 
   /**
    * Maps the def of a newly created phi to the original value numbers corresponding to that phi's uses
    */
-  private[this] val phiDefToOldVals = mutable.Map.empty[StringSsaValueNumber, Set[WalaValueNumber]]
+  private[this] val phiDefToOldVals = mutable.Map.empty[StringSsaValueNumber, Set[ValueNumber]]
 
   /**
    * Get the original value number corresponding to a value number created by this SSA conversion.
    * If the new value number is a phi instruction, returns all the original value numbers that
    * appear as the instruction's uses.
    */
-  def getOldVals(newVal: StringSsaValueNumber): Set[WalaValueNumber] =
+  def getOldVals(newVal: StringSsaValueNumber): Set[ValueNumber] =
     phiDefToOldVals getOrElse (newVal, Set(newValToOldVal(newVal))) // todo correct? replace newValToOldVal with valueMap?
 
   private[this] def initialDefUses(ir: IR): mutable.Map[SSAInvokeInstruction, DefUses] = {
@@ -66,7 +66,7 @@ abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSACo
     mutable.Map(tuples.toSeq: _*)
   }
 
-  protected override def getNextNewValueNumber: WalaValueNumber = newValNum.next()
+  protected override def getNextNewValueNumber: ValueNumber = newValNum.next()
 
   protected override def repairInstructionDefs(
     instr: SSAInstruction,
@@ -78,7 +78,7 @@ abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSACo
       case i: SSAInvokeInstruction =>
         val newDefVns = newDefs map SSVN.apply
         val newUseVns = newUses map SSVN.apply
-        def updateVals(oldVals: Array[WalaValueNumber], newVals: Array[StringSsaValueNumber]) =
+        def updateVals(oldVals: Array[ValueNumber], newVals: Array[StringSsaValueNumber]) =
           oldVals zip newVals foreach {
           case (o, n) =>
             newValToOldVal += n -> o
@@ -90,7 +90,7 @@ abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSACo
         throw new UnsupportedOperationException(INVOKE_INSTR_MSG)
     }
 
-  protected override def getMaxValueNumber: WalaValueNumber = symbolTable.getMaxValueNumber
+  protected override def getMaxValueNumber: ValueNumber = symbolTable.getMaxValueNumber
 
   protected override def getPhi(B: SSACFG#BasicBlock, index: Int): SSAPhiInstruction = basicBlockToPhis(B)(index)
 
@@ -115,7 +115,7 @@ abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSACo
     val oldUses1 = 0 until rvalIndex map oldInstr.getUse
     val oldUses2 = rvalIndex until oldInstr.getNumberOfUses map oldInstr.getUse
     val newUses  = (oldUses1 :+ newRval) ++ oldUses2
-    phiInstruction setValues newUses.toArray[WalaValueNumber]
+    phiInstruction setValues newUses.toArray[ValueNumber]
     phiDefToOldVals += (SSVN(phiInstruction.getDef) -> getOldVals(SSVN(newRval))) // todo correct?
   }
 
@@ -123,7 +123,7 @@ abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSACo
     basicBlockToPhis(B)(index) = inst
 
   protected override def placeNewPhiAt(value: Int, Y: SSACFG#BasicBlock): Unit = { // todo it's confusing that value doesn't indicate the position in the phi array, given the method name
-    val params = new Array[WalaValueNumber](CFG getPredNodeCount Y)
+    val params = new Array[ValueNumber](CFG getPredNodeCount Y)
     params.indices foreach { params(_) = value }
 
     val phi     = new SSAPhiInstruction(SSAInstruction.NO_INDEX, value, params)

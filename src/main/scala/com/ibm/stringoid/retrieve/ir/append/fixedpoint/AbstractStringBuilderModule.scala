@@ -1,7 +1,7 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
-import com.ibm.stringoid.retrieve.ir.append.WalaValueNumber
+import com.ibm.stringoid.retrieve.ir.append.ValueNumber
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{BitVectorVariable, UnaryOperator}
 import com.ibm.wala.ssa.{DefUse, IR, SSAInvokeInstruction, SSAPhiInstruction}
@@ -35,7 +35,7 @@ trait AbstractStringBuilderModule {
   def asboSolver(ir: IR): AsboFixedPointSolver =
     new AsboFixedPointSolver(ir, createAbstractObjectNumbering(ir))
   
-  def getResult(solver: AsboFixedPointSolver): BitVectorSolver[WalaValueNumber] = {
+  def getResult(solver: AsboFixedPointSolver): BitVectorSolver[ValueNumber] = {
     val result = solver.result
     result.solve(null)
     result
@@ -44,10 +44,10 @@ trait AbstractStringBuilderModule {
   /**
    * The resulting map we are interested in obtaining.
    */
-  def valueNumberToAsbo(solver: AsboFixedPointSolver): Map[WalaValueNumber, Set[ASBO]] = {
+  def valueNumberToAsbo(solver: AsboFixedPointSolver): Map[ValueNumber, Set[ASBO]] = {
     val result = getResult(solver)
     (solver.valueNumberGraph map {
-      vn: WalaValueNumber =>
+      vn: ValueNumber =>
         val intSet = result.getOut(vn).getValue
         vn -> intSetToAsbo(intSet, solver.abstractObjectNumbering)
     })(breakOut)
@@ -55,10 +55,10 @@ trait AbstractStringBuilderModule {
 
   private[this] def intSetToAsbo(intSet: IntSet, numbering: AsboMapping): Set[ASBO] = {
     val walaIterator = intSet.intIterator
-    val set = new Iterator[WalaValueNumber] {
+    val set = new Iterator[ValueNumber] {
       override def hasNext: Boolean = walaIterator.hasNext
       override def next(): Int = walaIterator.next()
-    }.toSet[WalaValueNumber]
+    }.toSet[ValueNumber]
     set map numbering.getMappedObject 
   }
 
@@ -75,12 +75,12 @@ trait AbstractStringBuilderModule {
     val abstractObjectNumbering: AsboMapping
   ) {
 
-    def result: BitVectorSolver[WalaValueNumber] = {
-      val framework = new BitVectorFramework[WalaValueNumber, ASBO](
+    def result: BitVectorSolver[ValueNumber] = {
+      val framework = new BitVectorFramework[ValueNumber, ASBO](
         valueNumberGraph,
         transferFunctions,
         abstractObjectNumbering)
-      val solver = new BitVectorSolver[WalaValueNumber](framework)
+      val solver = new BitVectorSolver[ValueNumber](framework)
       solver.solve(null)
       solver
     }
@@ -96,7 +96,7 @@ trait AbstractStringBuilderModule {
      * there will be a graph
      * 1 -> 2 -> 4 -> 5 <- 7
      */
-    def valueNumberGraph: Graph[WalaValueNumber] = {
+    def valueNumberGraph: Graph[ValueNumber] = {
       // 1 = new SB();
       // 2 = 1.append(3);
       // ...
@@ -105,9 +105,9 @@ trait AbstractStringBuilderModule {
       // Since append is mutable (it changes 1's object) we cannot connect the nodes to the first node where 1 is defined.
       // So we need to remember the previous instruction that appended something to 1, which is the purpoe of this map.
       // todo test this case in unit tests
-      val vnToLastUsedNode = mutable.Map.empty[WalaValueNumber, WalaValueNumber]
-      val graph = new SlowSparseNumberedGraph[WalaValueNumber](1)
-      def addNode(n: WalaValueNumber) = if (!(graph containsNode n)) graph addNode n
+      val vnToLastUsedNode = mutable.Map.empty[ValueNumber, ValueNumber]
+      val graph = new SlowSparseNumberedGraph[ValueNumber](1)
+      def addNode(n: ValueNumber) = if (!(graph containsNode n)) graph addNode n
       ir.iterateAllInstructions foreach {
         case inv: SSAInvokeInstruction if isSbConstructor(inv) =>
           getDefs(inv) foreach addNode
@@ -128,14 +128,14 @@ trait AbstractStringBuilderModule {
       graph
     }
 
-    private[this] def transferFunctions = new ITransferFunctionProvider[WalaValueNumber, BitVectorVariable] {
+    private[this] def transferFunctions = new ITransferFunctionProvider[ValueNumber, BitVectorVariable] {
 
       override def getMeetOperator: AbstractMeetOperator[BitVectorVariable] =
         BitVectorUnion.instance
 
       override def hasEdgeTransferFunctions: Boolean = false
 
-      override def getNodeTransferFunction(vn: WalaValueNumber): UnaryOperator[BitVectorVariable] = {
+      override def getNodeTransferFunction(vn: ValueNumber): UnaryOperator[BitVectorVariable] = {
         val defUse = new DefUse(ir)
         defUse getDef vn match {
           case instr: SSAInvokeInstruction if isSbConstructor(instr) =>
@@ -146,7 +146,7 @@ trait AbstractStringBuilderModule {
         }
       }
 
-      override def getEdgeTransferFunction(src: WalaValueNumber, dst: WalaValueNumber): UnaryOperator[BitVectorVariable] =
+      override def getEdgeTransferFunction(src: ValueNumber, dst: ValueNumber): UnaryOperator[BitVectorVariable] =
         throw new UnsupportedOperationException("No edge transfer functions in abstract StringBuilder fixed-point iteration")
 
       override def hasNodeTransferFunctions: Boolean = true

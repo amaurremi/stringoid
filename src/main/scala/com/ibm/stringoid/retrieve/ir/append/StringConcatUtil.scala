@@ -32,23 +32,23 @@ object StringConcatUtil {
     instr.getNumberOfParameters == 2 && // one for 'this', one for argument
       (instr.toString() contains SB_APPEND_PREFIX)
 
-  def getDefs(instr: SSAInvokeInstruction): Array[WalaValueNumber] =
+  def getDefs(instr: SSAInvokeInstruction): Array[ValueNumber] =
     if (isSbAppend(instr))
-      Array[WalaValueNumber](instr getDef 0, instr getUse 0)
+      Array[ValueNumber](instr getDef 0, instr getUse 0)
     else
-      Array[WalaValueNumber](instr getUse 0)
+      Array[ValueNumber](instr getUse 0)
 
-  def getFirstSecondAppendDef(instr: SSAInvokeInstruction): (WalaValueNumber, WalaValueNumber) = {
+  def getFirstSecondAppendDef(instr: SSAInvokeInstruction): (ValueNumber, ValueNumber) = {
     assert(isSbAppend(instr))
     (instr getDef 0, instr getUse 0)
   }
 
-  def getUses(instr: SSAInvokeInstruction): Array[WalaValueNumber] =
+  def getUses(instr: SSAInvokeInstruction): Array[ValueNumber] =
     if (isSbConstructorWithStringParam(instr) || isSbAppend(instr))
-      Array[WalaValueNumber](instr getUse 0, instr getUse 1)
+      Array[ValueNumber](instr getUse 0, instr getUse 1)
     else
-      Array.empty[WalaValueNumber]
+      Array.empty[ValueNumber]
 
-  def getPhiUses(instr: SSAPhiInstruction): Seq[WalaValueNumber] =
+  def getPhiUses(instr: SSAPhiInstruction): Seq[ValueNumber] =
     1 to instr.getNumberOfUses map instr.getUse
 }
