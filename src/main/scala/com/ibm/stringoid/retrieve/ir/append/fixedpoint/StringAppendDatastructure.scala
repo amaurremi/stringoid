@@ -4,9 +4,12 @@ import com.ibm.stringoid.retrieve.ir.append._
 
 trait StringAppendDatastructure {
 
-  sealed trait StringAppend {
+  /**
+   * A data structure for a string concatenation.
+   */
+  sealed trait StringConcatenation {
 
-    def addAlternatives(string: StringAppend): StringAppend =
+    def addAlternatives(string: StringConcatenation): StringConcatenation =
       string match {
         case StringAlternatives(alts) =>
           StringAlternatives(alts + this)
@@ -14,7 +17,7 @@ trait StringAppendDatastructure {
           StringAlternatives(Set(string, this))
       }
     
-    def append(string: StringAppend): StringAppend =
+    def append(string: StringConcatenation): StringConcatenation =
     string match {
       case StringSeq(strings) =>
         StringSeq(strings +: this)
@@ -23,17 +26,17 @@ trait StringAppendDatastructure {
     }
   }
   
-  case class StringAlternatives(strings: Set[StringAppend]) extends StringAppend {
+  case class StringAlternatives(strings: Set[StringConcatenation]) extends StringConcatenation {
     
-    override def addAlternatives(alts: StringAppend): StringAppend =
+    override def addAlternatives(alts: StringConcatenation): StringConcatenation =
       alts match {
         case StringAlternatives(strings2) => StringAlternatives(strings ++ strings2)
       }
   }
   
-  case class StringSeq(strings: Seq[StringAppend]) extends StringAppend {
+  case class StringSeq(strings: Seq[StringConcatenation]) extends StringConcatenation {
 
-    override def append(string: StringAppend): StringAppend =
+    override def append(string: StringConcatenation): StringConcatenation =
       string match {
         case StringSeq(strings2) =>
           StringSeq(strings ++ strings2)
@@ -41,6 +44,6 @@ trait StringAppendDatastructure {
           StringSeq(strings :+ string)
       }
   }
-  
-  case class AppendArgument(vn: ValueNumber) extends StringAppend
+ 
+  case class AppendArgument(vn: ValueNumber) extends StringConcatenation
 }

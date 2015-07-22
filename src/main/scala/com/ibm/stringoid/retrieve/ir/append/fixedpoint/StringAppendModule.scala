@@ -11,18 +11,26 @@ import scala.collection.mutable
 
 trait StringAppendModule extends StringAppendDatastructure {
 
-  type BB = IExplodedBasicBlock
-  
-  // ITransferFunctionProvider's methods force the lattice elements to be mutable
-  type AsboToString = mutable.Map[ASBO, StringAppend]
-  
-  class StringAppendFixedPointSolver(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]) {
+  def stringAppendsAtEndOfMethod(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]): Set[StringConcatenation] = {
+    val solver = new StringAppendFixedPointSolver(ir, vnToAsbo)
+    val stringAppendResult = solver.result
+    stringAppendResult.getOut(solver.endOfMethod).values.toSet[StringConcatenation]
+  }
+
+  private class StringAppendFixedPointSolver(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]) {
+
+    type BB = IExplodedBasicBlock
+
+    // ITransferFunctionProvider's methods force the lattice elements to be mutable
+    type AsboToString = mutable.Map[ASBO, StringConcatenation]
 
     import com.ibm.wala.fixpoint.FixedPointConstants._
 
+    def endOfMethod = getGraph.exit
+
     def result: DataflowSolver[BB, AsboToString] = {
       val framework = new IKilldallFramework[BB, AsboToString] {
-        override def getFlowGraph = ExplodedControlFlowGraph.make(ir)
+        override def getFlowGraph = getGraph
         override def getTransferFunctionProvider = transferFunctions
       }
       val solver = getSolver(framework)
@@ -30,13 +38,16 @@ trait StringAppendModule extends StringAppendDatastructure {
       solver
     }
 
+    private[this] def getGraph = ExplodedControlFlowGraph.make(ir)
+
     private[this] def getSolver(framework: IKilldallFramework[BB, AsboToString]) =
       new DataflowSolver[BB, AsboToString](framework) {
 
         override def makeNodeVariable(n: BB, IN: Boolean): AsboToString =
-          mutable.Map.empty[ASBO, StringAppend]
+          mutable.Map.empty[ASBO, StringConcatenation]
 
-        override def makeEdgeVariable(src: BB, dst: BB): AsboToString = ???
+        override def makeEdgeVariable(src: BB, dst: BB): AsboToString =
+          throw new UnsupportedOperationException("No edge transfer functions for StringAppend fixed-point solver.")
 
         override def makeStmtRHS(size: ValueNumber): Array[AsboToString] =
           new Array[AsboToString](size)
@@ -58,7 +69,7 @@ trait StringAppendModule extends StringAppendDatastructure {
                   }
               }
 
-            val newMap = mutable.Map.empty[ASBO, StringAppend]
+            val newMap = mutable.Map.empty[ASBO, StringConcatenation]
             rhs foreach {
               addRhsToLhs(newMap, _)
             }
@@ -71,8 +82,6 @@ trait StringAppendModule extends StringAppendDatastructure {
           }
         }
 
-      override def hasEdgeTransferFunctions: Boolean = ???
-
       override def getNodeTransferFunction(node: BB): UnaryOperator[AsboToString] = {
         node.getInstruction match {
           case inv: SSAInvokeInstruction if isSbAppend(inv) || isSbConstructorWithStringParam(inv) =>
@@ -82,13 +91,14 @@ trait StringAppendModule extends StringAppendDatastructure {
               case None =>
                 throw new UnsupportedOperationException("Value-number-to-ASBO map should contain the value number for this StringBuilder")
             }
-          case phi: SSAPhiInstruction => ??? // todo will there evere be a phi instruction here?
+          case _                                                                                   =>
+            IdentityOperator
         }
       }
 
-        private[this] class AppendOperator(asbos: Set[ASBO], string: StringAppend) extends UnaryOperator[AsboToString] {
+        private[this] class AppendOperator(asbos: Set[ASBO], string: StringConcatenation) extends UnaryOperator[AsboToString] {
           override def evaluate(lhs: AsboToString, rhs: AsboToString): Byte = {
-            val newMap = mutable.Map.empty[ASBO, StringAppend] ++= rhs
+            val newMap = mutable.Map.empty[ASBO, StringConcatenation] ++= rhs
             asbos foreach {
               asbo =>
                 val newString = rhs get asbo match {
@@ -106,7 +116,7 @@ trait StringAppendModule extends StringAppendDatastructure {
           }
         }
 
-        private[this] class IdentityOperator extends UnaryOperator[AsboToString] {
+        private[this] object IdentityOperator extends UnaryOperator[AsboToString] {
 
           override def evaluate(lhs: AsboToString, rhs: AsboToString): Byte =
             if (lhs == rhs)
@@ -116,11 +126,13 @@ trait StringAppendModule extends StringAppendDatastructure {
               CHANGED
             }
         }
-      }
 
-      override def getEdgeTransferFunction(src: BB, dst: BB): UnaryOperator[AsboToString] = ???
+      override def getEdgeTransferFunction(src: BB, dst: BB): UnaryOperator[AsboToString] =
+        throw new UnsupportedOperationException("No edge transfer functions for StringAppend fixed-point solver.")
 
       override def hasNodeTransferFunctions: Boolean = true
+
+      override def hasEdgeTransferFunctions: Boolean = false
     }
   }
 }

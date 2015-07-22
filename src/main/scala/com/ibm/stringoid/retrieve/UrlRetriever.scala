@@ -26,7 +26,8 @@ trait UrlRetriever extends  {
       })(breakOut)
   }
 
-  protected val URL_REGEX = "https?://[^\" ]+"
+  protected val URL_PREFIX = "https?://[^\" ]*"
+  protected val URL_REGEX  = "https?://[^\" ]+"
 
   def apply(apkPath: Path): UrlsWithSources
 
