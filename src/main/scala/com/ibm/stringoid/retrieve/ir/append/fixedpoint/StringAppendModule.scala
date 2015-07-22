@@ -75,17 +75,16 @@ trait StringAppendModule extends StringAppendDatastructure {
 
       override def getNodeTransferFunction(node: BB): UnaryOperator[AsboToString] = {
         node.getInstruction match {
-          case inv: SSAInvokeInstruction if isSbConstructorWithStringParam(inv) => ???
-          case inv: SSAInvokeInstruction if isSbConstructor(inv) => ???
-          case inv: SSAInvokeInstruction if isSbAppend(inv) =>
+          case inv: SSAInvokeInstruction if isSbAppend(inv) || isSbConstructorWithStringParam(inv) =>
             vnToAsbo get inv.getDef match {
               case Some(asbos) =>
                 new AppendOperator(asbos, AppendArgument(inv getUse 0)) // todo what if the argument is in itself a StringBuilder? will we handle that case outside?
               case None =>
-
-              case phi: SSAPhiInstruction => ???
+                throw new UnsupportedOperationException("Value-number-to-ASBO map should contain the value number for this StringBuilder")
             }
+          case phi: SSAPhiInstruction => ??? // todo will there evere be a phi instruction here?
         }
+      }
 
         private[this] class AppendOperator(asbos: Set[ASBO], string: StringAppend) extends UnaryOperator[AsboToString] {
           override def evaluate(lhs: AsboToString, rhs: AsboToString): Byte = {
@@ -108,8 +107,14 @@ trait StringAppendModule extends StringAppendDatastructure {
         }
 
         private[this] class IdentityOperator extends UnaryOperator[AsboToString] {
+
           override def evaluate(lhs: AsboToString, rhs: AsboToString): Byte =
-            
+            if (lhs == rhs)
+              NOT_CHANGED
+            else {
+              lhs ++= rhs
+              CHANGED
+            }
         }
       }
 
