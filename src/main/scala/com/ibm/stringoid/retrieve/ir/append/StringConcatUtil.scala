@@ -36,7 +36,10 @@ object StringConcatUtil {
     if (isSbAppend(instr))
       Array[ValueNumber](instr getDef 0, instr getUse 0)
     else
-      Array[ValueNumber](instr getUse 0)
+      Array[ValueNumber](getSbConstructorDef(instr))
+
+  def getSbConstructorDef(inv: SSAInvokeInstruction): ValueNumber =
+    inv getUse 0
 
   def getFirstSecondAppendDef(instr: SSAInvokeInstruction): (ValueNumber, ValueNumber) = {
     assert(isSbAppend(instr))
@@ -50,5 +53,5 @@ object StringConcatUtil {
       Array.empty[ValueNumber]
 
   def getPhiUses(instr: SSAPhiInstruction): Seq[ValueNumber] =
-    1 to instr.getNumberOfUses map instr.getUse
+    1 until instr.getNumberOfUses map instr.getUse
 }
