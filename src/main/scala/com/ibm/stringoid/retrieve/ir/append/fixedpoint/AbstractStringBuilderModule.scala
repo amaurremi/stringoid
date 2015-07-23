@@ -34,24 +34,32 @@ trait AbstractStringBuilderModule {
 
   def asboSolver(ir: IR): AsboFixedPointSolver =
     new AsboFixedPointSolver(ir, createAbstractObjectNumbering(ir))
-  
-  def getResult(solver: AsboFixedPointSolver): BitVectorSolver[ValueNumber] = {
-    val result = solver.result
-    result.solve(null)
-    result
+
+  /**
+   * If the method deals with StringBuilders, returns Some result
+   */
+  def getResult(solver: AsboFixedPointSolver): Option[BitVectorSolver[ValueNumber]] = {
+    solver.result map {
+      result =>
+        result.solve(null)
+        result
+    }
   }
   
   /**
    * The resulting map we are interested in obtaining.
    */
-  def valueNumberToAsbo(solver: AsboFixedPointSolver): Map[ValueNumber, Set[ASBO]] = {
-    val result = getResult(solver)
-    (solver.valueNumberGraph map {
-      vn: ValueNumber =>
-        val intSet = result.getOut(vn).getValue
-        vn -> intSetToAsbo(intSet, solver.abstractObjectNumbering)
-    })(breakOut)
-  }
+  def valueNumberToAsbo(solver: AsboFixedPointSolver): Map[ValueNumber, Set[ASBO]] =
+    getResult(solver) match {
+      case Some(result) =>
+        (solver.valueNumberGraph map {
+          vn: ValueNumber =>
+            val intSet = result.getOut(vn).getValue
+            vn -> intSetToAsbo(intSet, solver.abstractObjectNumbering)
+        })(breakOut)
+      case None           =>
+        Map.empty[ValueNumber, Set[ASBO]]
+    }
 
   private[this] def intSetToAsbo(intSet: IntSet, numbering: AsboMapping): Set[ASBO] = {
     val walaIterator = intSet.intIterator
@@ -75,14 +83,21 @@ trait AbstractStringBuilderModule {
     val abstractObjectNumbering: AsboMapping
   ) {
 
-    def result: BitVectorSolver[ValueNumber] = {
-      val framework = new BitVectorFramework[ValueNumber, ASBO](
-        valueNumberGraph,
-        transferFunctions,
-        abstractObjectNumbering)
-      val solver = new BitVectorSolver[ValueNumber](framework)
-      solver.solve(null)
-      solver
+    /**
+     * If a method has deals with StringBuilders, returns Some solver, otherwise None
+     */
+    def result: Option[BitVectorSolver[ValueNumber]] = {
+      val graph = valueNumberGraph
+      if (graph.isEmpty) None
+      else {
+        val framework = new BitVectorFramework[ValueNumber, ASBO](
+          valueNumberGraph,
+          transferFunctions,
+          abstractObjectNumbering)
+        val solver = new BitVectorSolver[ValueNumber](framework)
+        solver.solve(null)
+        Some(solver)
+      }
     }
 
     /**
