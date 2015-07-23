@@ -46,10 +46,10 @@ object FixedPointAppendIrRetriever
     string match {
       case SingleAppendArgument(vn) =>
         matchesUrlPrefix(vn)
-      case SingleStringSeq(s :: _)                              =>
+      case SingleStringSeq(s :: _)  =>
         // todo trim empty strings?
         hasUrlPrefix(table, s)
-      case _                                                    =>
+      case _                        =>
         false
     }
   }
