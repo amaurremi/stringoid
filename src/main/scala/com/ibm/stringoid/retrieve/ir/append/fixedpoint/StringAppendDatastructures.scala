@@ -32,7 +32,7 @@ trait StringAppendDatastructures {
       string match {
         case AltStringSeq(strings) =>
           AltStringSeq(this +: strings)
-        case _                  =>
+        case _                     =>
           AltStringSeq(Seq(this, string))
       }
 
