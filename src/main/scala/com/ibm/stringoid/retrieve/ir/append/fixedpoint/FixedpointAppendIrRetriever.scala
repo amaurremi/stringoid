@@ -27,17 +27,19 @@ object FixedPointAppendIrRetriever
     UrlsWithSources(urlWithSourcesMap)
   }
 
-  private[this] def getUrlsForIr(ir: IR): Set[Url] = {
-    val valNumToAsbo = valueNumberToAsbo(asboSolver(ir))
-    val stringAppends: Set[AltStringConcatenation] = stringAppendsAtEndOfMethod(ir, valNumToAsbo)
-    val strings: Set[SingleStringConcatenation] = stringAppends flatMap { _.flatten }
-    // identifying URLs
-    val table = ir.getSymbolTable
-    strings collect {
-      case string if hasUrlPrefix(table, string) =>
-        UrlSeq(parseUrl(table, string))
+  private[this] def getUrlsForIr(ir: IR): Set[Url] =
+    asboSolver(ir) match {
+      case Some(solver) =>
+        val valNumToAsbo = valueNumberToAsbo(solver)
+        val stringAppends: Set[AltStringConcatenation] = stringAppendsAtEndOfMethod(ir, valNumToAsbo)
+        val strings: Set[SingleStringConcatenation] = stringAppends flatMap { _.flatten }
+        // identifying URLs
+        val table = ir.getSymbolTable
+        strings collect {
+          case string if hasUrlPrefix(table, string) =>
+            UrlSeq(parseUrl(table, string))
+        }
     }
-  }
 
   // todo make lazy (avoid flattening of unnecessary data structures)
   private[this] def hasUrlPrefix(table: SymbolTable, string: SingleStringConcatenation): Boolean = {
