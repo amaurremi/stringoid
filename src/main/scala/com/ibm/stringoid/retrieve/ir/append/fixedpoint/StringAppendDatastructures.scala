@@ -91,7 +91,7 @@ trait StringAppendDatastructures {
       string match {
         case SingleStringSeq(strings2) =>
           SingleStringSeq(strings ++ strings2)
-        case _                   =>
+        case _                         =>
           SingleStringSeq(strings :+ string)
       }
   }
