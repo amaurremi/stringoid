@@ -39,6 +39,8 @@ object FixedPointAppendIrRetriever
           case string if hasUrlPrefix(table, string) =>
             UrlSeq(parseUrl(table, string))
         }
+      case None         =>
+        Set.empty[Url]
     }
 
   // todo make lazy (avoid flattening of unnecessary data structures)
