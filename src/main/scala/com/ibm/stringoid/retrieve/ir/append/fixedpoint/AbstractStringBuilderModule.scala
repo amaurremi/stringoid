@@ -67,12 +67,9 @@ trait AbstractStringBuilderModule {
   }
 
   private[this] def createAbstractObjectNumbering(ir: IR): AsboMapping = {
-    val x = ir.iterateNormalInstructions().filter {
-      i => i.isInstanceOf[SSAInvokeInstruction]
-    }
     val abstractObjects = ir.iterateNormalInstructions collect {
       case inv: SSAInvokeInstruction if isSbConstructor(inv) =>
-        AbstractStringBuilderObject(inv getDef 0)
+        AbstractStringBuilderObject(inv getUse 0)
     }
     new ObjectArrayMapping[ASBO](abstractObjects.toArray[ASBO])
   }
