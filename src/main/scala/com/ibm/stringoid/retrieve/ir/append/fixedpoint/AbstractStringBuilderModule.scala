@@ -4,14 +4,14 @@ import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.ValueNumber
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{BitVectorVariable, UnaryOperator}
-import com.ibm.wala.ssa.{DefUse, IR, SSAInvokeInstruction, SSAPhiInstruction}
+import com.ibm.wala.ssa._
 import com.ibm.wala.util.collections.ObjectArrayMapping
 import com.ibm.wala.util.graph.Graph
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph
 import com.ibm.wala.util.intset.{BitVector, IntSet, OrdinalSetMapping}
 
 import scala.collection.JavaConversions._
-import scala.collection.{breakOut, mutable}
+import scala.collection.breakOut
 
 /**
  * Consider the program
@@ -151,10 +151,16 @@ trait AbstractStringBuilderModule {
 
       override def hasEdgeTransferFunctions: Boolean = false
 
+      /**
+       * We need to redefine isSbConstructor because in DefUse the instruction is stored in a different form
+       */
+      private[this] def isSbConstructorInDefUse(instr: SSAInstruction): Boolean =
+        instr.toString contains "= new <Application,Ljava/lang/StringBuilder>"
+
       override def getNodeTransferFunction(vn: ValueNumber): UnaryOperator[BitVectorVariable] = {
         val defUse = new DefUse(ir)
         defUse getDef vn match {
-          case instr: SSAInvokeInstruction if isSbConstructor(instr) =>
+          case instr if isSbConstructorInDefUse(instr) =>
             val gen = new BitVector(abstractObjectNumbering getMappedIndex AbstractStringBuilderObject(vn))
             new BitVectorKillGen(new BitVector(), gen)
           case _                                                     =>

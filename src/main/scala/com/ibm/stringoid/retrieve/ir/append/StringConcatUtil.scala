@@ -15,14 +15,14 @@ object StringConcatUtil {
    * todo StringBuffer
    */
   def isSbConstructorWithStringParam(instr: SSAInvokeInstruction): Boolean =
-    instr.toString() startsWith SB_CONSTRUCTOR_PREFIX + "L"
+    instr.toString() contains SB_CONSTRUCTOR_PREFIX + "L"
 
   /**
    * Does this instruction correspond to a new StringBuilder constructor invocation?
    * todo StringBuffer
    */
   def isSbConstructor(instr: SSAInvokeInstruction): Boolean =
-    instr.toString() startsWith SB_CONSTRUCTOR_PREFIX
+    instr.toString() contains SB_CONSTRUCTOR_PREFIX
 
   /**
    * Does this instruction correspond to a StringBuilder.append() that takes exactly one argument?
