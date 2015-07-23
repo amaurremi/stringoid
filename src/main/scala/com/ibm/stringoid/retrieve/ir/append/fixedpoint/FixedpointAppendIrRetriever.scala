@@ -33,7 +33,6 @@ object FixedPointAppendIrRetriever
         val valNumToAsbo = valueNumberToAsbo(solver)
         val stringAppends: Set[AltStringConcatenation] = stringAppendsAtEndOfMethod(ir, valNumToAsbo)
         val strings: Set[SingleStringConcatenation] = stringAppends flatMap { _.flatten }
-        // identifying URLs
         val table = ir.getSymbolTable
         strings collect {
           case string if hasUrlPrefix(table, string) =>
