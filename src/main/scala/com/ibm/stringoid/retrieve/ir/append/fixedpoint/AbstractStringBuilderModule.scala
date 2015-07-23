@@ -105,7 +105,6 @@ trait AbstractStringBuilderModule {
       // Since append is mutable (it changes 1's object) we cannot connect the nodes to the first node where 1 is defined.
       // So we need to remember the previous instruction that appended something to 1, which is the purpoe of this map.
       // todo test this case in unit tests
-      val vnToLastUsedNode = mutable.Map.empty[ValueNumber, ValueNumber]
       val graph = new SlowSparseNumberedGraph[ValueNumber](1)
       def addNode(n: ValueNumber) = if (!(graph containsNode n)) graph addNode n
       ir.iterateAllInstructions foreach {
