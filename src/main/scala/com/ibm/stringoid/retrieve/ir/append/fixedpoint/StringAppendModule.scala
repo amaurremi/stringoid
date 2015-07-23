@@ -24,10 +24,8 @@ trait StringAppendModule extends StringAppendDatastructures {
     type AsboMap = mutable.Map[ASBO, AltStringConcatenation]
 
     // ITransferFunctionProvider's methods force the lattice elements to be mutable
-    case class AsboToString(
-      asboToString: AsboMap
-    ) extends NodeWithNumber
-      with IVariable[AsboToString] {
+    sealed trait AsboToString extends NodeWithNumber with IVariable[AsboToString]  {
+      val asboToString: AsboMap
 
       private[this] var orderNumber = -1
 
@@ -40,6 +38,9 @@ trait StringAppendModule extends StringAppendDatastructures {
         asboToString ++= v.asboToString
       }
     }
+
+    case class AsboToStringIn(asboToString: AsboMap) extends AsboToString
+    case class AsboToStringOut(asboToString: AsboMap) extends AsboToString
 
     import com.ibm.wala.fixpoint.FixedPointConstants._
 
@@ -60,8 +61,11 @@ trait StringAppendModule extends StringAppendDatastructures {
     private[this] def getSolver(framework: IKilldallFramework[BB, AsboToString]) =
       new DataflowSolver[BB, AsboToString](framework) {
 
-        override def makeNodeVariable(n: BB, IN: Boolean): AsboToString =
-          AsboToString(mutable.Map.empty[ASBO, AltStringConcatenation])
+        override def makeNodeVariable(n: BB, in: Boolean): AsboToString =
+          if (in)
+            AsboToStringIn(mutable.Map.empty[ASBO, AltStringConcatenation])
+          else
+            AsboToStringOut(mutable.Map.empty[ASBO, AltStringConcatenation])
 
         override def makeEdgeVariable(src: BB, dst: BB): AsboToString =
           throw new UnsupportedOperationException("No edge transfer functions for StringAppend fixed-point solver.")
@@ -72,15 +76,9 @@ trait StringAppendModule extends StringAppendDatastructures {
     
     private[this] def transferFunctions = new ITransferFunctionProvider[BB, AsboToString] {
 
-      override def getMeetOperator: AbstractMeetOperator[AsboToString] = StringMeetOperator
+      override def getMeetOperator: AbstractMeetOperator[AsboToString] = StringMeetOperator()
 
-      case object StringMeetOperator extends AbstractMeetOperator[AsboToString] {
-
-        override def equals(obj: Any): Boolean =
-          obj match {
-            case StringMeetOperator => true
-            case _                  => false
-          }
+      case class StringMeetOperator() extends AbstractMeetOperator[AsboToString] {
 
         override def evaluate(lhs: AsboToString, rhs: Array[AsboToString]): Byte = {
           def addRhsToLhs(l: AsboMap, r: AsboMap): Unit =
@@ -118,7 +116,7 @@ trait StringAppendModule extends StringAppendDatastructures {
                 throw new UnsupportedOperationException("Value-number-to-ASBO map should contain the value number for this StringBuilder")
             }
           case _                                                                                   =>
-            IdentityOperator
+            IdentityOperator()
         }
       }
 
@@ -146,16 +144,10 @@ trait StringAppendModule extends StringAppendDatastructures {
           }
         }
 
-        private[this] case object IdentityOperator extends UnaryOperator[AsboToString] {
-
-          override def equals(obj: Any): Boolean =
-            obj match {
-              case IdentityOperator => true
-              case _                => false
-            }
+        private[this] case class IdentityOperator() extends UnaryOperator[AsboToString] {
 
           override def evaluate(lhs: AsboToString, rhs: AsboToString): Byte =
-            if (lhs == rhs)
+            if (lhs.asboToString == rhs.asboToString)
               NOT_CHANGED
             else {
               lhs.asboToString ++= rhs.asboToString

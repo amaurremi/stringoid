@@ -111,12 +111,12 @@ trait AbstractStringBuilderModule {
       ir.iterateAllInstructions foreach {
         case inv: SSAInvokeInstruction if isSbConstructor(inv) =>
           getDefs(inv) foreach addNode
-        case inv: SSAInvokeInstruction if isSbAppend(inv) =>
+        case inv: SSAInvokeInstruction if isSbAppend(inv)      =>
           val (firstDef, secondDef) = getFirstSecondAppendDef(inv) // in 1 = 2.append(3), 1 is firstDef and 2 is secondDef
           graph addNode firstDef
           graph addNode secondDef
           graph addEdge(secondDef, firstDef)
-        case phi: SSAPhiInstruction =>
+        case phi: SSAPhiInstruction                            =>
           val defNode = phi.getDef
           graph addNode defNode
           getPhiUses(phi) foreach {
@@ -124,6 +124,8 @@ trait AbstractStringBuilderModule {
               addNode(use)
               graph addEdge (use, defNode)
           }
+        case _                                                 =>
+          // do  nothing
       }
       graph
     }
