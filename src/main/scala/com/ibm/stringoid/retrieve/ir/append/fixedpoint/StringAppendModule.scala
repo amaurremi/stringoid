@@ -16,6 +16,9 @@ trait StringAppendModule extends StringAppendDatastructures {
   private[this] val MISSING_STRING_BUILDER_MESSAGE: String = "Value-number-to-ASBO map should contain the value number for this StringBuilder."
   private[this] val EDGE_FUNCTIONS_NOT_SUPPORTED_MESSAGE: String = "No edge transfer functions for StringAppend fixed-point solver."
 
+  /**
+   * Get the string concatenation result corresponding to the last instruction
+   */
   def stringAppendsAtEndOfMethod(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]): Set[AltStringConcatenation] = {
     val solver = new StringAppendFixedPointSolver(ir, vnToAsbo)
     val stringAppendResult = solver.result
