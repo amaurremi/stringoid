@@ -96,7 +96,7 @@ trait StringAppendModule extends StringAppendDatastructures {
         override def evaluate(lhs: AsboToString, rhs: Array[AsboToString]): Byte = {
           def addRhsToLhs(l: AsboMap, r: AsboMap): Unit =
             r foreach {
-              case (asbo, sb1) =>
+              case (asbo, sb1)   =>
                 l get asbo match {
                   case Some(sb2) =>
                     l += asbo -> (sb1 | sb2)
