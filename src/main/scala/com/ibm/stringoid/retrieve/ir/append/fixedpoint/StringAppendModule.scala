@@ -1,28 +1,33 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
+import java.util
+
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append._
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{IVariable, UnaryOperator}
 import com.ibm.wala.ssa._
 import com.ibm.wala.ssa.analysis.{ExplodedControlFlowGraph, IExplodedBasicBlock}
+import com.ibm.wala.util.Predicate
 import com.ibm.wala.util.graph.impl.NodeWithNumber
+import com.ibm.wala.util.graph.traverse.BFSPathFinder
 
-import scala.StringBuilder
+import scala.collection.JavaConversions._
 import scala.collection.mutable
 
 trait StringAppendModule extends StringAppendDatastructures {
 
-  private[this] val MISSING_STRING_BUILDER_MESSAGE: String = "Value-number-to-ASBO map should contain the value number for this StringBuilder."
-  private[this] val EDGE_FUNCTIONS_NOT_SUPPORTED_MESSAGE: String = "No edge transfer functions for StringAppend fixed-point solver."
+  private[this] val MISSING_STRING_BUILDER_MESSAGE: String =
+    "Value-number-to-ASBO map should contain the value number for this StringBuilder."
+  private[this] val EDGE_FUNCTIONS_NOT_SUPPORTED_MESSAGE: String =
+    "No edge transfer functions for StringAppend fixed-point solver."
 
   /**
-   * Get the string concatenation result corresponding to the last instruction
+   * Get the string concatenation result corresponding to the last instruction containing a ASBO-to-string map
    */
-  def stringAppendsAtEndOfMethod(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]): Set[AltStringConcatenation] = {
+  def stringAppendsAtEnd(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]): Set[AltStringConcatenation] = {
     val solver = new StringAppendFixedPointSolver(ir, vnToAsbo)
-    val stringAppendResult = solver.result
-    stringAppendResult.getOut(solver.endOfMethod).asboToString.values.toSet[AltStringConcatenation]
+    solver.lastBbResult.values.toSet
   }
 
   private class StringAppendFixedPointSolver(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]) {
@@ -51,8 +56,6 @@ trait StringAppendModule extends StringAppendDatastructures {
 
     import com.ibm.wala.fixpoint.FixedPointConstants._
 
-    def endOfMethod = getGraph.exit
-
     def result: DataflowSolver[BB, AsboToString] = {
       val framework = new IKilldallFramework[BB, AsboToString] {
         override def getFlowGraph = getGraph
@@ -61,6 +64,23 @@ trait StringAppendModule extends StringAppendDatastructures {
       val solver = getSolver(framework)
       solver.solve(null)
       solver
+    }
+
+    // todo this is inefficient, should be done at some other point without iterating through all instructions
+    // todo this is probably also wrong since it can miss a map in an alternative control-flow branch
+    def lastBbResult: Map[ASBO, AltStringConcatenation] = {
+      val nonEmptyAsboPredicate = new Predicate[BB] {
+        override def test(b: BB): Boolean = result.getOut(b).asboToString.nonEmpty
+      }
+      val bfs = new BFSPathFinder[BB](getGraph, getGraph.exit, nonEmptyAsboPredicate) {
+        override def getConnected(b: BB): util.Iterator[BB] = getGraph.getPredNodes(b)
+      }
+      Option(bfs.find) match {
+        case Some(lastBb) =>
+          result.getOut(lastBb.head).asboToString.toMap[ASBO, AltStringConcatenation]
+        case None         =>
+          Map.empty[ASBO, AltStringConcatenation]
+      }
     }
 
     private[this] def getGraph = ExplodedControlFlowGraph.make(ir)
