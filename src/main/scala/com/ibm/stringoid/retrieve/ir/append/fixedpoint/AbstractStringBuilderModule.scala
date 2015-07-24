@@ -51,11 +51,11 @@ trait AbstractStringBuilderModule {
    * The resulting map we are interested in obtaining.
    */
   def valueNumberToAsbo(solver: AsboFixedPointSolver): Map[ValueNumber, Set[ASBO]] =
-    (solver.valueNumberGraph map {
-      vn: ValueNumber =>
-        val intSet = getResult(solver).getOut(vn).getValue
-        vn -> intSetToAsbo(intSet, solver.abstractObjectNumbering)
-    })(breakOut)
+    (for {
+      vn     <- solver.valueNumberGraph
+      intSet <- Option(getResult(solver).getOut(vn).getValue)
+      i2a     = intSetToAsbo(intSet, solver.abstractObjectNumbering)
+    } yield vn -> i2a)(breakOut)
 
   private[this] def intSetToAsbo(intSet: IntSet, numbering: AsboMapping): Set[ASBO] = {
     val walaIterator = intSet.intIterator
@@ -146,15 +146,17 @@ trait AbstractStringBuilderModule {
 
       /**
        * We need to redefine isSbConstructor because in DefUse the instruction is stored in a different form
+       * and it is not an instance of [[SSAInvokeInstruction]]
        */
       private[this] def isSbConstructorInDefUse(instr: SSAInstruction): Boolean =
-        instr.toString contains "= new <Application,Ljava/lang/StringBuilder>"
+        Option(instr).isDefined && (instr.toString contains "= new <Application,Ljava/lang/StringBuilder>")
 
       override def getNodeTransferFunction(vn: ValueNumber): UnaryOperator[BitVectorVariable] = {
         val defUse = new DefUse(ir)
         defUse getDef vn match {
           case instr if isSbConstructorInDefUse(instr) =>
-            val gen = new BitVector(abstractObjectNumbering getMappedIndex AbstractStringBuilderObject(vn))
+            val gen = new BitVector()
+            gen.set(abstractObjectNumbering getMappedIndex AbstractStringBuilderObject(vn))
             new BitVectorKillGen(new BitVector(), gen)
           case _                                                     =>
             BitVectorIdentity.instance()
