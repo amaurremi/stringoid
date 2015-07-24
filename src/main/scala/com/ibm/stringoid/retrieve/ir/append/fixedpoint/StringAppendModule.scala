@@ -8,9 +8,13 @@ import com.ibm.wala.ssa._
 import com.ibm.wala.ssa.analysis.{ExplodedControlFlowGraph, IExplodedBasicBlock}
 import com.ibm.wala.util.graph.impl.NodeWithNumber
 
+import scala.StringBuilder
 import scala.collection.mutable
 
 trait StringAppendModule extends StringAppendDatastructures {
+
+  private[this] val MISSING_STRING_BUILDER_MESSAGE: String = "Value-number-to-ASBO map should contain the value number for this StringBuilder."
+  private[this] val EDGE_FUNCTIONS_NOT_SUPPORTED_MESSAGE: String = "No edge transfer functions for StringAppend fixed-point solver."
 
   def stringAppendsAtEndOfMethod(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]): Set[AltStringConcatenation] = {
     val solver = new StringAppendFixedPointSolver(ir, vnToAsbo)
@@ -68,7 +72,7 @@ trait StringAppendModule extends StringAppendDatastructures {
             AsboToStringOut(mutable.Map.empty[ASBO, AltStringConcatenation])
 
         override def makeEdgeVariable(src: BB, dst: BB): AsboToString =
-          throw new UnsupportedOperationException("No edge transfer functions for StringAppend fixed-point solver.")
+          throw new UnsupportedOperationException(EDGE_FUNCTIONS_NOT_SUPPORTED_MESSAGE)
 
         override def makeStmtRHS(size: ValueNumber): Array[AsboToString] =
           new Array[AsboToString](size)
@@ -106,19 +110,25 @@ trait StringAppendModule extends StringAppendDatastructures {
         }
       }
 
-      override def getNodeTransferFunction(node: BB): UnaryOperator[AsboToString] = {
+      override def getNodeTransferFunction(node: BB): UnaryOperator[AsboToString] =
         node.getInstruction match {
-          case inv: SSAInvokeInstruction if isSbAppend(inv) || isSbConstructorWithStringParam(inv) =>
-            vnToAsbo get inv.getDef match {
+          case instr: SSAInvokeInstruction if isSbAppend(instr) =>
+            vnToAsbo get getFirstSbAppendDef(instr) match {
               case Some(asbos) =>
-                new AppendOperator(asbos, AltAppendArgument(inv getUse 0)) // todo what if the argument is in itself a StringBuilder? will we handle that case outside?
+                new AppendOperator(asbos, AltAppendArgument(getAppendArgument(instr))) // todo what if the argument is in itself a StringBuilder? will we handle that case outside?
               case None =>
-                throw new UnsupportedOperationException("Value-number-to-ASBO map should contain the value number for this StringBuilder")
+                throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
+            }
+          case inv: SSAInvokeInstruction if isSbConstructorWithStringParam(inv) =>
+            vnToAsbo get getSbConstructorDef(inv) match {
+              case Some(asbos) =>
+                new AppendOperator(asbos, AltAppendArgument(getSbConstructorArgument(inv)))
+              case None =>
+                throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
             }
           case _                                                                                   =>
             IdentityOperator()
         }
-      }
 
         private[this] case class AppendOperator(asbos: Set[ASBO], string: AltStringConcatenation) extends UnaryOperator[AsboToString] {
 
@@ -156,7 +166,7 @@ trait StringAppendModule extends StringAppendDatastructures {
         }
 
       override def getEdgeTransferFunction(src: BB, dst: BB): UnaryOperator[AsboToString] =
-        throw new UnsupportedOperationException("No edge transfer functions for StringAppend fixed-point solver.")
+        throw new UnsupportedOperationException(EDGE_FUNCTIONS_NOT_SUPPORTED_MESSAGE)
 
       override def hasNodeTransferFunctions: Boolean = true
 
