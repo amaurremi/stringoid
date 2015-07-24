@@ -30,10 +30,10 @@ object FixedPointAppendIrRetriever
   private[this] def getUrlsForIr(ir: IR): Set[Url] =
     asboSolver(ir) match {
       case Some(solver) =>
-        val valNumToAsbo = valueNumberToAsbo(solver)
-        val stringAppends: Set[AltStringConcatenation] = stringAppendsAtEndOfMethod(ir, valNumToAsbo)
-        val strings: Set[SingleStringConcatenation] = stringAppends flatMap { _.flatten }
-        val table = ir.getSymbolTable
+        val valNumToAsbo  = valueNumberToAsbo(solver)
+        val stringAppends = stringAppendsAtEnd(ir, valNumToAsbo)
+        val strings       = stringAppends flatMap { _.flatten }
+        val table         = ir.getSymbolTable
         strings collect {
           case string if hasUrlPrefix(table, string) =>
             UrlSeq(parseUrl(table, string))
