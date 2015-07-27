@@ -45,7 +45,7 @@ object FixedPointAppendIrRetriever
   // todo make lazy (avoid flattening of unnecessary data structures)
   private[this] def hasUrlPrefix(table: SymbolTable, string: SingleStringConcatenation): Boolean = {
     def matchesUrlPrefix(vn: ValueNumber) =
-      (table isConstant vn) && (table getStringValue vn matches URL_PREFIX)
+      (table isStringConstant vn) && (table getStringValue vn matches URL_PREFIX)
     string match {
       case SingleAppendArgument(vn) =>
         matchesUrlPrefix(vn)

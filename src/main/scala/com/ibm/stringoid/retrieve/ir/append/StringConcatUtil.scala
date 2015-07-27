@@ -62,5 +62,7 @@ object StringConcatUtil {
       Array.empty[ValueNumber]
 
   def getPhiUses(instr: SSAPhiInstruction): Seq[ValueNumber] =
-    0 until instr.getNumberOfUses map instr.getUse
+    0 until instr.getNumberOfUses collect {
+      case n: Int if (instr getUse n) >= 0 => instr getUse n
+    } // todo this is to filter out -1 instructions. is this good? should it be > 0?
 }

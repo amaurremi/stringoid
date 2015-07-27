@@ -60,6 +60,7 @@ trait StringAppendModule extends StringAppendDatastructures {
 
     def result: DataflowSolver[BB, AsboToString] = {
       val framework = new IKilldallFramework[BB, AsboToString] {
+
         override def getFlowGraph = getGraph
 
         override def getTransferFunctionProvider = transferFunctions
