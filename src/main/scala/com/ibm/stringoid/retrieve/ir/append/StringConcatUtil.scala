@@ -50,10 +50,10 @@ object StringConcatUtil {
   }
 
   def getAppendArgument(instr: SSAInvokeInstruction): ValueNumber =
-    instr getUse 0
+    instr getUse 1
 
   def getSbConstructorArgument(instr: SSAInvokeInstruction): ValueNumber =
-    instr getUse 0
+    instr getUse 1
 
   def getUses(instr: SSAInvokeInstruction): Array[ValueNumber] =
     if (isSbConstructorWithStringParam(instr) || isSbAppend(instr))
@@ -62,5 +62,5 @@ object StringConcatUtil {
       Array.empty[ValueNumber]
 
   def getPhiUses(instr: SSAPhiInstruction): Seq[ValueNumber] =
-    1 until instr.getNumberOfUses map instr.getUse
+    0 until instr.getNumberOfUses map instr.getUse
 }

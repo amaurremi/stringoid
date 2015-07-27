@@ -121,7 +121,7 @@ trait StringAppendModule extends StringAppendDatastructures {
 
       override def getNodeTransferFunction(node: BB): UnaryOperator[AsboToString] =
         node.getInstruction match {
-          case instr: SSAInvokeInstruction if isSbAppend(instr) =>
+          case instr: SSAInvokeInstruction if isSbAppend(instr)                =>
             vnToAsbo get getFirstSbAppendDef(instr) match {
               case Some(asbos) =>
                 new AppendOperator(asbos, AltAppendArgument(getAppendArgument(instr))) // todo what if the argument is in itself a StringBuilder? will we handle that case outside?
@@ -135,7 +135,7 @@ trait StringAppendModule extends StringAppendDatastructures {
               case None =>
                 throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
             }
-          case _                                                                                   =>
+          case _                                                                =>
             IdentityOperator()
         }
 
