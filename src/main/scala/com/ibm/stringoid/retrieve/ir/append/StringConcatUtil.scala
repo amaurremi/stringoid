@@ -44,7 +44,7 @@ object StringConcatUtil {
   def getFirstSbAppendDef(instr: SSAInvokeInstruction): ValueNumber =
     instr getDef 0
 
-  def getFirstSecondAppendDef(instr: SSAInvokeInstruction): (ValueNumber, ValueNumber) = {
+  def getSbAppendDefs(instr: SSAInvokeInstruction): (ValueNumber, ValueNumber) = {
     assert(isSbAppend(instr))
     (instr getDef 0, instr getUse 0)
   }
@@ -54,12 +54,6 @@ object StringConcatUtil {
 
   def getSbConstructorArgument(instr: SSAInvokeInstruction): ValueNumber =
     instr getUse 1
-
-  def getUses(instr: SSAInvokeInstruction): Array[ValueNumber] =
-    if (isSbConstructorWithStringParam(instr) || isSbAppend(instr))
-      Array[ValueNumber](instr getUse 0, instr getUse 1)
-    else
-      Array.empty[ValueNumber]
 
   def getPhiUses(instr: SSAPhiInstruction): Seq[ValueNumber] =
     0 until instr.getNumberOfUses collect {

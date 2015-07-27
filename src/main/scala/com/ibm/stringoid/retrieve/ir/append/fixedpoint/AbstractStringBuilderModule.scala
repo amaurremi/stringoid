@@ -119,7 +119,7 @@ trait AbstractStringBuilderModule {
         case inv: SSAInvokeInstruction if isSbConstructor(inv) =>
           getDefs(inv) foreach addNode
         case inv: SSAInvokeInstruction if isSbAppend(inv)      =>
-          val (firstDef, secondDef) = getFirstSecondAppendDef(inv) // in 1 = 2.append(3), 1 is firstDef and 2 is secondDef
+          val (firstDef, secondDef) = getSbAppendDefs(inv) // in 1 = 2.append(3), 1 is firstDef and 2 is secondDef
           graph addNode firstDef
           graph addNode secondDef
           graph addEdge(secondDef, firstDef)

@@ -52,16 +52,22 @@ abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSACo
   def getOldVals(newVal: StringSsaValueNumber): Set[ValueNumber] =
     phiDefToOldVals getOrElse (newVal, Set(newValToOldVal(newVal))) // todo correct? replace newValToOldVal with valueMap?
 
+  private[this] def getAppendUses(instr: SSAInvokeInstruction): Array[ValueNumber] =
+    if (isSbConstructorWithStringParam(instr) || isSbAppend(instr))
+      Array[ValueNumber](instr getUse 0, instr getUse 1)
+    else
+      Array.empty[ValueNumber]
+
   private[this] def initialDefUses(ir: IR): mutable.Map[SSAInvokeInstruction, DefUses] = {
     val tuples: Iterator[(SSAInvokeInstruction, DefUses)] = ir.iterateAllInstructions collect {
       case instr: SSAInvokeInstruction if isSbConstructor(instr) =>
         val uses = if (isSbConstructorWithStringParam(instr))
-                     getUses(instr) map SSVN.apply
+                     getAppendUses(instr) map SSVN.apply
                    else
                      Array.empty[StringSsaValueNumber]
         instr -> DefUses(getDefs(instr) map SSVN.apply, uses)
       case instr: SSAInvokeInstruction if isSbAppend(instr) =>
-        instr -> DefUses(getDefs(instr) map SSVN.apply, getUses(instr) map SSVN.apply)
+        instr -> DefUses(getDefs(instr) map SSVN.apply, getAppendUses(instr) map SSVN.apply)
     }
     mutable.Map(tuples.toSeq: _*)
   }
@@ -84,7 +90,7 @@ abstract class StringConcatSsaConversion protected(ir: IR) extends AbstractSSACo
             newValToOldVal += n -> o
         }
         updateVals(getDefs(i), newDefVns)
-        updateVals(getUses(i), newUseVns)
+        updateVals(getAppendUses(i), newUseVns)
         normalInstrToDefUses += (i -> DefUses(newDefVns, newUseVns))
       case _                       =>
         throw new UnsupportedOperationException(INVOKE_INSTR_MSG)
