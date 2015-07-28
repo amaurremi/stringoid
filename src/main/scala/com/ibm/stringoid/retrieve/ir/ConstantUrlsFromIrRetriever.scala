@@ -15,7 +15,7 @@ trait ConstantUrlsFromIrRetriever extends IrUrlRetriever {
   ): UrlsWithSources = {
     val urlMethodPairs: Seq[(Url, Method)] = getIrs(apkPath) flatMap {
       ir =>
-        getUrlMethodPairsFromIr(ir) map {
+        getConstantUrlStrings(ir) map {
           url =>
             val method = ir.getMethod
             url -> (method.getDeclaringClass.getName + "." + method.getName.toString)

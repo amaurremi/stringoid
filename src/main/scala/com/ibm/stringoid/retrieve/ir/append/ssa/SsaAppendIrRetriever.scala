@@ -17,7 +17,7 @@ object SsaAppendIrRetriever extends IrFromBuilderRetriever with AppendUrl {
     val allUrlsWithSources: Seq[(Url, Set[Method])] =
       for {
         ir           <- getIrs(apkPath)
-        constantUrls  = getUrlMethodPairsFromIr(ir) map {
+        constantUrls  = getConstantUrlStrings(ir) map {
           u =>
             UrlSeq(Seq(UrlString(u)))
         }

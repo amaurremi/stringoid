@@ -57,7 +57,7 @@ object Main {
           else path
         })
 
-    private[this] val analysisTypes: String = AnalysisType.values mkString ", "
+    private[this] val analysisTypes = AnalysisType.values mkString ", "
 
     head("stringoid")
     opt[AnalysisType]("a1") required() valueName "<analysis1>" action {

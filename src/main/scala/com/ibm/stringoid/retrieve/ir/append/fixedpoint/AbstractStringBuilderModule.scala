@@ -34,8 +34,10 @@ trait AbstractStringBuilderModule {
 
   def asboSolver(ir: IR): Option[AsboFixedPointSolver] = {
     val numbering = createAbstractObjectNumbering(ir)
-    if (numbering.isEmpty)None
-    else Some(new AsboFixedPointSolver(ir, numbering))
+    if (numbering.isEmpty)
+      None
+    else
+      Some(new AsboFixedPointSolver(ir, numbering))
   }
 
   /**
@@ -48,7 +50,7 @@ trait AbstractStringBuilderModule {
   }
   
   /**
-   * The resulting map we are interested in obtaining.
+   * The resulting map from value numbers to abstract StringBuilder objects
    */
   def valueNumberToAsbo(solver: AsboFixedPointSolver): Map[ValueNumber, Set[ASBO]] =
     (for {
@@ -156,7 +158,9 @@ trait AbstractStringBuilderModule {
         defUse getDef vn match {
           case instr if isSbConstructorInDefUse(instr) =>
             val gen = new BitVector()
-            gen.set(abstractObjectNumbering getMappedIndex AbstractStringBuilderObject(vn))
+            val mappedIndex = abstractObjectNumbering getMappedIndex AbstractStringBuilderObject(vn)
+            assert(mappedIndex >= 0)
+            gen.set(mappedIndex)
             new BitVectorKillGen(new BitVector(), gen)
           case _                                                     =>
             BitVectorIdentity.instance()
