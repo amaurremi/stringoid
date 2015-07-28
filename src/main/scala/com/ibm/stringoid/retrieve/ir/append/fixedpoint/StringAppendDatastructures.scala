@@ -80,6 +80,15 @@ trait StringAppendDatastructures {
     override def flatten: Set[SingleStringConcatenation] = Set(SingleAppendArgument(vn))
   }
 
+  case object AltCycle extends AltStringConcatenation {
+
+    override def |(string: AltStringConcatenation): AltStringConcatenation = AltCycle
+
+    override def ++(string: AltStringConcatenation): AltStringConcatenation = AltCycle
+
+    override def flatten: Set[SingleStringConcatenation] = Set(SingleCycle)
+  }
+
   /**
    * A data structure for the representation of a single string (without alternatives).
    */
@@ -105,5 +114,10 @@ trait StringAppendDatastructures {
         case _                        =>
           SingleStringSeq(Seq(this, string))
       }
+  }
+
+  case object SingleCycle extends SingleStringConcatenation {
+
+    override def ++(string: SingleStringConcatenation): SingleStringConcatenation = SingleCycle
   }
 }

@@ -7,6 +7,7 @@ import com.ibm.wala.fixpoint.{IVariable, UnaryOperator}
 import com.ibm.wala.ssa._
 import com.ibm.wala.ssa.analysis.{ExplodedControlFlowGraph, IExplodedBasicBlock}
 import com.ibm.wala.util.graph.impl.NodeWithNumber
+import com.ibm.wala.util.graph.traverse.SCCIterator
 
 import scala.collection.JavaConversions._
 import scala.collection.{breakOut, mutable}
@@ -38,7 +39,7 @@ trait StringAppendModule extends StringAppendDatastructures {
     def graph = getGraph
 
     // ITransferFunctionProvider's methods force the lattice elements to be mutable
-    sealed trait AsboToString extends NodeWithNumber with IVariable[AsboToString]  {
+    sealed abstract class AsboToString(val bb: BB) extends NodeWithNumber with IVariable[AsboToString]  {
       val asboToString: AsboMap
 
       private[this] var orderNumber = -1
@@ -53,8 +54,8 @@ trait StringAppendModule extends StringAppendDatastructures {
       }
     }
 
-    case class AsboToStringIn(asboToString: AsboMap) extends AsboToString
-    case class AsboToStringOut(asboToString: AsboMap) extends AsboToString
+    case class AsboToStringIn(asboToString: AsboMap, override val bb: BB) extends AsboToString(bb)
+    case class AsboToStringOut(asboToString: AsboMap, override val bb: BB) extends AsboToString(bb)
 
     import com.ibm.wala.fixpoint.FixedPointConstants._
 
@@ -65,21 +66,24 @@ trait StringAppendModule extends StringAppendDatastructures {
 
         override def getTransferFunctionProvider = transferFunctions
       }
+
       val solver = getSolver(framework)
       solver.solve(null)
       solver
     }
 
-    private[this] def getGraph = ExplodedControlFlowGraph.make(ir)
+    private[this] lazy val getGraph = ExplodedControlFlowGraph.make(ir)
+
+    private[this] lazy val stronglyConnectedComponents = new SCCIterator(getGraph).toSet
 
     private[this] def getSolver(framework: IKilldallFramework[BB, AsboToString]) =
       new DataflowSolver[BB, AsboToString](framework) {
 
-        override def makeNodeVariable(n: BB, in: Boolean): AsboToString =
+        override def makeNodeVariable(bb: BB, in: Boolean): AsboToString =
           if (in)
-            AsboToStringIn(mutable.Map.empty[ASBO, AltStringConcatenation])
+            AsboToStringIn(mutable.Map.empty[ASBO, AltStringConcatenation], bb)
           else
-            AsboToStringOut(mutable.Map.empty[ASBO, AltStringConcatenation])
+            AsboToStringOut(mutable.Map.empty[ASBO, AltStringConcatenation], bb)
 
         override def makeEdgeVariable(src: BB, dst: BB): AsboToString =
           throw new UnsupportedOperationException(EDGE_FUNCTIONS_NOT_SUPPORTED_MESSAGE)
@@ -95,21 +99,34 @@ trait StringAppendModule extends StringAppendDatastructures {
       case class StringMeetOperator() extends AbstractMeetOperator[AsboToString] {
 
         override def evaluate(lhs: AsboToString, rhs: Array[AsboToString]): Byte = {
-          def addRhsToLhs(l: AsboMap, r: AsboMap): Unit =
-            r foreach {
-              case (asbo, sb1)   =>
-                l get asbo match {
-                  case Some(sb2) =>
-                    l += asbo -> (sb1 | sb2)
-                  case None =>
-                    l += asbo -> sb1
+          val sccForLhs = stronglyConnectedComponents find {
+            scc =>
+              scc.size > 1 && (scc contains lhs.bb)
+          }
+
+          def addRhsToLhs(l: AsboMap, r: AsboToString): Unit =
+            sccForLhs match  {
+              case Some(scc) if scc contains r.bb =>
+                r.asboToString foreach {
+                  case (asbo, _) =>
+                    l += asbo -> AltCycle
+                }
+              case _                              =>
+                r.asboToString foreach {
+                  case (asbo, sb1) =>
+                    l get asbo match {
+                      case Some(sb2) =>
+                        l += asbo -> (sb1 | sb2)
+                      case None =>
+                        l += asbo -> sb1
+                    }
                 }
             }
 
           val newMap = mutable.Map.empty[ASBO, AltStringConcatenation]
           rhs foreach {
             rmap =>
-              addRhsToLhs(newMap, rmap.asboToString)
+              addRhsToLhs(newMap, rmap)
           }
           if (newMap == lhs.asboToString)
             NOT_CHANGED
@@ -173,6 +190,8 @@ trait StringAppendModule extends StringAppendDatastructures {
               lhs.asboToString ++= rhs.asboToString
               CHANGED
             }
+
+          override def isIdentity: Boolean = true
         }
 
       override def getEdgeTransferFunction(src: BB, dst: BB): UnaryOperator[AsboToString] =
