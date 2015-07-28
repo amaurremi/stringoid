@@ -60,7 +60,7 @@ object FixedPointAppendIrRetriever
   private[this] def parseUrl(table: SymbolTable, string: SingleStringConcatenation): Seq[UrlPart] = {
     string match {
       case SingleStringSeq(strings) =>
-        // todo add accumulator to method and do tail recursion
+        // todo tail recursion
         strings.foldLeft(Seq.empty[UrlPart]) {
           case (prefix, s) =>
             prefix ++ parseUrl(table, s)
@@ -72,6 +72,8 @@ object FixedPointAppendIrRetriever
         else
           Seq(UrlPlaceHolder)
       // todo there is also the case where the append argument is a StringBuilder! This is not handled currently!
+      case SingleCycle              =>
+        Seq(UrlWithCycle)
     }
   }
 }
