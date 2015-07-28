@@ -3,6 +3,7 @@ package com.ibm.stringoid
 import java.nio.file.{Files, InvalidPathException, Path, Paths}
 
 import com.ibm.stringoid.AnalysisType._
+import com.ibm.stringoid.util.Time
 import scopt.{OptionParser, Read}
 
 import scala.collection.JavaConversions._
@@ -11,7 +12,7 @@ object Main {
 
   // Program arguments
   // all apks:
-  // --a1 cha --a2 grep src/test/resources/playdrone_apks/com.facebook.katana-4947895.apk src/test/resources/playdrone_apks/com.google.android.apps.maps-804010103.apk src/test/resources/playdrone_apks/com.google.android.apps.plus-413339268.apk src/test/resources/playdrone_apks/com.google.android.gm-4900120.apk src/test/resources/playdrone_apks/com.google.android.gms-6183036.apk src/test/resources/playdrone_apks/com.google.android.googlequicksearchbox-300306150.apk src/test/resources/playdrone_apks/com.google.android.street-18102.apk src/test/resources/playdrone_apks/com.google.android.tts-210302120.apk src/test/resources/playdrone_apks/com.google.android.videos-33331.apk src/test/resources/playdrone_apks/com.google.android.youtube-51405300.apk
+  // --a1 append --a2 grep src/test/resources/playdrone_apks/com.facebook.katana-4947895.apk src/test/resources/playdrone_apks/com.google.android.apps.maps-804010103.apk src/test/resources/playdrone_apks/com.google.android.apps.plus-413339268.apk src/test/resources/playdrone_apks/com.google.android.gm-4900120.apk src/test/resources/playdrone_apks/com.google.android.gms-6183036.apk src/test/resources/playdrone_apks/com.google.android.googlequicksearchbox-300306150.apk src/test/resources/playdrone_apks/com.google.android.street-18102.apk src/test/resources/playdrone_apks/com.google.android.tts-210302120.apk src/test/resources/playdrone_apks/com.google.android.videos-33331.apk src/test/resources/playdrone_apks/com.google.android.youtube-51405300.apk
   // those where grep > cg
   // --a1 cha --a2 grep src/test/resources/playdrone_apks/com.google.android.apps.maps-804010103.apk rc/test/resources/playdrone_apks/com.google.android.gms-6183036.apk src/test/resources/playdrone_apks/com.google.android.googlequicksearchbox-300306150.apk src/test/resources/playdrone_apks/com.google.android.tts-210302120.apk src/test/resources/playdrone_apks/com.google.android.youtube-51405300.apk
 
@@ -23,7 +24,9 @@ object Main {
   def runPlaydroneApks(a1: AnalysisType, a2: AnalysisType, apkFiles: Seq[Path], outDir: Path) = {
     apkFiles foreach {
       file =>
-        write(PrintableResult(a1, a2, file), file, outDir)
+        Time.time("processing " + file.toString) {
+          write(PrintableResult(a1, a2, file), file, outDir)
+        }
     }
   }
 
