@@ -12,6 +12,8 @@ trait AppendUrl {
     override def toString = string
   }
   case class UrlPhi(urls: Set[UrlSeq]) extends UrlPart
-  case object UrlPlaceHolder extends UrlPart
+  case object UrlPlaceHolder extends UrlPart {
+    override def toString = "�"
+  }
   case object UrlWithCycle extends UrlPart
 }
