@@ -63,18 +63,25 @@ trait StringAppendDatastructures {
           AltStringSeq(strings :+ string)
       }
 
+    // simplify this method
     override def flatten: Set[SingleStringConcatenation] =
       strings match {
-        case head :: tail =>
-          for {
-            flatHead <- head.flatten
-            flatTail <- AltStringSeq(tail).flatten
-          } yield flatHead ++ flatTail
         case Seq() =>
           Set.empty[SingleStringConcatenation]
+        case head :: tail =>
+          val flatHeadSets = head.flatten
+          val flatTailSets = AltStringSeq(tail).flatten
+          if (flatTailSets.isEmpty)
+            flatHeadSets
+          else
+            flatHeadSets.foldLeft(Set.empty[SingleStringConcatenation]) {
+              case (prevSet, string) =>
+                val newStrings = flatTailSets map { string ++ _ }
+                prevSet ++ newStrings
+            }
       }
   }
- 
+
   case class AltAppendArgument(vn: ValueNumber) extends AltStringConcatenation {
 
     override def flatten: Set[SingleStringConcatenation] = Set(SingleAppendArgument(vn))
