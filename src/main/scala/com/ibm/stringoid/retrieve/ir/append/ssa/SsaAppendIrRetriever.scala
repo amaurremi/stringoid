@@ -1,15 +1,15 @@
 package com.ibm.stringoid.retrieve.ir.append.ssa
 
 import java.nio.file.Path
-
-import com.ibm.stringoid.retrieve.ir.IrFromCgRetriever
+import com.ibm.stringoid.retrieve.ir.IrUrlRetriever
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append._
+import com.ibm.stringoid.util.AnalysisConfig
 import com.ibm.wala.ssa.{IR, SSAInvokeInstruction, SSAPhiInstruction}
 
 import scala.collection.breakOut
 
-object SsaAppendIrRetriever extends IrFromCgRetriever with AppendUrl {
+final class SsaAppendIrRetriever(override val config: AnalysisConfig) extends IrUrlRetriever with AppendUrl {
 
   override type Url = UrlSeq
 

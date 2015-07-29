@@ -4,9 +4,10 @@ import java.nio.file.Path
 
 import com.ibm.stringoid.retrieve.ir.IrUrlRetriever
 import com.ibm.stringoid.retrieve.ir.append.{AppendUrl, ValueNumber}
+import com.ibm.stringoid.util.AnalysisConfig
 import com.ibm.wala.ssa.{IR, SymbolTable}
 
-trait FixedPointAppendIrRetriever
+final class FixedPointAppendIrRetriever(override val config: AnalysisConfig)
   extends IrUrlRetriever
   with AppendUrl
   with AbstractStringBuilderModule

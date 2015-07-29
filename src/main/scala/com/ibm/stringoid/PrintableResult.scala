@@ -4,6 +4,7 @@ import java.nio.file.Path
 
 import com.ibm.stringoid.AnalysisType._
 import com.ibm.stringoid.retrieve.StringMap
+import com.ibm.stringoid.util.AnalysisConfig
 
 object PrintableResult {
 
@@ -13,11 +14,12 @@ object PrintableResult {
   def apply(
     a1: AnalysisType,
     a2: AnalysisType,
-    apkPath: Path
+    apkPath: Path,
+    config: AnalysisConfig
   ): PrintableResult = {
 
-    val urls1 = retriever(a1)(apkPath).printable
-    val urls2 = retriever(a2)(apkPath).printable
+    val urls1 = retriever(a1, config)(apkPath).printable
+    val urls2 = retriever(a2, config)(apkPath).printable
     new PrintableResult(urls1, a1, urls2, a2)
   }
 }

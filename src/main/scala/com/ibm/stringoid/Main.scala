@@ -3,7 +3,7 @@ package com.ibm.stringoid
 import java.nio.file.{Files, InvalidPathException, Path, Paths}
 
 import com.ibm.stringoid.AnalysisType._
-import com.ibm.stringoid.util.Time
+import com.ibm.stringoid.util.{AnalysisConfig, Time}
 import scopt.{OptionParser, Read}
 
 import scala.collection.JavaConversions._
@@ -18,17 +18,23 @@ object Main {
 
   def main(args: Array[String]): Unit =
     parser.parse(args, CmdOptions()) foreach { options =>
-      runPlaydroneApks(options.analysis1, options.analysis2, options.files, options.outDir)
+      import options._
+      runPlaydroneApks(analysis1, analysis2, files, outDir, AnalysisConfig(irFromCg, ignoreLibs))
     }
 
-  def runPlaydroneApks(a1: AnalysisType, a2: AnalysisType, apkFiles: Seq[Path], outDir: Path) = {
+  def runPlaydroneApks(
+    a1: AnalysisType, 
+    a2: AnalysisType, 
+    apkFiles: Seq[Path], 
+    outDir: Path,
+    config: AnalysisConfig
+  ) =
     apkFiles foreach {
       file =>
         Time.time("processing " + file.toString) {
-          write(PrintableResult(a1, a2, file), file, outDir)
+          write(PrintableResult(a1, a2, file, config), file, outDir)
         }
     }
-  }
 
   /**
    * Write the output of Urls to specified file
@@ -43,7 +49,9 @@ object Main {
 
   case class CmdOptions (
     analysis1: AnalysisType = Grep,
-    analysis2: AnalysisType = CgIr,
+    analysis2: AnalysisType = Constants,
+    ignoreLibs: Boolean     = false,
+    irFromCg: Boolean       = false,
     outDir: Path            = Paths.get("target", "url_comparison"),
     files: Seq[Path]        = Seq.empty[Path]
   )
@@ -72,6 +80,14 @@ object Main {
       (o, opts) =>
         opts.copy(outDir = o)
     } text "output directory"
+    cmd("ignore-libs") action {
+      (_, opts) =>
+        opts.copy(ignoreLibs = true)
+    } text "ignore libraries"
+    cmd("reachable") action {
+      (_, opts) =>
+        opts.copy(irFromCg = true)
+    } text "construct call graph to only retrieve URLs in reachable methods"
     arg[Path]("<file>...") unbounded() action {
       (f, opts) =>
         opts.copy(files = opts.files :+ f)
