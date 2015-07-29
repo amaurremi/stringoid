@@ -2,8 +2,7 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
 import java.nio.file.Path
 
-import com.ibm.stringoid.retrieve.ir.{IrUrlRetriever, IrFromCgRetriever}
-import com.ibm.stringoid.retrieve.ir.append.ssa.SsaAppendIrRetriever._
+import com.ibm.stringoid.retrieve.ir.IrUrlRetriever
 import com.ibm.stringoid.retrieve.ir.append.{AppendUrl, ValueNumber}
 import com.ibm.wala.ssa.{IR, SymbolTable}
 
