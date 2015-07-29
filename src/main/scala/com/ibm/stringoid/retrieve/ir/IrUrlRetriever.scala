@@ -43,7 +43,7 @@ trait IrUrlRetriever extends UrlRetriever {
 
   protected final def getIrs(apkPath: Path): Seq[IR] = {
     implicit val config = configWithApk(apkPath)
-    val irs = getIrsFromBuilder(new FlexibleCallGraphBuilder())
+    val irs = getIrsFromBuilder(new FlexibleCallGraphBuilder)
     irs filter { Option(_).isDefined }
   }
 

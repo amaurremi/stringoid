@@ -39,19 +39,19 @@ case class PrintableResult(a1Urls: StringMap, a1: AnalysisType, a2Urls: StringMa
     val urls1 = a1Urls.keySet
     val urls2 = a2Urls.keySet
     s"""Number of different URLs through $name1: ${urls1.size}
-        |Number of different URLs through $name2: ${urls2.size}
-        |
-        |**** In $name1 but not in $name2 ****
-                                           |${(urls1 diff urls2) mkString "\n"}
-        |
-        |**** In $name2 but not in $name1 ****
-                                           |${(urls2 diff urls1) mkString "\n"}
-        |
-        |**** All URLs obtained through $name1 ****
-                                                |${mkString(a1Urls)}
-        |
-        |**** All URLs obtained through $name2 ****
-                                                |${mkString(a2Urls)}
+       |Number of different URLs through $name2: ${urls2.size}
+       |
+       |**** In $name1 but not in $name2 ****
+       |${(urls1 diff urls2) mkString "\n"}
+       |
+       |**** In $name2 but not in $name1 ****
+       |${(urls2 diff urls1) mkString "\n"}
+       |
+       |**** All URLs obtained through $name1 ****
+       |${mkString(a1Urls)}
+       |
+       |**** All URLs obtained through $name2 ****
+       |${mkString(a2Urls)}
        """.stripMargin
   }
 }

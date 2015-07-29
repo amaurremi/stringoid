@@ -11,7 +11,6 @@ object AnalysisType extends Enumeration {
   val Constants = Value("constants")
   val Grep        = Value("grep")
   val Append      = Value("append")
-  val SsaAppend   = Value("ssa")
 
   def retriever(at: AnalysisType, config: AnalysisConfig) = at match {
     case Constants  =>
