@@ -1,8 +1,9 @@
 package com.ibm.stringoid
 
 import com.ibm.stringoid.retrieve._
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.FixedPointAppendIrRetriever
 import com.ibm.stringoid.retrieve.ir.append.ssa.SsaAppendIrRetriever
-import com.ibm.stringoid.retrieve.ir.{CgIrUrlRetriever, UrlFromChaRetriever}
+import com.ibm.stringoid.retrieve.ir._
 import scopt.Read
 
 object AnalysisType extends Enumeration {
@@ -16,11 +17,13 @@ object AnalysisType extends Enumeration {
 
   def retriever(at: AnalysisType) = at match {
     case CgIr  =>
-      CgIrUrlRetriever
+      new ConstantUrlFromIrRetriever with IrFromCgRetriever
     case ChaIr =>
-      UrlFromChaRetriever
-    case Append =>
-      FixedPointAppendIrRetriever
+      new ConstantUrlFromIrRetriever with IrFromChaRetriever
+    case AppendCg =>
+      new FixedPointAppendIrRetriever with IrFromCgRetriever
+    case AppendCha =>
+      new FixedPointAppendIrRetriever with IrFromChaRetriever
     case SsaAppend =>
       SsaAppendIrRetriever
     case Grep  =>
