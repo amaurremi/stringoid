@@ -2,12 +2,13 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
 import java.nio.file.Path
 
-import com.ibm.stringoid.retrieve.ir.IrFromBuilderRetriever
+import com.ibm.stringoid.retrieve.ir.{IrUrlRetriever, IrFromCgRetriever}
+import com.ibm.stringoid.retrieve.ir.append.ssa.SsaAppendIrRetriever._
 import com.ibm.stringoid.retrieve.ir.append.{AppendUrl, ValueNumber}
 import com.ibm.wala.ssa.{IR, SymbolTable}
 
-object FixedPointAppendIrRetriever
-  extends IrFromBuilderRetriever
+trait FixedPointAppendIrRetriever
+  extends IrUrlRetriever
   with AppendUrl
   with AbstractStringBuilderModule
   with StringAppendModule {
@@ -16,8 +17,12 @@ object FixedPointAppendIrRetriever
 
   override def apply(apkPath: Path): UrlsWithSources = {
     val urlsWithSources: Seq[(Url, Method)] = for {
-      ir  <- getIrs(apkPath)
-      url <- getUrlsForIr(ir)
+      ir        <- getIrs(apkPath)
+      constants  = getConstantUrlStrings(ir) map {
+        u =>
+          UrlSeq(Seq(UrlString(u)))
+      }
+      url       <- getUrlsForIr(ir) ++ constants
     } yield url -> ir.getMethod.toString
     val urlWithSourcesMap = urlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
       case (prevMap, (url, method)) =>
