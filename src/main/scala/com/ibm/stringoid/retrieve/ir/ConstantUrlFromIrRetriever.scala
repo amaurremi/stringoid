@@ -6,7 +6,7 @@ import java.nio.file.Path
  * An analysis that is based on extracting the URL strings that appear as
  * constants in an IR's symbol table.
  */
-trait ConstantUrlsFromIrRetriever extends IrUrlRetriever {
+trait ConstantUrlFromIrRetriever extends IrUrlRetriever {
 
   override type Url = String
 
