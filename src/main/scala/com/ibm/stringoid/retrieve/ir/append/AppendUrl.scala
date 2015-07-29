@@ -4,7 +4,7 @@ trait AppendUrl {
 
   case class UrlSeq(url: Seq[UrlPart]) {
     override def toString =
-      url mkString " + "
+      url mkString ""
   }
 
   sealed trait UrlPart
