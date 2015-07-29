@@ -80,7 +80,8 @@ object Main {
       opts =>
         if (opts.analysis1 == opts.analysis2)
           Left("Comparing equal analyses")
-        else Right(opts)
+        else
+          Right(opts)
     }
   }
 }

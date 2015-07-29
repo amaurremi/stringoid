@@ -4,7 +4,7 @@ trait AppendUrl {
 
   case class UrlSeq(url: Seq[UrlPart]) {
     override def toString =
-      url mkString " + "
+      url mkString ""
   }
 
   sealed trait UrlPart
@@ -12,6 +12,8 @@ trait AppendUrl {
     override def toString = string
   }
   case class UrlPhi(urls: Set[UrlSeq]) extends UrlPart
-  case object UrlPlaceHolder extends UrlPart
+  case object UrlPlaceHolder extends UrlPart {
+    override def toString = "�"
+  }
   case object UrlWithCycle extends UrlPart
 }
