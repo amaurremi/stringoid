@@ -19,6 +19,15 @@ object Main {
   def main(args: Array[String]): Unit =
     parser.parse(args, CmdOptions()) foreach { options =>
       import options._
+      val irMethod = if (irFromCg) "call graph" else "class hierarchy"
+      val libs     = if (ignoreLibs) "being ignored" else "included"
+      val info     =
+        s"""
+           |Comparing $analysis1 with $analysis2.
+           |Using $irMethod construction for retrieving IRs.
+           |Libraries are $libs.
+         """.stripMargin
+      println(info)
       runPlaydroneApks(analysis1, analysis2, files, outDir, AnalysisConfig(irFromCg, ignoreLibs))
     }
 

@@ -2,7 +2,6 @@ package com.ibm.stringoid
 
 import com.ibm.stringoid.retrieve._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.FixedPointAppendIrRetriever
-import com.ibm.stringoid.retrieve.ir.append.ssa.SsaAppendIrRetriever
 import com.ibm.stringoid.retrieve.ir._
 import com.ibm.stringoid.util.AnalysisConfig
 import scopt.Read
@@ -19,8 +18,6 @@ object AnalysisType extends Enumeration {
       new ConstantUrlFromIrRetriever(config)
     case Append =>
       new FixedPointAppendIrRetriever(config)
-    case SsaAppend =>
-      new SsaAppendIrRetriever(config)
     case Grep  =>
       GrepUrlRetriever
   }
