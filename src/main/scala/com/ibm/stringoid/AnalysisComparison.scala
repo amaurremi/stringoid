@@ -6,28 +6,9 @@ import argonaut.Argonaut._
 import argonaut._
 import com.ibm.stringoid.util.AnalysisConfig
 
-trait AnalysisComparison extends AnalysisTypes with UrlRetrievers {
+trait AnalysisComparison extends UrlRetrievers {
 
-  import AnalysisType._
-
-  case class AnalysisResult(
-    analysis: AnalysisType,
-    runningTime: Double,
-    urlsWithSources: UrlsWithSources
-  )
-
-  object AnalysisResult {
-    implicit def AnalysisResultEncodeJson: EncodeJson[AnalysisResult] =
-      jencode3L(
-        (ar: AnalysisResult) =>
-          (ar.analysis, ar.runningTime, ar.urlsWithSources)
-      )("analysis", "running-time", "urls-with-sources")
-  }
-
-  case class AnalysisComparisonResult(
-    a1: AnalysisResult,
-    a2: AnalysisResult
-  )
+  case class AnalysisComparisonResult(a1: AnalysisResult, a2: AnalysisResult)
 
   object AnalysisComparisonResult {
     implicit def AnalysisComparisonResultEncodeJson: EncodeJson[AnalysisComparisonResult] =
