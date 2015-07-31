@@ -1,7 +1,8 @@
-package com.ibm.stringoid.retrieve.ir
+package com.ibm.stringoid.retrieve.ir.constant
 
 import java.nio.file.Path
 
+import com.ibm.stringoid.retrieve.ir.IrUrlRetriever
 import com.ibm.stringoid.util.AnalysisConfig
 
 /**
@@ -10,22 +11,23 @@ import com.ibm.stringoid.util.AnalysisConfig
  */
 final class ConstantUrlFromIrRetriever(override val config: AnalysisConfig) extends IrUrlRetriever {
 
-  override type Url = String
-
-  override def apply(
-    apkPath: Path
-  ): UrlsWithSources = {
+  override def apply(apkPath: Path): UrlsWithSources = {
     val urlMethodPairs: Seq[(Url, Method)] = getIrs(apkPath) flatMap {
       ir =>
         getConstantUrlStrings(ir) map {
           url =>
             val method = ir.getMethod
-            url -> (method.getDeclaringClass.getName + "." + method.getName.toString)
+            Url(List(UrlString(url))) -> (method.getDeclaringClass.getName + "." + method.getName.toString)
         }
     }
-    UrlsWithSources(urlMethodPairs.foldLeft(Map.empty[Url, Set[Method]]) {
+    val urlWithSetSources = urlMethodPairs.foldLeft(Map.empty[Url, Set[Method]]) {
       case (prev, (wu, m)) =>
         prev.updated(wu, prev.getOrElse(wu, Set.empty[Method]) + m)
-    })
+    }
+    val urlWithListSources = urlWithSetSources map {
+      case (url, methods: Set[Method]) =>
+        url -> methods.toList
+    }
+    UrlsWithSources(urlWithListSources)
   }
 }

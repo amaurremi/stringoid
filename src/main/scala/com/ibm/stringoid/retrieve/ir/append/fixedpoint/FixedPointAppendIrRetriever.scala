@@ -3,24 +3,21 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 import java.nio.file.Path
 
 import com.ibm.stringoid.retrieve.ir.IrUrlRetriever
-import com.ibm.stringoid.retrieve.ir.append.{AppendUrl, ValueNumber}
+import com.ibm.stringoid.retrieve.ir.append.ValueNumber
 import com.ibm.stringoid.util.AnalysisConfig
 import com.ibm.wala.ssa.{IR, SymbolTable}
 
 final class FixedPointAppendIrRetriever(override val config: AnalysisConfig)
   extends IrUrlRetriever
-  with AppendUrl
   with AbstractStringBuilderModule
   with StringAppendModule {
-
-  override type Url = UrlSeq
 
   override def apply(apkPath: Path): UrlsWithSources = {
     val urlsWithSources: Seq[(Url, Method)] = for {
       ir        <- getIrs(apkPath)
       constants  = getConstantUrlStrings(ir) map {
         u =>
-          UrlSeq(Seq(UrlString(u)))
+          Url(List(UrlString(u)))
       }
       url       <- getUrlsForIr(ir) ++ constants
     } yield url -> ir.getMethod.toString
@@ -29,7 +26,11 @@ final class FixedPointAppendIrRetriever(override val config: AnalysisConfig)
         val prevMethods = prevMap getOrElse (url, Set.empty[Method])
         prevMap updated (url, prevMethods + method)
     }
-    UrlsWithSources(urlWithSourcesMap)
+    val urlWithListSourcesMap = urlWithSourcesMap map {
+      case (url, methods: Set[Method]) =>
+        url -> methods.toList
+    }
+    UrlsWithSources(urlWithListSourcesMap)
   }
 
   private[this] def getUrlsForIr(ir: IR): Set[Url] =
@@ -41,7 +42,7 @@ final class FixedPointAppendIrRetriever(override val config: AnalysisConfig)
         val table         = ir.getSymbolTable
         strings collect {
           case string if hasUrlPrefix(table, string) =>
-            UrlSeq(parseUrl(table, string))
+            Url(parseUrl(table, string))
         }
       case None         =>
         Set.empty[Url]
@@ -54,7 +55,7 @@ final class FixedPointAppendIrRetriever(override val config: AnalysisConfig)
     string match {
       case SingleAppendArgument(vn) =>
         matchesUrlPrefix(vn)
-      case SingleStringSeq(s :: _)  =>
+      case SingleStringList(s :: _)  =>
         // todo trim empty strings?
         hasUrlPrefix(table, s)
       case _                        =>
@@ -62,23 +63,23 @@ final class FixedPointAppendIrRetriever(override val config: AnalysisConfig)
     }
   }
 
-  private[this] def parseUrl(table: SymbolTable, string: SingleStringConcatenation): Seq[UrlPart] = {
+  private[this] def parseUrl(table: SymbolTable, string: SingleStringConcatenation): List[UrlPart] = {
     string match {
-      case SingleStringSeq(strings) =>
+      case SingleStringList(strings) =>
         // todo tail recursion
-        strings.foldLeft(Seq.empty[UrlPart]) {
+        strings.foldLeft(List.empty[UrlPart]) {
           case (prefix, s) =>
             prefix ++ parseUrl(table, s)
         }
       case SingleAppendArgument(vn) =>
         // todo we could add more URL-part-types and be more precise about the type of value
         if (table isConstant vn)
-          Seq(UrlString((table getConstantValue vn).toString))
+          List(UrlString((table getConstantValue vn).toString))
         else
-          Seq(UrlPlaceHolder)
+          List(UrlPlaceHolder)
       // todo there is also the case where the append argument is a StringBuilder! This is not handled currently!
       case SingleCycle              =>
-        Seq(UrlWithCycle)
+        List(UrlWithCycle)
     }
   }
 }

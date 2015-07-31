@@ -101,14 +101,14 @@ trait StringAppendDatastructures {
    */
   sealed trait SingleStringConcatenation extends StringConcatenation[SingleStringConcatenation]
 
-  case class SingleStringSeq(strings: Seq[SingleStringConcatenation]) extends SingleStringConcatenation {
+  case class SingleStringList(strings: List[SingleStringConcatenation]) extends SingleStringConcatenation {
 
     override def ++(string: SingleStringConcatenation): SingleStringConcatenation =
       string match {
-        case SingleStringSeq(strings2) =>
-          SingleStringSeq(strings ++ strings2)
+        case SingleStringList(strings2) =>
+          SingleStringList(strings ++ strings2)
         case _                         =>
-          SingleStringSeq(strings :+ string)
+          SingleStringList(strings :+ string)
       }
   }
 
@@ -116,10 +116,10 @@ trait StringAppendDatastructures {
 
     override def ++(string: SingleStringConcatenation): SingleStringConcatenation =
       string match {
-        case SingleStringSeq(strings) =>
-          SingleStringSeq(this +: strings)
+        case SingleStringList(strings) =>
+          SingleStringList(this +: strings)
         case _                        =>
-          SingleStringSeq(Seq(this, string))
+          SingleStringList(List(this, string))
       }
   }
 

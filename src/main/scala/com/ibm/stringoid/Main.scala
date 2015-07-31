@@ -2,13 +2,16 @@ package com.ibm.stringoid
 
 import java.nio.file.{Files, InvalidPathException, Path, Paths}
 
-import com.ibm.stringoid.AnalysisType._
-import com.ibm.stringoid.util.{AnalysisConfig, Time}
+import argonaut.Argonaut._
+import argonaut._
+import com.ibm.stringoid.util.{AnalysisConfig, TimeResult}
 import scopt.{OptionParser, Read}
 
 import scala.collection.JavaConversions._
 
-object Main {
+object Main extends AnalysisComparison {
+
+  import AnalysisType._
 
   // Program arguments
   // all apks:
@@ -40,20 +43,20 @@ object Main {
   ) =
     apkFiles foreach {
       file =>
-        Time.time("processing " + file.toString) {
-          write(PrintableResult(a1, a2, file, config), file, outDir)
+        TimeResult.printTime("processing " + file.toString) {
+          write(AnalysisComparisonResult(a1, a2, file, config), file, outDir)
         }
     }
 
   /**
    * Write the output of Urls to specified file
    */
-  def write(comparison: PrintableResult, apkPath: Path, outDir: Path): Unit = {
+  def write(comparison: AnalysisComparisonResult, apkPath: Path, outDir: Path): Unit = {
     import comparison._
     Files.createDirectories(outDir)
     val logName = "%s_%s_%s.txt".format(apkPath.getFileName.toString, a1, a2)
     val logPath = Paths.get(outDir.toString, logName)
-    Files.write(logPath, Seq(comparison.toString))
+    Files.write(logPath, Seq(comparison.asJson.spaces2))
   }
 
   case class CmdOptions (
