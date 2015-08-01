@@ -20,7 +20,7 @@ trait UrlRetrievers extends AnalysisTypes with Urls {
           val cg  = if (ac.irFromCg) "call graph" else "class hierarchy"
           (ac.analysis.toString, lib, cg)
         }
-      )("analysis-type", "libraries", "reachability")
+      )("analysis type", "libraries", "reachability")
 
     val default = AnalysisConfig(irFromCg = false, ignoreLibs = true, analysis = AnalysisType.Grep)
   }
@@ -36,7 +36,7 @@ trait UrlRetrievers extends AnalysisTypes with Urls {
       jencode3L(
         (ar: AnalysisResult) =>
           (ar.config, ar.runningTime, ar.urlsWithSources)
-      )("configuration", "running-time", "urls-with-sources")
+      )("configuration", "running time", "urls with sources")
   }
 
   /**

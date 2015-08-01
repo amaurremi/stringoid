@@ -13,7 +13,7 @@ trait Urls {
     implicit def UrlEncodeJson: EncodeJson[Url] =
       jencode1L(
         (u: Url) => u.url
-      )("url-parts")
+      )("concatenation")
   }
 
   sealed trait UrlPart
@@ -72,7 +72,7 @@ trait Urls {
       jencode1L(
         (uws: UrlsWithSources) =>
           jsonMap(uws.uws)
-      )("url-to-methods-map")
+      )("url-to-methods map")
     }
   }
 }
