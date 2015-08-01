@@ -31,14 +31,28 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
       Grep
   }
 
-  case class AnalysisComparisonResult(result1: AnalysisResult, result2: AnalysisResult)
+  case class AnalysisComparisonResult(
+    result1: AnalysisResult,
+    result2: AnalysisResult,
+    in1not2size: Int,
+    in2not1size: Int,
+    in1not2: Set[Url],
+    in2not1: Set[Url]
+  )
 
   object AnalysisComparisonResult {
     implicit def AnalysisComparisonResultEncodeJson: EncodeJson[AnalysisComparisonResult] =
-      jencode2L(
-        (acr: AnalysisComparisonResult) =>
-          (acr.result1, acr.result2)
-      )("analysis1", "analysis2")
+      jencode6L(
+        (acr: AnalysisComparisonResult) => {
+          import acr._
+          (result1, result2, in1not2size, in2not1size, in1not2, in2not1)
+        }
+      )("analysis1",
+          "analysis2",
+          "1st has > URLs than 2nd by",
+          "2nd has > URLs than 1st by",
+          "in 1st analysis but not in 2nd",
+          "in 2nd analysis but not in 1st")
 
     /**
      * Retrieve the URLs for an APK file using WALA and using grep.
@@ -50,7 +64,13 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
     ): AnalysisComparisonResult = {
       val TimeResult(result1, time1) = TimeResult(retriever(config1)(apkPath))
       val TimeResult(result2, time2) = TimeResult(retriever(config2)(apkPath))
-      AnalysisComparisonResult(AnalysisResult(config1, time1, result1) , AnalysisResult(config2, time2, result2))
+      val ar1 = AnalysisResult(config1, time1, result1)
+      val ar2 = AnalysisResult(config2, time2, result2)
+      val urls1 = ar1.urlsWithSources.uws.keySet
+      val urls2 = ar2.urlsWithSources.uws.keySet
+      val in1not2: Set[Url] = (urls1 diff urls2).toSet
+      val in2not1: Set[Url] = (urls2 diff urls1).toSet
+      AnalysisComparisonResult(ar1 , ar2, in1not2.size, in2not1.size, in1not2, in2not1)
     }
   }
 }
