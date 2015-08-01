@@ -10,7 +10,9 @@ import scala.collection.JavaConversions._
 
 trait UrlRetrievers extends AnalysisTypes with Urls {
 
-  case class AnalysisConfig(irFromCg: Boolean, ignoreLibs: Boolean, analysis: AnalysisType.AnalysisType)
+  import AnalysisType._
+
+  case class AnalysisConfig(irFromCg: Boolean, ignoreLibs: Boolean, analysis: AnalysisType)
 
   object AnalysisConfig {
     implicit def AnalysisConfigEncodeJson: EncodeJson[AnalysisConfig] =
@@ -18,7 +20,7 @@ trait UrlRetrievers extends AnalysisTypes with Urls {
         (ac: AnalysisConfig) => {
           val lib = if (ac.ignoreLibs) "ignoring" else "including"
           val cg  = if (ac.irFromCg) "call graph" else "class hierarchy"
-          (ac.analysis.toString, lib, cg)
+          (prettyPrint(ac.analysis), lib, cg)
         }
       )("analysis type", "libraries", "reachability")
 
@@ -55,5 +57,4 @@ trait UrlRetrievers extends AnalysisTypes with Urls {
         "wala.dependencies.apk",
         ConfigValueFactory.fromIterable(Seq(apkPath.toString)))
   }
-
 }

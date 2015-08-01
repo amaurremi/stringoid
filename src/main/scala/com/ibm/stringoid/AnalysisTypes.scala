@@ -13,7 +13,14 @@ trait AnalysisTypes {
     implicit val analysisTypeRead: scopt.Read[AnalysisType] =
       Read.reads(AnalysisType.withName)
 
-    def unapply(at: AnalysisType): Option[String] =
-      Some(at.toString)
+    def prettyPrint(at: AnalysisType) =
+      at match {
+        case Constants =>
+          "constants (extracting constant URLs from symbol tables)"
+        case Grep      =>
+          "grep"
+        case Append    =>
+          "append (extracting string concatentations through StringBuilders and '+'"
+      }
   }
 }

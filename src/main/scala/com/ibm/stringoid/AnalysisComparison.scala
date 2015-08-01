@@ -47,12 +47,12 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
           import acr._
           (result1, result2, in1not2size, in2not1size, in1not2, in2not1)
         }
-      )("analysis1",
-          "analysis2",
-          "1st has > URLs than 2nd by",
-          "2nd has > URLs than 1st by",
-          "in 1st analysis but not in 2nd",
-          "in 2nd analysis but not in 1st")
+      )("1st analysis",
+        "2nd analysis",
+        "1st has > URLs than 2nd by",
+        "2nd has > URLs than 1st by",
+        "in 1st analysis but not in 2nd",
+        "in 2nd analysis but not in 1st")
 
     /**
      * Retrieve the URLs for an APK file using WALA and using grep.

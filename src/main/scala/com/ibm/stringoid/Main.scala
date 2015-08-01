@@ -30,7 +30,7 @@ object Main extends AnalysisComparison {
   def write(comparison: AnalysisComparisonResult, apkPath: Path, outDir: Path): Unit = {
     import comparison._
     Files.createDirectories(outDir)
-    val logName = "%s_%s_%s.txt".format(apkPath.getFileName.toString, result1.config.analysis, result2.config.analysis)
+    val logName = "%s_%s_%s.json".format(apkPath.getFileName.toString, result1.config.analysis, result2.config.analysis)
     val logPath = Paths.get(outDir.toString, logName)
     Files.write(logPath, comparison.asJson.spaces2.getBytes) // todo is this bad?
   }

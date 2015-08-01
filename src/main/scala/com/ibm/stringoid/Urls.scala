@@ -54,7 +54,7 @@ trait Urls {
       jencode2L(
         (um: UrlToMethodsPair) =>
           (um.url, um.methods)
-      )("url", "methods")
+      )("url", "found in methods")
   }
 
   // todo List should be a Set but Argonaut doesn't understand it
