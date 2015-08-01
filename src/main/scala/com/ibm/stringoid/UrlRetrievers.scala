@@ -18,7 +18,7 @@ trait UrlRetrievers extends AnalysisTypes with Urls {
         (ac: AnalysisConfig) => {
           val lib = if (ac.ignoreLibs) "ignoring" else "including"
           val cg  = if (ac.irFromCg) "call graph" else "class hierarchy"
-          (ac.analysis, lib, cg)
+          (ac.analysis.toString, lib, cg)
         }
       )("analysis-type", "libraries", "reachability")
 

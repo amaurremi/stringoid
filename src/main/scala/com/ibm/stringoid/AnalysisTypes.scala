@@ -1,7 +1,5 @@
 package com.ibm.stringoid
 
-import argonaut.Argonaut._
-import argonaut._
 import scopt.Read
 
 trait AnalysisTypes {
@@ -17,8 +15,5 @@ trait AnalysisTypes {
 
     def unapply(at: AnalysisType): Option[String] =
       Some(at.toString)
-
-    implicit def AnalysisTypeEncodeJson: EncodeJson[AnalysisType] =
-      jencode1L((at: AnalysisType) => at.toString)("analysis-type")
   }
 }

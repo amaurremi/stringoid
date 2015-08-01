@@ -22,7 +22,7 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.1" % "test",
   "org.scalamock" %% "scalamock-scalatest-support" % "3.2" % "test",
   "org.mockito" % "mockito-core" % "1.9.5",
-  "org.scalaz" %% "scalaz-core" % "7.1.0",
+  "org.scalaz" %% "scalaz-core" % "7.0.6",
   "com.github.scopt" %% "scopt" % "3.3.0")
 
 org.scalastyle.sbt.ScalastylePlugin.Settings

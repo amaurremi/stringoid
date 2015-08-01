@@ -12,11 +12,8 @@ object Main extends AnalysisComparison {
 
   import AnalysisType._
 
-  // Program arguments
-  // all apks:
-  // --a1 append --a2 grep src/test/resources/playdrone_apks/com.facebook.katana-4947895.apk src/test/resources/playdrone_apks/com.google.android.apps.maps-804010103.apk src/test/resources/playdrone_apks/com.google.android.apps.plus-413339268.apk src/test/resources/playdrone_apks/com.google.android.gm-4900120.apk src/test/resources/playdrone_apks/com.google.android.gms-6183036.apk src/test/resources/playdrone_apks/com.google.android.googlequicksearchbox-300306150.apk src/test/resources/playdrone_apks/com.google.android.street-18102.apk src/test/resources/playdrone_apks/com.google.android.tts-210302120.apk src/test/resources/playdrone_apks/com.google.android.videos-33331.apk src/test/resources/playdrone_apks/com.google.android.youtube-51405300.apk
-  // those where grep > cg
-  // --a1 cha --a2 grep src/test/resources/playdrone_apks/com.google.android.apps.maps-804010103.apk rc/test/resources/playdrone_apks/com.google.android.gms-6183036.apk src/test/resources/playdrone_apks/com.google.android.googlequicksearchbox-300306150.apk src/test/resources/playdrone_apks/com.google.android.tts-210302120.apk src/test/resources/playdrone_apks/com.google.android.youtube-51405300.apk
+  // Program arguments example
+  // --a1 append --a2 constants --lib1 false --lib2 false --cg1 false --cg2 false src/test/resources/cgeo.geocaching.developer-build.apk src/test/resources/playdrone_apks/com.facebook.katana-4947895.apk src/test/resources/playdrone_apks/com.google.android.apps.maps-804010103.apk src/test/resources/playdrone_apks/com.google.android.apps.plus-413339268.apk src/test/resources/playdrone_apks/com.google.android.gm-4900120.apk src/test/resources/playdrone_apks/com.google.android.gms-6183036.apk src/test/resources/playdrone_apks/com.google.android.googlequicksearchbox-300306150.apk src/test/resources/playdrone_apks/com.google.android.street-18102.apk src/test/resources/playdrone_apks/com.google.android.tts-210302120.apk src/test/resources/playdrone_apks/com.google.android.videos-33331.apk src/test/resources/playdrone_apks/com.google.android.youtube-51405300.apk
 
   def main(args: Array[String]): Unit =
     parser.parse(args, CmdOptions()) foreach { options =>
@@ -35,9 +32,9 @@ object Main extends AnalysisComparison {
   def write(comparison: AnalysisComparisonResult, apkPath: Path, outDir: Path): Unit = {
     import comparison._
     Files.createDirectories(outDir)
-    val logName = "%s_%s_%s.txt".format(apkPath.getFileName.toString, result1, result2)
+    val logName = "%s_%s_%s.txt".format(apkPath.getFileName.toString, result1.config.analysis, result2.config.analysis)
     val logPath = Paths.get(outDir.toString, logName)
-    Files.write(logPath, Seq(comparison.asJson.spaces2))
+    Files.write(logPath, comparison.asJson.spaces2.getBytes) // todo is this bad?
   }
 
   case class CmdOptions (
