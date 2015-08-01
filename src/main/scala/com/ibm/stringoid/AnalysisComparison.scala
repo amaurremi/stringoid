@@ -64,8 +64,8 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
     ): AnalysisComparisonResult = {
       val TimeResult(result1, time1) = TimeResult(retriever(config1)(apkPath))
       val TimeResult(result2, time2) = TimeResult(retriever(config2)(apkPath))
-      val ar1 = AnalysisResult(config1, time1, result1)
-      val ar2 = AnalysisResult(config2, time2, result2)
+      val ar1 = AnalysisResult(config1, time1, result1, result1.uws.size)
+      val ar2 = AnalysisResult(config2, time2, result2, result2.uws.size)
       val urls1 = ar1.urlsWithSources.uws.keySet
       val urls2 = ar2.urlsWithSources.uws.keySet
       val in1not2: Set[Url] = (urls1 diff urls2).toSet

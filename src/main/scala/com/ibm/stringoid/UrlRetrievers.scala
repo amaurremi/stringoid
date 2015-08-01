@@ -30,15 +30,18 @@ trait UrlRetrievers extends AnalysisTypes with Urls {
   case class AnalysisResult(
     config: AnalysisConfig,
     runningTime: Double,
-    urlsWithSources: UrlsWithSources
+    urlsWithSources: UrlsWithSources,
+    urlsNum: Int
   )
 
   object AnalysisResult {
     implicit def AnalysisResultEncodeJson: EncodeJson[AnalysisResult] =
-      jencode3L(
-        (ar: AnalysisResult) =>
-          (ar.config, ar.runningTime, ar.urlsWithSources)
-      )("configuration", "running time", "urls with sources")
+      jencode4L(
+        (ar: AnalysisResult) => {
+          import ar._
+          (config, runningTime, urlsWithSources, urlsNum)
+        }
+      )("configuration", "running time", "urls with sources", "number of URLs")
   }
 
   /**
