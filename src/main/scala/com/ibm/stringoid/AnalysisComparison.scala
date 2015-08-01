@@ -13,7 +13,7 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
 
   import AnalysisType._
 
-  def retriever(at: AnalysisType, config: AnalysisConfig): UrlRetriever = at match {
+  def retriever(config: AnalysisConfig): UrlRetriever = config.analysis match {
     case Constants =>
       new ConstantUrlFromIrRetriever(config)
     case Append =>
@@ -31,27 +31,26 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
       Grep
   }
 
-  case class AnalysisComparisonResult(a1: AnalysisResult, a2: AnalysisResult)
+  case class AnalysisComparisonResult(result1: AnalysisResult, result2: AnalysisResult)
 
   object AnalysisComparisonResult {
     implicit def AnalysisComparisonResultEncodeJson: EncodeJson[AnalysisComparisonResult] =
       jencode2L(
         (acr: AnalysisComparisonResult) =>
-          (acr.a1, acr.a2)
+          (acr.result1, acr.result2)
       )("analysis1", "analysis2")
 
     /**
      * Retrieve the URLs for an APK file using WALA and using grep.
      */
     def apply(
-      a1: AnalysisType,
-      a2: AnalysisType,
-      apkPath: Path,
-      config: AnalysisConfig
+      config1: AnalysisConfig,
+      config2: AnalysisConfig,
+      apkPath: Path
     ): AnalysisComparisonResult = {
-      val TimeResult(result1, time1) = TimeResult(retriever(a1, config)(apkPath))
-      val TimeResult(result2, time2) = TimeResult(retriever(a2, config)(apkPath))
-      AnalysisComparisonResult(AnalysisResult(a1, time1, result1) , AnalysisResult(a2, time2, result2))
+      val TimeResult(result1, time1) = TimeResult(retriever(config1)(apkPath))
+      val TimeResult(result2, time2) = TimeResult(retriever(config2)(apkPath))
+      AnalysisComparisonResult(AnalysisResult(config1, time1, result1) , AnalysisResult(config2, time2, result2))
     }
   }
 }

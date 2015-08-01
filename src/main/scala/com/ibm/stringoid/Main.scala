@@ -21,30 +21,12 @@ object Main extends AnalysisComparison {
   def main(args: Array[String]): Unit =
     parser.parse(args, CmdOptions()) foreach { options =>
       import options._
-      val irMethod = if (irFromCg) "call graph" else "class hierarchy"
-      val libs     = if (ignoreLibs) "being ignored" else "included"
-      val info     =
-        s"""
-           |Comparing $analysis1 with $analysis2.
-           |Using $irMethod construction for retrieving IRs.
-           |Libraries are $libs.
-         """.stripMargin
-      println(info)
-      runPlaydroneApks(analysis1, analysis2, files, outDir, AnalysisConfig(irFromCg, ignoreLibs))
-    }
-
-  def runPlaydroneApks(
-    a1: AnalysisType, 
-    a2: AnalysisType, 
-    apkFiles: Seq[Path], 
-    outDir: Path,
-    config: AnalysisConfig
-  ) =
-    apkFiles foreach {
-      file =>
-        TimeResult.printTime("processing " + file.toString) {
-          write(AnalysisComparisonResult(a1, a2, file, config), file, outDir)
-        }
+      files foreach {
+        file =>
+          TimeResult.printTime("processing " + file.toString) {
+            write(AnalysisComparisonResult(config1, config2, file), file, outDir)
+          }
+      }
     }
 
   /**
@@ -53,16 +35,14 @@ object Main extends AnalysisComparison {
   def write(comparison: AnalysisComparisonResult, apkPath: Path, outDir: Path): Unit = {
     import comparison._
     Files.createDirectories(outDir)
-    val logName = "%s_%s_%s.txt".format(apkPath.getFileName.toString, a1, a2)
+    val logName = "%s_%s_%s.txt".format(apkPath.getFileName.toString, result1, result2)
     val logPath = Paths.get(outDir.toString, logName)
     Files.write(logPath, Seq(comparison.asJson.spaces2))
   }
 
   case class CmdOptions (
-    analysis1: AnalysisType = Grep,
-    analysis2: AnalysisType = Constants,
-    ignoreLibs: Boolean     = false,
-    irFromCg: Boolean       = false,
+    config1: AnalysisConfig = AnalysisConfig.default,
+    config2: AnalysisConfig = AnalysisConfig.default,
     outDir: Path            = Paths.get("target", "url_comparison"),
     files: Seq[Path]        = Seq.empty[Path]
   )
@@ -80,32 +60,40 @@ object Main extends AnalysisComparison {
 
     head("stringoid")
     opt[AnalysisType]("a1") required() valueName "<analysis1>" action {
-      (a1, opts) =>
-        opts.copy(analysis1 = a1)
+      (analysis, opts) =>
+        opts.copy(config1 = opts.config1.copy(analysis = analysis)) // todo lenses
     } text s"first analysis type (one of $analysisTypes)"
     opt[AnalysisType]("a2") required() valueName "<analysis2>" action {
-      (a2, opts) =>
-        opts.copy(analysis2 = a2)
+      (analysis, opts) =>
+        opts.copy(config2 = opts.config2.copy(analysis = analysis)) // todo lenses
     } text s"second analysis type (one of $analysisTypes)"
     opt[Path]('o', "outdir") optional() valueName "<out dir>" action {
       (o, opts) =>
         opts.copy(outDir = o)
     } text "output directory"
-    cmd("ignore-libs") action {
-      (_, opts) =>
-        opts.copy(ignoreLibs = true)
-    } text "ignore libraries"
-    cmd("reachable") action {
-      (_, opts) =>
-        opts.copy(irFromCg = true)
-    } text "construct call graph to only retrieve URLs in reachable methods"
+    opt[Boolean]("lib1") optional() valueName "<include libraries>" action {
+      (includeLibs, opts) =>
+        opts.copy(config1 = opts.config1.copy(ignoreLibs = !includeLibs)) // todo lenses + invert flag ignoreLibs to includeLibs
+    } text "ignore libraries in first analysis?"
+    opt[Boolean]("lib2") optional() valueName "<libraries?>" action {
+      (includeLibs, opts) =>
+        opts.copy(config2 = opts.config2.copy(ignoreLibs = !includeLibs)) // todo lenses + invert flag ignoreLibs to includeLibs
+    } text "ignore libraries in second analysis?"
+    opt[Boolean]("cg1") optional() valueName "<call graph?>" action {
+      (irFromCg, opts) =>
+        opts.copy(config1 = opts.config1.copy(irFromCg = irFromCg)) // todo lenses
+    } text "construct call graph to only retrieve URLs in reachable methods in first analysis?"
+    opt[Boolean]("cg2") optional() valueName "<call graph?>" action {
+      (irFromCg, opts) =>
+        opts.copy(config2 = opts.config2.copy(irFromCg = irFromCg)) // todo lenses
+    } text "construct call graph to only retrieve URLs in reachable methods in second analysis?"
     arg[Path]("<file>...") unbounded() action {
       (f, opts) =>
         opts.copy(files = opts.files :+ f)
     } text "APK files"
     checkConfig {
       opts =>
-        if (opts.analysis1 == opts.analysis2)
+        if (opts.config1.analysis == opts.config2.analysis)
           Left("Comparing equal analyses")
         else
           Right(opts)

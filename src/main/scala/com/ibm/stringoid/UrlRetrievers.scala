@@ -10,12 +10,23 @@ import scala.collection.JavaConversions._
 
 trait UrlRetrievers extends AnalysisTypes with Urls {
 
-  import AnalysisType._
+  case class AnalysisConfig(irFromCg: Boolean, ignoreLibs: Boolean, analysis: AnalysisType.AnalysisType)
 
-  case class AnalysisConfig(irFromCg: Boolean, ignoreLibs: Boolean)
+  object AnalysisConfig {
+    implicit def AnalysisConfigEncodeJson: EncodeJson[AnalysisConfig] =
+      jencode3L(
+        (ac: AnalysisConfig) => {
+          val lib = if (ac.ignoreLibs) "ignoring" else "including"
+          val cg  = if (ac.irFromCg) "call graph" else "class hierarchy"
+          (ac.analysis, lib, cg)
+        }
+      )("analysis-type", "libraries", "reachability")
+
+    val default = AnalysisConfig(irFromCg = false, ignoreLibs = true, analysis = AnalysisType.Grep)
+  }
 
   case class AnalysisResult(
-    analysis: AnalysisType,
+    config: AnalysisConfig,
     runningTime: Double,
     urlsWithSources: UrlsWithSources
   )
@@ -24,8 +35,8 @@ trait UrlRetrievers extends AnalysisTypes with Urls {
     implicit def AnalysisResultEncodeJson: EncodeJson[AnalysisResult] =
       jencode3L(
         (ar: AnalysisResult) =>
-          (ar.analysis, ar.runningTime, ar.urlsWithSources)
-      )("analysis", "running-time", "urls-with-sources")
+          (ar.config, ar.runningTime, ar.urlsWithSources)
+      )("configuration", "running-time", "urls-with-sources")
   }
 
   /**
