@@ -3,8 +3,7 @@ package com.ibm.stringoid
 import java.nio.file.{Files, InvalidPathException, Path, Paths}
 
 import argonaut.Argonaut._
-import argonaut._
-import com.ibm.stringoid.util.{AnalysisConfig, TimeResult}
+import com.ibm.stringoid.util.TimeResult
 import scopt.{OptionParser, Read}
 
 import scala.collection.JavaConversions._

@@ -1,8 +1,8 @@
 package com.ibm.stringoid.retrieve.ir
 
 import java.nio.file.Path
+
 import com.ibm.stringoid.UrlRetrievers
-import com.ibm.stringoid.util.AnalysisConfig
 import com.ibm.wala.classLoader.IClass
 import com.ibm.wala.ssa.IR
 import com.ibm.wala.types.ClassLoaderReference

@@ -4,9 +4,32 @@ import java.nio.file.Path
 
 import argonaut.Argonaut._
 import argonaut._
-import com.ibm.stringoid.util.AnalysisConfig
+import com.ibm.stringoid.retrieve.grep.GrepUrlRetrievers
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.FixedPointAppendIrRetrievers
+import com.ibm.stringoid.retrieve.ir.constant.ConstantUrlFromIrRetrievers
+import com.ibm.stringoid.util.TimeResult
 
-trait AnalysisComparison extends UrlRetrievers {
+trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFromIrRetrievers with GrepUrlRetrievers {
+
+  import AnalysisType._
+
+  def retriever(at: AnalysisType, config: AnalysisConfig): UrlRetriever = at match {
+    case Constants =>
+      new ConstantUrlFromIrRetriever(config)
+    case Append =>
+      new FixedPointAppendIrRetriever(config)
+    case Grep =>
+      GrepUrlRetriever
+  }
+
+  def analysisType(retriever: UrlRetriever): AnalysisType = retriever match {
+    case _: ConstantUrlFromIrRetriever =>
+      Constants
+    case _: FixedPointAppendIrRetriever =>
+      Append
+    case GrepUrlRetriever =>
+      Grep
+  }
 
   case class AnalysisComparisonResult(a1: AnalysisResult, a2: AnalysisResult)
 
@@ -26,7 +49,9 @@ trait AnalysisComparison extends UrlRetrievers {
       apkPath: Path,
       config: AnalysisConfig
     ): AnalysisComparisonResult = {
-      AnalysisComparisonResult(retriever(a1, config)(apkPath), retriever(a2, config)(apkPath))
+      val TimeResult(result1, time1) = TimeResult(retriever(a1, config)(apkPath))
+      val TimeResult(result2, time2) = TimeResult(retriever(a2, config)(apkPath))
+      AnalysisComparisonResult(AnalysisResult(a1, time1, result1) , AnalysisResult(a2, time2, result2))
     }
   }
 }

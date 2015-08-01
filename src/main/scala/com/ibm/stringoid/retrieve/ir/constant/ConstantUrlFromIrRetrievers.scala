@@ -2,8 +2,7 @@ package com.ibm.stringoid.retrieve.ir.constant
 
 import java.nio.file.Path
 
-import com.ibm.stringoid.retrieve.ir.{IrUrlRetrievers, IrUrlRetriever}
-import com.ibm.stringoid.util.AnalysisConfig
+import com.ibm.stringoid.retrieve.ir.IrUrlRetrievers
 
 trait ConstantUrlFromIrRetrievers extends IrUrlRetrievers {
 

@@ -2,10 +2,8 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
 import java.nio.file.Path
 
-import com.ibm.stringoid.UrlRetrievers
-import com.ibm.stringoid.retrieve.ir.{IrUrlRetrievers, IrUrlRetriever}
+import com.ibm.stringoid.retrieve.ir.IrUrlRetrievers
 import com.ibm.stringoid.retrieve.ir.append.ValueNumber
-import com.ibm.stringoid.util.AnalysisConfig
 import com.ibm.wala.ssa.{IR, SymbolTable}
 
 trait FixedPointAppendIrRetrievers extends IrUrlRetrievers {
