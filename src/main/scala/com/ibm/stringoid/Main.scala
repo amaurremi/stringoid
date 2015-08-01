@@ -88,7 +88,7 @@ object Main extends AnalysisComparison {
     } text "APK files"
     checkConfig {
       opts =>
-        if (opts.config1.analysis == opts.config2.analysis)
+        if (opts.config1 == opts.config2)
           Left("Comparing equal analyses")
         else
           Right(opts)
