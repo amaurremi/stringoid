@@ -6,8 +6,6 @@ import argonaut.Argonaut._
 import com.ibm.stringoid.util.TimeResult
 import scopt.{OptionParser, Read}
 
-import scala.collection.JavaConversions._
-
 object Main extends AnalysisComparison {
 
   import AnalysisType._
