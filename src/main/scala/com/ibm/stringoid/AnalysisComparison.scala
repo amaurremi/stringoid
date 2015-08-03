@@ -13,23 +13,15 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
 
   import AnalysisType._
 
-  def retriever(config: AnalysisConfig): UrlRetriever = config.analysis match {
-    case Constants =>
-      new ConstantUrlFromIrRetriever(config)
-    case Append =>
-      new FixedPointAppendIrRetriever(config)
-    case Grep =>
-      GrepUrlRetriever
-  }
-
-  def analysisType(retriever: UrlRetriever): AnalysisType = retriever match {
-    case _: ConstantUrlFromIrRetriever =>
-      Constants
-    case _: FixedPointAppendIrRetriever =>
-      Append
-    case GrepUrlRetriever =>
-      Grep
-  }
+  def retriever(config: AnalysisConfig): UrlRetriever =
+    config.analysis match {
+      case Constants =>
+        new ConstantUrlFromIrRetriever(config)
+      case Append =>
+        new FixedPointAppendIrRetriever(config)
+      case Grep =>
+        GrepUrlRetriever
+    }
 
   case class AnalysisComparisonResult(
     result1: AnalysisResult,

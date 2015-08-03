@@ -8,7 +8,7 @@ import scopt.{OptionParser, Read}
 
 object Main extends AnalysisComparison {
 
-  import AnalysisType._
+  import AnalysisType._, FilterType._
 
   // Program arguments example
   // --a1 append --a2 constants --lib1 false --lib2 false --cg1 false --cg2 false src/test/resources/cgeo.geocaching.developer-build.apk src/test/resources/playdrone_apks/com.facebook.katana-4947895.apk src/test/resources/playdrone_apks/com.google.android.apps.maps-804010103.apk src/test/resources/playdrone_apks/com.google.android.apps.plus-413339268.apk src/test/resources/playdrone_apks/com.google.android.gm-4900120.apk src/test/resources/playdrone_apks/com.google.android.gms-6183036.apk src/test/resources/playdrone_apks/com.google.android.googlequicksearchbox-300306150.apk src/test/resources/playdrone_apks/com.google.android.street-18102.apk src/test/resources/playdrone_apks/com.google.android.tts-210302120.apk src/test/resources/playdrone_apks/com.google.android.videos-33331.apk src/test/resources/playdrone_apks/com.google.android.youtube-51405300.apk
@@ -52,6 +52,7 @@ object Main extends AnalysisComparison {
         })
 
     private[this] val analysisTypes = AnalysisType.values mkString ", "
+    private[this] val filterTypes   = FilterType.values mkString ", "
 
     head("stringoid")
     opt[AnalysisType]("a1") required() valueName "<analysis1>" action {
@@ -62,6 +63,14 @@ object Main extends AnalysisComparison {
       (analysis, opts) =>
         opts.copy(config2 = opts.config2.copy(analysis = analysis)) // todo lenses
     } text s"second analysis type (one of $analysisTypes)"
+    opt[FilterType]("filter1") optional() valueName "<filter1>" action {
+      (filter, opts) =>
+        opts.copy(config1 = opts.config1.copy(filter = filter)) // todo lenses
+    } text s"filter for 1st-analysis results (one of $filterTypes)"
+    opt[FilterType]("filter2") optional() valueName "<filter2>" action {
+      (filter, opts) =>
+        opts.copy(config2 = opts.config2.copy(filter = filter)) // todo lenses
+    } text s"filter for 2nd-analysis results (one of $filterTypes)"
     opt[Path]('o', "outdir") optional() valueName "<out dir>" action {
       (o, opts) =>
         opts.copy(outDir = o)
