@@ -24,24 +24,7 @@ trait UrlRetrievers extends AnalysisTypes with FilterTypes with Urls {
         }
       )("analysis type", "libraries", "reachability")
 
-    val default = AnalysisConfig(irFromCg = false, ignoreLibs = true, analysis = Grep, filter = Identity)
-  }
-
-  case class AnalysisResult(
-    config: AnalysisConfig,
-    runningTime: Double,
-    urlsWithSources: UrlsWithSources,
-    urlsNum: Int
-  )
-
-  object AnalysisResult {
-    implicit def AnalysisResultEncodeJson: EncodeJson[AnalysisResult] =
-      jencode4L(
-        (ar: AnalysisResult) => {
-          import ar._
-          (config, runningTime, urlsWithSources, urlsNum)
-        }
-      )("configuration", "running time", "urls with sources", "number of URLs")
+    val default = AnalysisConfig(irFromCg = false, ignoreLibs = true, analysis = Unset, filter = Identity)
   }
 
   /**

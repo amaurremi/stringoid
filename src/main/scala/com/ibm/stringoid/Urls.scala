@@ -13,7 +13,7 @@ trait Urls {
     implicit def UrlEncodeJson: EncodeJson[Url] =
       jencode1L(
         (u: Url) => u.url
-      )("concatenation")
+      )("concat")
   }
 
   sealed trait UrlPart
@@ -29,9 +29,9 @@ trait Urls {
             case UrlPhi(urls) =>
               ("phis", urls.toList.jencode) // todo why do we need to convert it to a list?
             case UrlPlaceHolder =>
-              ("variable", "n/a".jencode)
+              ("variable", "undefined".jencode)
             case UrlWithCycle =>
-              ("cycle", "n/a".jencode)
+              ("cycle", "undefined".jencode)
           }
       )("kind", "value")
   }
@@ -54,7 +54,7 @@ trait Urls {
       jencode2L(
         (um: UrlToMethodsPair) =>
           (um.url, um.methods)
-      )("url", "found in methods")
+      )("url", "methods")
   }
 
   // todo List should be a Set but Argonaut doesn't understand it
@@ -76,7 +76,7 @@ trait Urls {
       jencode1L(
         (uws: UrlsWithSources) =>
           jsonMap(uws.uws)
-      )("url-to-methods map")
+      )("url2methods")
     }
   }
 }

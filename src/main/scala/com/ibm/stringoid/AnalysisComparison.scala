@@ -13,17 +13,42 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
 
   import AnalysisType._
 
-  def retriever(config: AnalysisConfig): UrlRetriever =
+  def retriever(config: AnalysisConfig, apkPath: Path): UrlsWithSources =
     config.analysis match {
       case Constants =>
-        new ConstantUrlFromIrRetriever(config)
+        (new ConstantUrlFromIrRetriever(config))(apkPath)
       case Append =>
-        new FixedPointAppendIrRetriever(config)
+        (new FixedPointAppendIrRetriever(config))(apkPath)
       case Grep =>
-        GrepUrlRetriever
+        GrepUrlRetriever(apkPath)
     }
 
-  case class AnalysisComparisonResult(
+  case class AnalysisResult private(
+    config: AnalysisConfig,
+    runningTime: Double,
+    urlsWithSources: UrlsWithSources,
+    urlsNum: Int
+  )
+
+  object AnalysisResult {
+    implicit def AnalysisResultEncodeJson: EncodeJson[AnalysisResult] =
+      jencode4L(
+        (ar: AnalysisResult) => {
+          import ar._
+          (config, runningTime, urlsWithSources, urlsNum)
+        }
+      )("config", "runtime", "urls", "num")
+
+    def apply(
+      config: AnalysisConfig,
+      apkPath: Path
+    ): AnalysisResult = {
+      val TimeResult(result, time) = TimeResult(retriever(config, apkPath))
+      AnalysisResult(config, time, result, result.uws.size)
+    }
+  }
+
+  case class AnalysisComparisonResult private(
     result1: AnalysisResult,
     result2: AnalysisResult,
     in1not2size: Int,
@@ -39,12 +64,12 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
           import acr._
           (result1, result2, in1not2size, in2not1size, in1not2, in2not1)
         }
-      )("1st analysis",
-        "2nd analysis",
-        "1st has > URLs than 2nd by",
-        "2nd has > URLs than 1st by",
-        "in 1st analysis but not in 2nd",
-        "in 2nd analysis but not in 1st")
+      )("analysis1",
+        "analysis2",
+        "diff_1_2", // difference between the number of results in the first and second analysis
+        "diff_2_1", // difference between the number of results in the second and first analysis
+        "in1not2",  // URLs present in the first but not second analysis
+        "in2not1")  // URLs present in the second but not first analysis
 
     /**
      * Retrieve the URLs for an APK file using WALA and using grep.
@@ -54,10 +79,8 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
       config2: AnalysisConfig,
       apkPath: Path
     ): AnalysisComparisonResult = {
-      val TimeResult(result1, time1) = TimeResult(retriever(config1)(apkPath))
-      val TimeResult(result2, time2) = TimeResult(retriever(config2)(apkPath))
-      val ar1 = AnalysisResult(config1, time1, result1, result1.uws.size)
-      val ar2 = AnalysisResult(config2, time2, result2, result2.uws.size)
+      val ar1 = AnalysisResult(config1, apkPath)
+      val ar2 = AnalysisResult(config2, apkPath)
       val urls1 = ar1.urlsWithSources.uws.keySet
       val urls2 = ar2.urlsWithSources.uws.keySet
       val in1not2 = (urls1 diff urls2).toSet
