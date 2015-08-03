@@ -22,7 +22,7 @@ trait UrlRetrievers extends AnalysisTypes with Urls {
           val cg  = if (ac.irFromCg) "call graph" else "class hierarchy"
           (prettyPrint(ac.analysis), lib, cg)
         }
-      )("analysis type", "libraries", "reachability")
+      )("analysis", "libs", "reachability")
 
     val default = AnalysisConfig(irFromCg = false, ignoreLibs = true, analysis = Unset)
   }
