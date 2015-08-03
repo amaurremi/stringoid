@@ -8,12 +8,12 @@ import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 
 import scala.collection.JavaConversions._
 
-trait UrlRetrievers extends AnalysisTypes with FilterTypes with Urls {
+trait UrlRetrievers extends AnalysisTypes with Urls {
 
   import AnalysisType._
   import FilterType._
 
-  case class AnalysisConfig(irFromCg: Boolean, ignoreLibs: Boolean, analysis: AnalysisType, filter: FilterType)
+  case class AnalysisConfig(irFromCg: Boolean, ignoreLibs: Boolean, analysis: AnalysisType)
 
   object AnalysisConfig {
     implicit def AnalysisConfigEncodeJson: EncodeJson[AnalysisConfig] =
@@ -25,7 +25,7 @@ trait UrlRetrievers extends AnalysisTypes with FilterTypes with Urls {
         }
       )("analysis type", "libraries", "reachability")
 
-    val default = AnalysisConfig(irFromCg = false, ignoreLibs = true, analysis = Unset, filter = Identity)
+    val default = AnalysisConfig(irFromCg = false, ignoreLibs = true, analysis = Unset)
   }
 
   /**

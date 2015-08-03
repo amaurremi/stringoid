@@ -78,7 +78,6 @@ object Main extends AnalysisComparison {
         })
 
     private[this] val analysisTypes = AnalysisType.validValues mkString ", "
-    private[this] val filterTypes   = FilterType.values mkString ", "
 
     head("stringoid")
     cmd("compare") valueName "compare" action {
@@ -97,14 +96,6 @@ object Main extends AnalysisComparison {
       (analysis, opts) =>
         opts.copy(config2 = opts.config2.copy(analysis = analysis)) // todo lenses
     } text s"second analysis type (one of $analysisTypes)"
-    opt[FilterType]("filter") optional() valueName "<filter1>" action {
-      (filter, opts) =>
-        opts.copy(config1 = opts.config1.copy(filter = filter)) // todo lenses
-    } text s"filter for 1st-analysis results (one of $filterTypes)"
-    opt[FilterType]("filter2") optional() valueName "<filter2>" action {
-      (filter, opts) =>
-        opts.copy(config2 = opts.config2.copy(filter = filter)) // todo lenses
-    } text s"filter for 2nd-analysis results (one of $filterTypes)"
     opt[Path]('o', "outdir") optional() valueName "<out dir>" action {
       (o, opts) =>
         opts.copy(outDir = o)
