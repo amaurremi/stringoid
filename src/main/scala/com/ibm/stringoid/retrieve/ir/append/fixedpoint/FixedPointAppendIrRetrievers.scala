@@ -6,6 +6,7 @@ import com.ibm.stringoid.retrieve.ir.IrUrlRetrievers
 import com.ibm.stringoid.retrieve.ir.append.ValueNumber
 import com.ibm.wala.analysis.typeInference.TypeInference
 import com.ibm.wala.ssa.{IR, SymbolTable}
+import com.ibm.wala.util.debug.UnimplementedError
 
 import scala.collection.mutable
 
@@ -84,10 +85,14 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers {
           if (table isConstant vn)
             List(UrlString((table getConstantValue vn).toString))
           else {
-//            val typeInference = typeInferenceMap getOrElseUpdate (ir, TypeInference.make(ir, true))
-//            val abstraction = typeInference.getType(vn)
-//            List(VariableType(abstraction.toString)) // todo avoid creating type inference each time
-            List(UrlPlaceHolder)
+            try {
+              val typeInference = typeInferenceMap getOrElseUpdate (ir, TypeInference.make(ir, true))
+              val abstraction = typeInference.getType(vn)
+              List(VariableType(abstraction.toString))
+            } catch {
+              case _: UnimplementedError =>
+                List(UrlPlaceHolder)
+            }
           }
         // todo there is also the case where the append argument is a StringBuilder! This is not handled currently!
         case SingleCycle =>

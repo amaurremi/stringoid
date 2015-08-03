@@ -39,8 +39,6 @@ object Main extends AnalysisComparison {
     Try(AnalysisResult.fromConfig(config, apkPath).asJson.nospaces)
   }
 
-
-
   /**
    * Write the output of the URL retrieval to specified file
    */
