@@ -36,7 +36,7 @@ object Main extends AnalysisComparison {
 
   def analyseAPK(analysis: String, apkPath: Path, useCallGraph: Boolean, ignoreLibraries: Boolean) : Try[String] = {
     val config = AnalysisConfig(useCallGraph, ignoreLibraries, AnalysisType.withName(analysis))
-    Try(AnalysisResult.fromConfig(config, apkPath).asJson.spaces2)
+    Try(AnalysisResult.fromConfig(config, apkPath).asJson.nospaces)
   }
 
 
