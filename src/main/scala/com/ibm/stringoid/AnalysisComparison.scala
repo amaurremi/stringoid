@@ -23,7 +23,7 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
         GrepUrlRetriever(apkPath)
     }
 
-  case class AnalysisResult private(
+  case class AnalysisResult private[AnalysisComparison](
     config: AnalysisConfig,
     runningTime: Double,
     urlsWithSources: UrlsWithSources,
@@ -48,7 +48,7 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
     }
   }
 
-  case class AnalysisComparisonResult private(
+  case class AnalysisComparisonResult private[AnalysisComparison](
     result1: AnalysisResult,
     result2: AnalysisResult,
     in1not2size: Int,
