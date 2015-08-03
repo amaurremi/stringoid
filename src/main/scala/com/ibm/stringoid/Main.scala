@@ -9,7 +9,8 @@ import scopt.{OptionParser, Read}
 
 object Main extends AnalysisComparison {
 
-  import AnalysisType._, FilterType._
+  import AnalysisType._
+  import FilterType._
 
   // Program arguments example for comparison
   // compare --a1 append --a2 constants --lib1 false --lib2 false --cg1 false --cg2 false src/test/resources/cgeo.geocaching.developer-build.apk src/test/resources/playdrone_apks/com.facebook.katana-4947895.apk src/test/resources/playdrone_apks/com.google.android.apps.maps-804010103.apk src/test/resources/playdrone_apks/com.google.android.apps.plus-413339268.apk src/test/resources/playdrone_apks/com.google.android.gm-4900120.apk src/test/resources/playdrone_apks/com.google.android.gms-6183036.apk src/test/resources/playdrone_apks/com.google.android.googlequicksearchbox-300306150.apk src/test/resources/playdrone_apks/com.google.android.street-18102.apk src/test/resources/playdrone_apks/com.google.android.tts-210302120.apk src/test/resources/playdrone_apks/com.google.android.videos-33331.apk src/test/resources/playdrone_apks/com.google.android.youtube-51405300.apk

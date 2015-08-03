@@ -10,7 +10,8 @@ import scala.collection.JavaConversions._
 
 trait UrlRetrievers extends AnalysisTypes with FilterTypes with Urls {
 
-  import AnalysisType._, FilterType._
+  import AnalysisType._
+  import FilterType._
 
   case class AnalysisConfig(irFromCg: Boolean, ignoreLibs: Boolean, analysis: AnalysisType, filter: FilterType)
 
