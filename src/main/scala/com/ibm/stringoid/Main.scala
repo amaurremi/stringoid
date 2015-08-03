@@ -7,6 +7,8 @@ import argonaut.Json
 import com.ibm.stringoid.util.TimeResult
 import scopt.{OptionParser, Read}
 
+import scala.util.Try
+
 object Main extends AnalysisComparison {
 
   import AnalysisType._
@@ -31,6 +33,13 @@ object Main extends AnalysisComparison {
           }
       }
     }
+
+  def analyseAPK(analysis: String, apkPath: Path, useCallGraph: Boolean, ignoreLibraries: Boolean) : Try[String] = {
+    val config = AnalysisConfig(useCallGraph, ignoreLibraries, AnalysisType.withName(analysis))
+    Try(AnalysisResult(config, apkPath).asJson.spaces2)
+  }
+
+
 
   /**
    * Write the output of the URL retrieval to specified file

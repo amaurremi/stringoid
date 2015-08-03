@@ -4,7 +4,10 @@ import java.nio.file.Path
 
 import com.ibm.stringoid.retrieve.ir.IrUrlRetrievers
 import com.ibm.stringoid.retrieve.ir.append.ValueNumber
+import com.ibm.wala.analysis.typeInference.TypeInference
 import com.ibm.wala.ssa.{IR, SymbolTable}
+
+import scala.collection.mutable
 
 trait FixedPointAppendIrRetrievers extends IrUrlRetrievers {
 
@@ -42,10 +45,9 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers {
           val strings = stringAppends flatMap {
             _.flatten
           }
-          val table = ir.getSymbolTable
           strings collect {
-            case string if hasUrlPrefix(table, string) =>
-              Url(parseUrl(table, string))
+            case string if hasUrlPrefix(ir.getSymbolTable, string) =>
+              Url(parseUrl(ir, string))
           }
         case None =>
           Set.empty[Url]
@@ -66,20 +68,27 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers {
       }
     }
 
-    private[this] def parseUrl(table: SymbolTable, string: SingleStringConcatenation): List[UrlPart] = {
+    private[this] val typeInferenceMap = mutable.Map.empty[IR, TypeInference]
+
+    private[this] def parseUrl(ir: IR, string: SingleStringConcatenation): List[UrlPart] = {
+      val table = ir.getSymbolTable
       string match {
         case SingleStringList(strings) =>
           // todo tail recursion
           strings.foldLeft(List.empty[UrlPart]) {
             case (prefix, s) =>
-              prefix ++ parseUrl(table, s)
+              prefix ++ parseUrl(ir, s)
           }
         case SingleAppendArgument(vn) =>
           // todo we could add more URL-part-types and be more precise about the type of value
           if (table isConstant vn)
             List(UrlString((table getConstantValue vn).toString))
-          else
+          else {
+//            val typeInference = typeInferenceMap getOrElseUpdate (ir, TypeInference.make(ir, true))
+//            val abstraction = typeInference.getType(vn)
+//            List(VariableType(abstraction.toString)) // todo avoid creating type inference each time
             List(UrlPlaceHolder)
+          }
         // todo there is also the case where the append argument is a StringBuilder! This is not handled currently!
         case SingleCycle =>
           List(UrlWithCycle)

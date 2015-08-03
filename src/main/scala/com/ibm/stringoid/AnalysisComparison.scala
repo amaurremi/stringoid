@@ -37,7 +37,7 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
           import ar._
           (config, runningTime, urlsWithSources, urlsNum)
         }
-      )("config", "runtime", "urls", "num")
+      )("config", "runtime", "result", "url-num")
 
     def apply(
       config: AnalysisConfig,

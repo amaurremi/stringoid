@@ -30,6 +30,8 @@ trait Urls {
               ("phis", urls.toList.jencode) // todo why do we need to convert it to a list?
             case UrlPlaceHolder =>
               ("variable", "undefined".jencode)
+            case VariableType(tpe) =>
+              ("variable", tpe.jencode)
             case UrlWithCycle =>
               ("cycle", "undefined".jencode)
           }
@@ -43,6 +45,8 @@ trait Urls {
   case class UrlPhi(urls: Set[Url]) extends UrlPart
 
   case object UrlPlaceHolder extends UrlPart
+
+  case class VariableType(tpe: String) extends UrlPart
 
   case object UrlWithCycle extends UrlPart
 
