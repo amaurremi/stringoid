@@ -26,9 +26,9 @@ object Main extends AnalysisComparison {
           TimeResult.printTime("processing " + file.toString) {
             mode match {
               case Compare        =>
-                writeComparison(AnalysisComparisonResult(config1, config2, file), file, outDir)
+                writeComparison(AnalysisComparisonResult.fromConfigs(config1, config2, file), file, outDir)
               case SingleAnalysis =>
-                writeSingleAnalysis(AnalysisResult(config1, file), file, outDir)
+                writeSingleAnalysis(AnalysisResult.fromConfig(config1, file), file, outDir)
             }
           }
       }
@@ -36,7 +36,7 @@ object Main extends AnalysisComparison {
 
   def analyseAPK(analysis: String, apkPath: Path, useCallGraph: Boolean, ignoreLibraries: Boolean) : Try[String] = {
     val config = AnalysisConfig(useCallGraph, ignoreLibraries, AnalysisType.withName(analysis))
-    Try(AnalysisResult(config, apkPath).asJson.spaces2)
+    Try(AnalysisResult.fromConfig(config, apkPath).asJson.spaces2)
   }
 
 

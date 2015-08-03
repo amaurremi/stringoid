@@ -39,7 +39,7 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
         }
       )("config", "runtime", "result", "url-num")
 
-    def apply(
+    def fromConfig(
       config: AnalysisConfig,
       apkPath: Path
     ): AnalysisResult = {
@@ -74,13 +74,13 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
     /**
      * Retrieve the URLs for an APK file using WALA and using grep.
      */
-    def apply(
+    def fromConfigs(
       config1: AnalysisConfig,
       config2: AnalysisConfig,
       apkPath: Path
     ): AnalysisComparisonResult = {
-      val ar1 = AnalysisResult(config1, apkPath)
-      val ar2 = AnalysisResult(config2, apkPath)
+      val ar1 = AnalysisResult.fromConfig(config1, apkPath)
+      val ar2 = AnalysisResult.fromConfig(config2, apkPath)
       val urls1 = ar1.urlsWithSources.uws.keySet
       val urls2 = ar2.urlsWithSources.uws.keySet
       val in1not2 = (urls1 diff urls2).toSet
