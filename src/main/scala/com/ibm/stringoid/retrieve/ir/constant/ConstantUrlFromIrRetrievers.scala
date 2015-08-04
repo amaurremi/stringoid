@@ -13,7 +13,7 @@ trait ConstantUrlFromIrRetrievers extends IrUrlRetrievers {
   final class ConstantUrlFromIrRetriever(override val config: AnalysisConfig) extends IrUrlRetriever {
 
     override def apply(apkPath: Path): UrlsWithSources = {
-      val urlMethodPairs: Seq[(Url, Method)] = getIrs(apkPath) flatMap {
+      val urlMethodPairs: Iterator[(Url, Method)] = getIrs(apkPath) flatMap {
         ir =>
           getConstantUrlStrings(ir) map {
             url =>

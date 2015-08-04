@@ -21,28 +21,27 @@ trait IrUrlRetrievers extends UrlRetrievers {
 
     protected def config: AnalysisConfig
 
-    protected final def getIrsFromBuilder(builder: FlexibleCallGraphBuilder): Seq[IR] = {
+    protected final def getIrsFromBuilder(builder: FlexibleCallGraphBuilder): Iterator[IR] = {
       val includeLib = !config.ignoreLibs
       if (config.irFromCg) {
-        (builder.cg collect {
+        builder.cg.iterator collect {
           case node if includeLib || isApplicationClass(node.getMethod.getDeclaringClass) =>
             node.getIR
-        })(breakOut)
+        }
       }
       else {
-        val irs = for {
+        for {
           c <- builder.cha.iterator()
           if includeLib || isApplicationClass(c)
           m <- c.getAllMethods
         } yield builder.cache.getIR(m)
-        irs.toSeq
       }
     }
 
     private[this] def isApplicationClass(c: IClass): Boolean =
       c.getClassLoader.getReference == ClassLoaderReference.Application
 
-    protected final def getIrs(apkPath: Path): Seq[IR] = {
+    protected final def getIrs(apkPath: Path): Iterator[IR] = { // todo some immutable stream collection?
       implicit val config = configWithApk(apkPath)
       val irs = getIrsFromBuilder(new FlexibleCallGraphBuilder)
       irs filter {

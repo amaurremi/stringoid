@@ -18,7 +18,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers {
     with StringAppendModule {
 
     override def apply(apkPath: Path): UrlsWithSources = {
-      val urlsWithSources: Seq[(Url, Method)] = for {
+      val urlsWithSources: Iterator[(Url, Method)] = for {
         ir <- getIrs(apkPath)
         constants = getConstantUrlStrings(ir) map {
           u =>
