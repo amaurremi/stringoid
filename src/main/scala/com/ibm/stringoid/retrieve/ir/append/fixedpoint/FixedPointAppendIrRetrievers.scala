@@ -5,7 +5,7 @@ import java.nio.file.Path
 import com.ibm.stringoid.retrieve.ir.IrUrlRetrievers
 import com.ibm.stringoid.retrieve.ir.append.ValueNumber
 import com.ibm.wala.analysis.typeInference.TypeInference
-import com.ibm.wala.ssa.{IR, SymbolTable}
+import com.ibm.wala.ssa._
 import com.ibm.wala.util.debug.UnimplementedError
 
 import scala.collection.mutable
@@ -85,20 +85,34 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers {
           if (table isConstant vn)
             List(UrlString((table getConstantValue vn).toString))
           else {
-            try {
+            val typeName = try {
               val typeInference = typeInferenceMap getOrElseUpdate (ir, TypeInference.make(ir, true))
               val abstraction = typeInference.getType(vn)
-              List(VariableType(abstraction.toString))
+              abstraction.toString
             } catch {
               case _: UnimplementedError =>
-                List(UrlPlaceHolder)
+                "undefined"
             }
+            List(VariableType(typeName, getSource(ir, vn)))
           }
         // todo there is also the case where the append argument is a StringBuilder! This is not handled currently!
         case SingleCycle =>
           List(UrlWithCycle)
       }
     }
+
+    private[this] def getSource(ir: IR, vn: ValueNumber): VariableSource =
+      if (ir.getSymbolTable.isParameter(vn))
+        Parameter
+      else
+        new DefUse(ir).getDef(vn) match {
+          case fieldAccess: SSAFieldAccessInstruction =>
+            FieldAccess
+          case invoke: SSAInvokeInstruction           =>
+            MethodReturn(invoke.getDeclaredTarget.toString)
+          case _                                      =>
+            UnknownSource
+        }
   }
 
 }

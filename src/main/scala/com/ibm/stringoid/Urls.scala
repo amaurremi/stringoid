@@ -28,26 +28,53 @@ trait Urls {
               ("constant", string.jencode)
             case UrlPhi(urls) =>
               ("phis", urls.toList.jencode) // todo why do we need to convert it to a list?
-            case UrlPlaceHolder =>
-              ("variable", "undefined".jencode)
-            case VariableType(tpe) =>
-              ("variable", tpe.jencode)
+            case v: VariableType =>
+              ("variable", VariableType.VariableTypeEncodeJson.apply(v)) // for some reason v.jencode results in a stack overflow
             case UrlWithCycle =>
               ("cycle", "undefined".jencode)
           }
       )("kind", "value")
   }
+  
+  sealed trait VariableSource
+  
+  case object Parameter extends VariableSource
+  
+  case class MethodReturn(methodName: String) extends VariableSource
+  
+  case object FieldAccess extends VariableSource
 
+  case object UnknownSource extends VariableSource
+  
   case class UrlString(string: String) extends UrlPart {
     override def toString = string
   }
 
   case class UrlPhi(urls: Set[Url]) extends UrlPart
 
-  case object UrlPlaceHolder extends UrlPart
+  case class VariableType(typeName: String, source: VariableSource) extends UrlPart
 
-  case class VariableType(tpe: String) extends UrlPart
+  object VariableType {
 
+    implicit def VariableTypeEncodeJson: EncodeJson[VariableType] =
+      jencode2L(
+        (v: VariableType) => {
+          val source =
+            v.source match {
+              case Parameter =>
+                "parameter"
+              case MethodReturn(methodName) =>
+                "method return: " + methodName
+              case FieldAccess =>
+                "field access"
+              case UnknownSource =>
+                "other"
+            }
+          (v.typeName, source)
+        }
+      )("type", "source")
+  }
+  
   case object UrlWithCycle extends UrlPart
 
   type Method = String

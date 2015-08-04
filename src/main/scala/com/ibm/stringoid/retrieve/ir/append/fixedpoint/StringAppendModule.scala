@@ -147,7 +147,6 @@ trait StringAppendModule extends StringAppendDatastructures {
                 // todo note that this means that we are appending to a StringBuilder for which we haven't added an ASBO to the vnToAsbo map.
                 // todo I think this means that the StringBuilder has been passed as a parameter or is a field. We should handle this case too at some point.
                 IdentityOperator()
-//                throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
             }
           case inv: SSAInvokeInstruction if isSbConstructorWithStringParam(inv) =>
             vnToAsbo get getSbConstructorDef(inv) match {
