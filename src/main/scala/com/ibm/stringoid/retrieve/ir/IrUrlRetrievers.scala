@@ -3,10 +3,13 @@ package com.ibm.stringoid.retrieve.ir
 import java.nio.file.Path
 
 import com.ibm.stringoid.UrlRetrievers
-import com.ibm.wala.classLoader.IClass
-import com.ibm.wala.ssa.IR
+import com.ibm.wala.classLoader.{ClassLoaderFactoryImpl, IClass}
+import com.ibm.wala.dalvik.classLoader.{DexFileModule, DexIRFactory}
+import com.ibm.wala.ipa.callgraph.AnalysisCache
+import com.ibm.wala.ipa.cha.ClassHierarchy
+import com.ibm.wala.ssa.{DefaultIRFactory, IR}
 import com.ibm.wala.types.ClassLoaderReference
-import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
+import edu.illinois.wala.ipa.callgraph.{AnalysisScope, Dependency, FlexibleCallGraphBuilder}
 
 import scala.collection.JavaConversions._
 import scala.collection._
@@ -21,32 +24,44 @@ trait IrUrlRetrievers extends UrlRetrievers {
 
     protected def config: AnalysisConfig
 
-    protected final def getIrsFromBuilder(builder: FlexibleCallGraphBuilder): Iterator[IR] = {
+    private[this] def isApplicationClass(c: IClass): Boolean =
+      c.getClassLoader.getReference == ClassLoaderReference.Application
+
+    protected final def getIrs(apkPath: Path): Iterator[IR] = { // todo some immutable stream collection?
+      implicit val analysisConfig = configWithApk(apkPath)
       val includeLib = !config.ignoreLibs
-      if (config.irFromCg) {
-        builder.cg.iterator collect {
+      val irs = if (config.irFromCg) {
+        new FlexibleCallGraphBuilder().cg.iterator collect {
           case node if includeLib || isApplicationClass(node.getMethod.getDeclaringClass) =>
             node.getIR
         }
       }
       else {
+        val scope = AnalysisScope(Seq.empty[Dependency])
+        val cha = getCha(scope)
+        val irFactory = getIrFactory(scope)
+        val cache = new AnalysisCache(irFactory)
         for {
-          c <- builder.cha.iterator()
+          c <- cha.iterator()
           if includeLib || isApplicationClass(c)
           m <- c.getAllMethods
-        } yield builder.cache.getIR(m)
+        } yield cache getIR m
       }
-    }
-
-    private[this] def isApplicationClass(c: IClass): Boolean =
-      c.getClassLoader.getReference == ClassLoaderReference.Application
-
-    protected final def getIrs(apkPath: Path): Iterator[IR] = { // todo some immutable stream collection?
-      implicit val config = configWithApk(apkPath)
-      val irs = getIrsFromBuilder(new FlexibleCallGraphBuilder)
       irs filter {
         Option(_).isDefined
       }
+    }
+
+    private[this] def getIrFactory(scope: AnalysisScope) =
+      if (scope getModules ClassLoaderReference.Application exists {
+        case _: DexFileModule => true
+        case _                => false
+      }) new DexIRFactory() else new DefaultIRFactory()
+
+    private[this] def getCha(implicit scope: AnalysisScope): ClassHierarchy = {
+      val includeLib = !config.ignoreLibs
+      val classLoaderImpl = new ClassLoaderFactoryImpl(scope.getExclusions)
+      ClassHierarchy.make(scope, classLoaderImpl)
     }
 
     def getConstantUrlStrings(ir: IR): Seq[String] = {
