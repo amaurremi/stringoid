@@ -20,9 +20,9 @@ trait StringAppendModule extends StringAppendDatastructures {
     "No edge transfer functions for StringAppend fixed-point solver."
 
   /**
-   * Get the string concatenation result corresponding to the last instruction containing a ASBO-to-string map
+   * Get the string concatenation results.
    */
-  def stringAppendsAtEnd(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]): Set[AltStringConcatenation] = {
+  def stringAppends(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]): Set[AltStringConcatenation] = {
     val solver = new StringAppendFixedPointSolver(ir, vnToAsbo)
     val result = solver.result
     (solver.graph flatMap {

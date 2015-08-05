@@ -65,7 +65,7 @@ object Main extends AnalysisComparison {
   private[this] def write(json: Json, logName: String, outDir: Path) = {
     Files.createDirectories(outDir)
     val logPath = Paths.get(outDir.toString, logName)
-    Files.write(logPath, json.spaces2.getBytes) // todo is this bad?
+    Files.write(logPath, json.spaces2.getBytes)
   }
 
   sealed trait AnalysisMode

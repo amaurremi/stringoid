@@ -24,7 +24,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers {
           u =>
             Url(List(UrlString(u)))
         }
-        url <- getUrlsForIr(ir) ++ constants
+        url <- getConcatUrlsForIr(ir) ++ constants
       } yield url -> ir.getMethod.toString
       val urlWithSourcesMap = urlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
         case (prevMap, (url, method)) =>
@@ -38,12 +38,12 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers {
       UrlsWithSources(urlWithListSourcesMap)
     }
 
-    private[this] def getUrlsForIr(ir: IR): Set[Url] =
+    private[this] def getConcatUrlsForIr(ir: IR): Set[Url] =
       asboSolver(ir) match {
         case Some(solver) =>
           val valNumToAsbo = valueNumberToAsbo(solver)
-          val stringAppends = stringAppendsAtEnd(ir, valNumToAsbo)
-          val strings = stringAppends flatMap {
+          val appends      = stringAppends(ir, valNumToAsbo)
+          val strings      = appends flatMap {
             _.flatten
           }
           strings collect {
