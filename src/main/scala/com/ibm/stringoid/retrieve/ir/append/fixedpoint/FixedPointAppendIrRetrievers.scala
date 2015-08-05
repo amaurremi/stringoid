@@ -7,10 +7,11 @@ import com.ibm.stringoid.retrieve.ir.append.ValueNumber
 import com.ibm.wala.analysis.typeInference.TypeInference
 import com.ibm.wala.ssa._
 import com.ibm.wala.util.debug.UnimplementedError
+import scala.collection.breakOut
 
 import scala.collection.mutable
 
-trait FixedPointAppendIrRetrievers extends IrUrlRetrievers {
+trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpecifiers {
 
   final class FixedPointAppendIrRetriever(override val config: AnalysisConfig)
     extends IrUrlRetriever
@@ -20,11 +21,13 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers {
     override def apply(apkPath: Path): UrlsWithSources = {
       val urlsWithSources: Iterator[(Url, Method)] = for {
         ir <- getIrs(apkPath)
-        constants = getConstantUrlStrings(ir) map {
-          u =>
-            Url(List(UrlString(u)))
-        }
-        url <- getConcatUrlsForIr(ir) ++ constants
+        formatted = getFormattedUrlStrings(ir)
+//        constants = getConstantUrlStrings(ir) map {
+//          u =>
+//            Url(List(UrlString(u)))
+//        }
+//        appends   = getConcatUrlsForIr(ir)
+        url <- formatted // appends ++ constants ++ formatted // todo merge appends with formatted
       } yield url -> ir.getMethod.toString
       val urlWithSourcesMap = urlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
         case (prevMap, (url, method)) =>
@@ -37,6 +40,41 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers {
       }
       UrlsWithSources(urlWithListSourcesMap)
     }
+
+    def getFormattedUrlStrings(ir: IR): Set[Url] = {
+      (ir.getInstructions flatMap {
+        case instr: SSAInvokeInstruction =>
+          getUrlFromStringFormat(instr, ir.getSymbolTable) map {
+            urlPrefix =>
+              val formattedParts = parse(urlPrefix, instr)
+              formattedParts.foldLeft(List.empty[UrlPart]) {
+                case (parts, FormattedStringPart(start, startNext)) =>
+                  ???
+                case (parts, Specifier(start, startNext, argVn)) =>
+                  ???
+              }
+              val urlParts = (1 until instr.getNumberOfUses).foldLeft(List.empty[UrlPart]) {
+                case (parts, use) =>
+
+                  parts :+ getAppendArgumentForVn(ir, use)
+              }
+              Url(urlParts)
+          }
+        case _                           =>
+          None
+      })(breakOut)
+    }
+
+    private[this] def getUrlFromStringFormat(instr: SSAInvokeInstruction, table: SymbolTable): Option[String] =
+      if (instr.getNumberOfUses > 0) {
+        val stringFormatSig = "Ljava/lang/String, format(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String"
+        val firstArg = instr getUse 0 // todo getUse 0 or 1?
+        if ((instr.getDeclaredTarget.toString contains stringFormatSig)
+          && (table isStringConstant firstArg)
+          && (table getStringValue firstArg matches URL_PREFIX))
+          Some(table getStringValue firstArg)
+        else None
+      } else None
 
     private[this] def getConcatUrlsForIr(ir: IR): Set[Url] =
       asboSolver(ir) match {
@@ -82,22 +120,27 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers {
           }
         case SingleAppendArgument(vn) =>
           // todo we could add more URL-part-types and be more precise about the type of value
-          if (table isConstant vn)
-            List(UrlString((table getConstantValue vn).toString))
-          else {
-            val typeName = try {
-              val typeInference = typeInferenceMap getOrElseUpdate (ir, TypeInference.make(ir, true))
-              val abstraction = typeInference.getType(vn)
-              abstraction.toString
-            } catch {
-              case _: UnimplementedError =>
-                "undefined"
-            }
-            List(VariableType(typeName, getSource(ir, vn)))
-          }
+          List(getAppendArgumentForVn(ir, vn))
         // todo there is also the case where the append argument is a StringBuilder! This is not handled currently!
         case SingleCycle =>
           List(UrlWithCycle)
+      }
+    }
+
+    private[this] def getAppendArgumentForVn(ir: IR, vn: ValueNumber): UrlPart = {
+      val table = ir.getSymbolTable
+      if (table isConstant vn)
+        UrlString((table getConstantValue vn).toString)
+      else {
+        val typeName = try {
+          val typeInference = typeInferenceMap getOrElseUpdate(ir, TypeInference.make(ir, true))
+          val abstraction = typeInference.getType(vn)
+          abstraction.toString
+        } catch {
+          case _: UnimplementedError =>
+            "undefined"
+        }
+        VariableType(typeName, getSource(ir, vn))
       }
     }
 
