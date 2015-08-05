@@ -34,8 +34,14 @@ object Main extends AnalysisComparison {
       }
     }
 
-  def analyseAPK(analysis: String, apkPath: Path, useCallGraph: Boolean, ignoreLibraries: Boolean) : Try[String] = {
-    val config = AnalysisConfig(useCallGraph, ignoreLibraries, AnalysisType.withName(analysis))
+  def analyseAPK(
+    analysis: String,
+    apkPath: Path,
+    useCallGraph: Boolean,
+    ignoreLibraries: Boolean,
+    stringFormat: Boolean
+  ) : Try[String] = {
+    val config = AnalysisConfig(useCallGraph, ignoreLibraries, stringFormat, AnalysisType.withName(analysis))
     Try(AnalysisResult.fromConfig(config, apkPath).asJson.nospaces)
   }
 
@@ -122,6 +128,14 @@ object Main extends AnalysisComparison {
       (irFromCg, opts) =>
         opts.copy(config2 = opts.config2.copy(irFromCg = irFromCg)) // todo lenses
     } text "construct call graph to only retrieve URLs in reachable methods in second analysis?"
+    opt[Boolean]('f', "string-format") optional() valueName "<string format?>" action {
+      (stringFormat, opts) =>
+        opts.copy(config1 = opts.config1.copy(stringFormat = stringFormat)) // todo lenses
+    } text "do string format in first analysis?"
+    opt[Boolean]("f2") optional() valueName "<string format?>" action { // todo lenses
+      (stringFormat, opts) =>
+        opts.copy(config2 = opts.config2.copy(stringFormat = stringFormat))
+    } text "do string format in second analysis?"
     arg[Path]("<file>...") unbounded() action {
       (f, opts) =>
         opts.copy(files = opts.files :+ f)

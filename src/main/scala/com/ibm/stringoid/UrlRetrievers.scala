@@ -12,7 +12,7 @@ trait UrlRetrievers extends AnalysisTypes with Urls {
 
   import AnalysisType._
 
-  case class AnalysisConfig(irFromCg: Boolean, ignoreLibs: Boolean, analysis: AnalysisType)
+  case class AnalysisConfig(irFromCg: Boolean, ignoreLibs: Boolean, stringFormat: Boolean, analysis: AnalysisType)
 
   object AnalysisConfig {
     implicit def AnalysisConfigEncodeJson: EncodeJson[AnalysisConfig] =
@@ -24,7 +24,7 @@ trait UrlRetrievers extends AnalysisTypes with Urls {
         }
       )("analysis", "libs", "reachability")
 
-    val default = AnalysisConfig(irFromCg = false, ignoreLibs = true, analysis = Unset)
+    val default = AnalysisConfig(irFromCg = false, ignoreLibs = true, stringFormat = false, analysis = Unset)
   }
 
   /**
