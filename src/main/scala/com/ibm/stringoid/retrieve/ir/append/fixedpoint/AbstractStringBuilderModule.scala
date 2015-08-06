@@ -88,7 +88,7 @@ trait AbstractStringBuilderModule {
       val graph = valueNumberGraph
       val framework = new BitVectorFramework[ValueNumber, ASBO](
         valueNumberGraph,
-        transferFunctions,
+        new StringBuilderTransferFunctions(new DefUse(ir)),
         abstractObjectNumbering)
       val solver = new BitVectorSolver[ValueNumber](framework)
       solver.solve(null)
@@ -139,7 +139,7 @@ trait AbstractStringBuilderModule {
       graph
     }
 
-    private[this] def transferFunctions = new ITransferFunctionProvider[ValueNumber, BitVectorVariable] {
+    private[this] class StringBuilderTransferFunctions(defUse: DefUse) extends ITransferFunctionProvider[ValueNumber, BitVectorVariable] {
 
       override def getMeetOperator: AbstractMeetOperator[BitVectorVariable] =
         BitVectorUnion.instance
@@ -154,7 +154,6 @@ trait AbstractStringBuilderModule {
         Option(instr).isDefined && (instr.toString contains "= new <Application,Ljava/lang/StringBuilder>")
 
       override def getNodeTransferFunction(vn: ValueNumber): UnaryOperator[BitVectorVariable] = {
-        val defUse = new DefUse(ir)
         defUse getDef vn match {
           case instr if isSbConstructorInDefUse(instr) =>
             val gen = new BitVector()
