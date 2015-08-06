@@ -34,11 +34,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
           val prevMethods = prevMap getOrElse(url, Set.empty[Method])
           prevMap updated(url, prevMethods + method)
       }
-      val urlWithListSourcesMap = urlWithSourcesMap map {
-        case (url, methods) =>
-          url -> methods
-      }
-      UrlsWithSources(urlWithListSourcesMap)
+      UrlsWithSources(urlWithSourcesMap)
     }
 
     def getFormattedUrlStrings(ir: IR): Set[Url] = {
