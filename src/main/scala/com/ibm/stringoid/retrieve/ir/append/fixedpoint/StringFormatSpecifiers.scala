@@ -23,15 +23,15 @@ trait StringFormatSpecifiers {
     var specifierCount = 0
     val matcher = fsPattern matcher s
     val buffer  = mutable.UnrolledBuffer.empty[FormattedString]
-    var i = 0
-    val len = s.length
-    while (i < len) {
-      if (matcher find i) {
-        if (matcher.start != i)
-          buffer add FormattedStringPart(matcher.group)
+    var index   = 0
+    val length  = s.length
+    while (index < length) {
+      if (matcher find index) {
+        if (matcher.start != index)
+          buffer add FormattedStringPart(s substring (index, matcher.start))
         specifierCount = specifierCount + 1
         buffer add Specifier(specifierCount)
-        i = matcher.end
+        index = matcher.end
       } else {
         specifierCount = specifierCount + 1
         buffer add Specifier(specifierCount)

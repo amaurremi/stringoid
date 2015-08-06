@@ -47,11 +47,11 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
           getUrlFromStringFormat(instr, ir.getSymbolTable) map {
             urlPrefix =>
               val (formattedParts, specifierNum) = parse(urlPrefix, instr)
-              val missingArguments               = specifierNum > instr.getNumberOfUses
+              val missingArguments               = specifierNum >= instr.getNumberOfUses
               val urlParts = formattedParts.foldLeft(Vector.empty[UrlPart]) {
                 case (parts, FormattedStringPart(string)) =>
                   parts :+ UrlString(string)
-                case (parts, Specifier(argNum)) =>
+                case (parts, Specifier(argNum))           =>
                   val newVariable =
                     if (missingArguments) MissingArgument
                     else getAppendArgumentForVn(ir, instr getUse argNum)
@@ -59,7 +59,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
               }
               Url(urlParts.toList)
           }
-        case _                    =>
+        case _                           =>
           None
       })(breakOut)
     }

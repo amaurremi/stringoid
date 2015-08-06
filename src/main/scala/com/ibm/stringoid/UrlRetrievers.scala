@@ -16,15 +16,16 @@ trait UrlRetrievers extends AnalysisTypes with Urls {
 
   object AnalysisConfig {
     implicit def AnalysisConfigEncodeJson: EncodeJson[AnalysisConfig] =
-      jencode3L(
+      jencode4L(
         (ac: AnalysisConfig) => {
-          val lib = if (ac.ignoreLibs) "ignoring" else "including"
-          val cg  = if (ac.irFromCg) "call graph" else "class hierarchy"
-          (prettyPrint(ac.analysis), lib, cg)
+          import ac._
+          val lib = if (ignoreLibs) "ignoring" else "including"
+          val cg  = if (irFromCg) "call graph" else "class hierarchy"
+          (prettyPrint(analysis), lib, cg, stringFormat)
         }
-      )("analysis", "libs", "reachability")
+      )("analysis", "libs", "reachability", "string-format")
 
-    val default = AnalysisConfig(irFromCg = false, ignoreLibs = true, stringFormat = false, analysis = Unset)
+    val default = AnalysisConfig(irFromCg = false, ignoreLibs = true, stringFormat = true, analysis = Unset)
   }
 
   /**

@@ -33,7 +33,7 @@ trait Urls {
             case UrlWithCycle      =>
               ("cycle", "undefined".jencode)
             case MissingArgument   =>
-              ("missing argument", "undefined".jencode)
+              ("missing", "undefined".jencode)
           }
       )("kind", "value")
   }
