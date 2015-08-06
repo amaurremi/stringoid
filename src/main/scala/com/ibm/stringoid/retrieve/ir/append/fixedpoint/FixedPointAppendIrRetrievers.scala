@@ -80,16 +80,45 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
         case Some(solver) =>
           val valNumToAsbo = valueNumberToAsbo(solver)
           val appends      = stringAppends(ir, valNumToAsbo)
-          val strings      = appends flatMap {
-            _.flatten
+          val urlAppends   = appends flatMap {
+            altStringConcatenation =>
+              getUrlSingleStringConcatenations(altStringConcatenation, ir)
           }
-          strings collect {
-            case string if hasUrlPrefix(ir.getSymbolTable, string) =>
+          urlAppends map {
+            string =>
               Url(parseUrl(ir, string))
           }
         case None =>
           Set.empty[Url]
       }
+
+    private[this] def getUrlSingleStringConcatenations(
+      string: AltStringConcatenation,
+      ir: IR
+    ): Set[SingleStringConcatenation] = {
+      string match {
+        case AltStringAlternatives(strings) =>
+          strings flatMap {
+            getUrlSingleStringConcatenations(_, ir)
+          }
+        case AltStringSeq(head :: tail) =>
+          for {
+            concat  <- getUrlSingleStringConcatenations(head, ir)
+            end     <- tail
+            flatEnd <- end.flatten
+          } yield concat ++ flatEnd
+        case AltStringSeq(Seq()) =>
+          Set.empty[SingleStringConcatenation]
+        case AltAppendArgument(vn) =>
+          val singleArg = SingleAppendArgument(vn)
+          if (hasUrlPrefix(ir.getSymbolTable, singleArg))
+            Set(singleArg)
+          else
+            Set.empty[SingleStringConcatenation]
+        case AltCycle =>
+          Set.empty[SingleStringConcatenation]
+      }
+    }
 
     // todo make lazy (avoid flattening of unnecessary data structures)
     private[this] def hasUrlPrefix(table: SymbolTable, string: SingleStringConcatenation): Boolean = {

@@ -17,6 +17,8 @@ trait StringAppendDatastructures {
    */
   sealed trait AltStringConcatenation extends StringConcatenation[AltStringConcatenation] {
 
+    def size: Long
+
     /**
      * add an alternative string
      */
@@ -51,6 +53,12 @@ trait StringAppendDatastructures {
 
     override def flatten: Set[SingleStringConcatenation] =
       strings flatMap { _.flatten }
+
+    override def size: Long =
+      strings.foldLeft(0L) {
+        (prevSize, string) =>
+          prevSize + string.size
+      }
   }
   
   case class AltStringSeq(strings: Seq[AltStringConcatenation]) extends AltStringConcatenation {
@@ -80,11 +88,19 @@ trait StringAppendDatastructures {
                 prevSet ++ newStrings
             }
       }
+
+    override def size: Long =
+      strings.foldLeft(1L) {
+        (prevSize, string) =>
+          prevSize * string.size
+      }
   }
 
   case class AltAppendArgument(vn: ValueNumber) extends AltStringConcatenation {
 
     override def flatten: Set[SingleStringConcatenation] = Set(SingleAppendArgument(vn))
+
+    override def size: Long = 1
   }
 
   case object AltCycle extends AltStringConcatenation {
@@ -94,6 +110,8 @@ trait StringAppendDatastructures {
     override def ++(string: AltStringConcatenation): AltStringConcatenation = AltCycle
 
     override def flatten: Set[SingleStringConcatenation] = Set(SingleCycle)
+
+    override def size: Long = 1
   }
 
   /**
