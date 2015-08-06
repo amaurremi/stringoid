@@ -7,7 +7,7 @@ import scala.collection._
 
 trait Urls {
 
-  case class Url(url: List[UrlPart])
+  case class Url(url: Vector[UrlPart])
 
   object Url {
     implicit def UrlEncodeJson: EncodeJson[Url] =
@@ -88,22 +88,22 @@ trait Urls {
     implicit def UrlToMethodsPairEncodeJson: EncodeJson[UrlToMethodsPair] =
       jencode2L(
         (um: UrlToMethodsPair) =>
-          (um.url, um.methods)
+          (um.url, um.methods.toList)
       )("url", "methods")
   }
 
   // todo List should be a Set but Argonaut doesn't understand it
-  case class UrlsWithSources(uws: Map[Url, List[Method]]) {
+  case class UrlsWithSources(uws: Map[Url, Set[Method]]) {
 
-    def filter(p: ((Url, List[Method])) => Boolean): UrlsWithSources =
+    def filter(p: ((Url, Set[Method])) => Boolean): UrlsWithSources =
       UrlsWithSources(uws filter p)
   }
 
-  case class UrlToMethodsPair(url: Url, methods: List[Method])
+  case class UrlToMethodsPair(url: Url, methods: Set[Method])
 
   object UrlsWithSources {
     implicit def UrlsWithSourcesEncodeJson: EncodeJson[UrlsWithSources] = {
-      def jsonMap(uws: Map[Url, List[Method]]): List[UrlToMethodsPair] =
+      def jsonMap(uws: Map[Url, Set[Method]]): Vector[UrlToMethodsPair] =
         (uws map {
           case (url, methods) =>
             UrlToMethodsPair(url, methods)

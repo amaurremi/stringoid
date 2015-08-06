@@ -24,7 +24,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
         formatted = getFormattedUrlStrings(ir)
         constants = getConstantUrlStrings(ir) map {
           u =>
-            Url(List(UrlString(u)))
+            Url(Vector(UrlString(u)))
         }
         appends   = getConcatUrlsForIr(ir)
         url <- appends ++ constants ++ formatted // todo merge appends with formatted
@@ -35,8 +35,8 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
           prevMap updated(url, prevMethods + method)
       }
       val urlWithListSourcesMap = urlWithSourcesMap map {
-        case (url, methods: Set[Method]) =>
-          url -> methods.toList
+        case (url, methods) =>
+          url -> methods
       }
       UrlsWithSources(urlWithListSourcesMap)
     }
@@ -57,7 +57,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
                     else getAppendArgumentForVn(ir, instr getUse argNum)
                   parts :+ newVariable
               }
-              Url(urlParts.toList)
+              Url(urlParts)
           }
         case _                           =>
           None
@@ -137,21 +137,21 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
 
     private[this] val typeInferenceMap = mutable.Map.empty[IR, TypeInference]
 
-    private[this] def parseUrl(ir: IR, string: SingleStringConcatenation): List[UrlPart] = {
+    private[this] def parseUrl(ir: IR, string: SingleStringConcatenation): Vector[UrlPart] = {
       val table = ir.getSymbolTable
       string match {
         case SingleStringList(strings) =>
           // todo tail recursion
-          strings.foldLeft(List.empty[UrlPart]) {
+          strings.foldLeft(Vector.empty[UrlPart]) {
             case (prefix, s) =>
               prefix ++ parseUrl(ir, s)
           }
         case SingleAppendArgument(vn) =>
           // todo we could add more URL-part-types and be more precise about the type of value
-          List(getAppendArgumentForVn(ir, vn))
+          Vector(getAppendArgumentForVn(ir, vn))
         // todo there is also the case where the append argument is a StringBuilder! This is not handled currently!
         case SingleCycle =>
-          List(UrlWithCycle)
+          Vector(UrlWithCycle)
       }
     }
 

@@ -18,7 +18,7 @@ trait GrepUrlRetrievers extends UrlRetrievers {
       val cmd = dexdump #| grep #| cut
       UrlsWithSources((cmd.lines map {
         l =>
-          Url(List(UrlString(l))) -> List.empty[Method]
+          Url(Vector(UrlString(l))) -> Set.empty[Method]
       })(breakOut))
     }
   }

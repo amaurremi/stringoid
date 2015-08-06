@@ -18,18 +18,14 @@ trait ConstantUrlFromIrRetrievers extends IrUrlRetrievers {
           getConstantUrlStrings(ir) map {
             url =>
               val method = ir.getMethod
-              Url(List(UrlString(url))) -> (method.getDeclaringClass.getName + "." + method.getName.toString)
+              Url(Vector(UrlString(url))) -> (method.getDeclaringClass.getName + "." + method.getName.toString)
           }
       }
-      val urlWithSetSources = urlMethodPairs.foldLeft(Map.empty[Url, Set[Method]]) {
+      val urlWithSources = urlMethodPairs.foldLeft(Map.empty[Url, Set[Method]]) {
         case (prev, (wu, m)) =>
           prev.updated(wu, prev.getOrElse(wu, Set.empty[Method]) + m)
       }
-      val urlWithListSources = urlWithSetSources map {
-        case (url, methods: Set[Method]) =>
-          url -> methods.toList
-      }
-      UrlsWithSources(urlWithListSources)
+      UrlsWithSources(urlWithSources)
     }
   }
 
