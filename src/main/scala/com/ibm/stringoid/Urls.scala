@@ -26,12 +26,14 @@ trait Urls {
           urlPart match {
             case UrlString(string) =>
               ("constant", string.jencode)
-            case UrlPhi(urls) =>
+            case UrlPhi(urls)      =>
               ("phis", urls.toList.jencode) // todo why do we need to convert it to a list?
-            case v: VariableType =>
+            case v: VariableType   =>
               ("variable", VariableType.VariableTypeEncodeJson.apply(v)) // for some reason v.jencode results in a stack overflow
-            case UrlWithCycle =>
+            case UrlWithCycle      =>
               ("cycle", "undefined".jencode)
+            case MissingArgument   =>
+              ("missing argument", "undefined".jencode)
           }
       )("kind", "value")
   }
@@ -49,6 +51,8 @@ trait Urls {
   case class UrlString(string: String) extends UrlPart {
     override def toString = string
   }
+
+  case object MissingArgument extends UrlPart
 
   case class UrlPhi(urls: Set[Url]) extends UrlPart
 

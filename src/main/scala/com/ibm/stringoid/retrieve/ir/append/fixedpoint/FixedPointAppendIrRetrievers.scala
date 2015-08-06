@@ -22,12 +22,12 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
       val urlsWithSources: Iterator[(Url, Method)] = for {
         ir <- getIrs(apkPath)
         formatted = getFormattedUrlStrings(ir)
-//        constants = getConstantUrlStrings(ir) map {
-//          u =>
-//            Url(List(UrlString(u)))
-//        }
-//        appends   = getConcatUrlsForIr(ir)
-        url <- formatted // appends ++ constants ++ formatted // todo merge appends with formatted
+        constants = getConstantUrlStrings(ir) map {
+          u =>
+            Url(List(UrlString(u)))
+        }
+        appends   = getConcatUrlsForIr(ir)
+        url <- appends ++ constants ++ formatted // todo merge appends with formatted
       } yield url -> ir.getMethod.toString
       val urlWithSourcesMap = urlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
         case (prevMap, (url, method)) =>
@@ -46,21 +46,20 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
         case instr: SSAInvokeInstruction =>
           getUrlFromStringFormat(instr, ir.getSymbolTable) map {
             urlPrefix =>
-              val formattedParts = parse(urlPrefix, instr)
-              formattedParts.foldLeft(List.empty[UrlPart]) {
-                case (parts, FormattedStringPart(start, startNext)) =>
-                  ???
-                case (parts, Specifier(start, startNext, argVn)) =>
-                  ???
+              val (formattedParts, specifierNum) = parse(urlPrefix, instr)
+              val missingArguments               = specifierNum > instr.getNumberOfUses
+              val urlParts = formattedParts.foldLeft(Vector.empty[UrlPart]) {
+                case (parts, FormattedStringPart(string)) =>
+                  parts :+ UrlString(string)
+                case (parts, Specifier(argNum)) =>
+                  val newVariable =
+                    if (missingArguments) MissingArgument
+                    else getAppendArgumentForVn(ir, instr getUse argNum)
+                  parts :+ newVariable
               }
-              val urlParts = (1 until instr.getNumberOfUses).foldLeft(List.empty[UrlPart]) {
-                case (parts, use) =>
-
-                  parts :+ getAppendArgumentForVn(ir, use)
-              }
-              Url(urlParts)
+              Url(urlParts.toList)
           }
-        case _                           =>
+        case _                    =>
           None
       })(breakOut)
     }
