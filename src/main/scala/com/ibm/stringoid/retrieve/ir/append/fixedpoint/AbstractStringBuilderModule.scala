@@ -65,7 +65,7 @@ trait AbstractStringBuilderModule {
       override def hasNext: Boolean = walaIterator.hasNext
       override def next(): Int = walaIterator.next()
     }.toSet[ValueNumber]
-    set map numbering.getMappedObject 
+    set map numbering.getMappedObject
   }
 
   private[this] def createAbstractObjectNumbering(ir: IR): AsboMapping = {
