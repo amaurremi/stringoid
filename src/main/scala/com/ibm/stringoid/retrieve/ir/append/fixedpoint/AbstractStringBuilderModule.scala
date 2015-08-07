@@ -156,9 +156,9 @@ trait AbstractStringBuilderModule {
       override def getNodeTransferFunction(vn: ValueNumber): UnaryOperator[BitVectorVariable] = {
         defUse getDef vn match {
           case instr if isSbConstructorInDefUse(instr) =>
-            val gen = new BitVector()
             val mappedIndex = abstractObjectNumbering getMappedIndex AbstractStringBuilderObject(vn)
             assert(mappedIndex >= 0)
+            val gen = new BitVector()
             gen.set(mappedIndex)
             new BitVectorKillGen(new BitVector(), gen)
           case _                                                     =>
