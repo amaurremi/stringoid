@@ -24,13 +24,17 @@ trait StringAppendModule extends StringAppendDatastructures {
    * Get the string concatenation results.
    */
   def stringAppends(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]): Set[AltStringConcatenation] = {
-    val solver = new StringAppendFixedPointSolver(ir, vnToAsbo)
-    val result = solver.result
+    val solver  = new StringAppendFixedPointSolver(ir, vnToAsbo)
+    val result  = solver.result
     val mapping = solver.atsRefMapping
-    (solver.graph flatMap {
+    val atsRefs: Set[Int] = (solver.graph map {
       bb =>
-        mapping(result.getOut(bb).index).asboToString.values
+        result.getOut(bb).index
     })(breakOut)
+    atsRefs flatMap {
+      ref =>
+        mapping(ref).asboToString.values
+    }
   }
 
   private class StringAppendFixedPointSolver(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]) {
