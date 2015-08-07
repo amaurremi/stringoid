@@ -22,8 +22,8 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
         ir <- getIrs(apkPath)
         formatted = getFormattedUrlStrings(ir)
         constants = getConstantUrlStrings(ir) map {
-          u =>
-            Url(Vector(UrlString(u)))
+          constantUrl =>
+            Url(Vector(UrlString(constantUrl)))
         }
         appends   = getConcatUrlsForIr(ir)
         url <- appends ++ constants ++ formatted // todo merge appends with formatted
