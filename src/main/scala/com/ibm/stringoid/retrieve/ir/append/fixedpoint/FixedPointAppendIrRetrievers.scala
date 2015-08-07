@@ -7,9 +7,8 @@ import com.ibm.stringoid.retrieve.ir.append.ValueNumber
 import com.ibm.wala.analysis.typeInference.TypeInference
 import com.ibm.wala.ssa._
 import com.ibm.wala.util.debug.UnimplementedError
-import scala.collection.breakOut
 
-import scala.collection.mutable
+import scala.collection.{breakOut, mutable}
 
 trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpecifiers {
 
@@ -66,7 +65,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
         val firstArg = instr getUse 0 // todo getUse 0 or 1?
         if ((instr.getDeclaredTarget.toString contains stringFormatSig)
           && (table isStringConstant firstArg)
-          && (table getStringValue firstArg matches URL_PREFIX))
+          && isUrlPrefix(table getStringValue firstArg))
           Some(table getStringValue firstArg)
         else None
       } else None
@@ -98,11 +97,15 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
             getUrlSingleStringConcatenations(_, ir)
           }
         case AltStringSeq(head :: tail) =>
-          for {
-            concat  <- getUrlSingleStringConcatenations(head, ir)
-            end     <- tail
-            flatEnd <- end.flatten
+          val headSingleStrings = getUrlSingleStringConcatenations(head, ir)
+          val withTail = for {
+            concat  <- headSingleStrings
+            flatEnd <- AltStringSeq(tail).flatten
           } yield concat ++ flatEnd
+          if (withTail.nonEmpty)
+            withTail
+          else
+            headSingleStrings
         case AltStringSeq(Seq()) =>
           Set.empty[SingleStringConcatenation]
         case AltAppendArgument(vn) =>
@@ -119,7 +122,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
     // todo make lazy (avoid flattening of unnecessary data structures)
     private[this] def hasUrlPrefix(table: SymbolTable, string: SingleStringConcatenation): Boolean = {
       def matchesUrlPrefix(vn: ValueNumber) =
-        (table isStringConstant vn) && (table getStringValue vn matches URL_PREFIX)
+        (table isStringConstant vn) && isUrlPrefix(table getStringValue vn)
       string match {
         case SingleAppendArgument(vn) =>
           matchesUrlPrefix(vn)

@@ -7,10 +7,15 @@ import com.ibm.wala.ssa.SSAInvokeInstruction
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
+object StringFormatSpecifiers {
+
+  val formatSpecifier = "%(\\d+\\$)?([-#+ 0,(\\<]*)?(\\d+)?(\\.\\d+)?([tT])?([a-zA-Z%])"
+  val fsPattern       = Pattern.compile(formatSpecifier)
+}
+
 trait StringFormatSpecifiers {
 
-  private val formatSpecifier = "%(\\d+\\$)?([-#+ 0,(\\<]*)?(\\d+)?(\\.\\d+)?([tT])?([a-zA-Z%])"
-  private val fsPattern       = Pattern.compile(formatSpecifier)
+  import StringFormatSpecifiers._
 
   sealed trait FormattedString
   case class FormattedStringPart(substring: String) extends FormattedString
