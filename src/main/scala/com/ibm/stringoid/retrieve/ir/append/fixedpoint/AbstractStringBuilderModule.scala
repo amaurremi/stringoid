@@ -32,12 +32,12 @@ trait AbstractStringBuilderModule {
   
   type AsboMapping = OrdinalSetMapping[ASBO]
 
-  def asboSolver(ir: IR): Option[AsboFixedPointSolver] = {
+  def asboSolver(ir: IR, defUse: DefUse): Option[AsboFixedPointSolver] = {
     val numbering = createAbstractObjectNumbering(ir)
     if (numbering.isEmpty)
       None
     else
-      Some(new AsboFixedPointSolver(ir, numbering))
+      Some(new AsboFixedPointSolver(ir, defUse, numbering))
   }
 
   /**
@@ -78,6 +78,7 @@ trait AbstractStringBuilderModule {
 
   class AsboFixedPointSolver(
     ir: IR,
+    defUse: DefUse,
     val abstractObjectNumbering: AsboMapping
   ) {
 
@@ -88,7 +89,7 @@ trait AbstractStringBuilderModule {
       val graph = valueNumberGraph
       val framework = new BitVectorFramework[ValueNumber, ASBO](
         valueNumberGraph,
-        new StringBuilderTransferFunctions(new DefUse(ir)),
+        new StringBuilderTransferFunctions,
         abstractObjectNumbering)
       val solver = new BitVectorSolver[ValueNumber](framework)
       solver.solve(null)
@@ -139,7 +140,7 @@ trait AbstractStringBuilderModule {
       graph
     }
 
-    private[this] class StringBuilderTransferFunctions(defUse: DefUse) extends ITransferFunctionProvider[ValueNumber, BitVectorVariable] {
+    private[this] class StringBuilderTransferFunctions extends ITransferFunctionProvider[ValueNumber, BitVectorVariable] {
 
       override def getMeetOperator: AbstractMeetOperator[BitVectorVariable] =
         BitVectorUnion.instance

@@ -44,7 +44,7 @@ trait Urls {
   
   case class MethodReturn(methodName: String) extends VariableSource
   
-  case object FieldAccess extends VariableSource
+  case class FieldAccess(fieldName: String) extends VariableSource
 
   case object UnknownSource extends VariableSource
   
@@ -69,8 +69,8 @@ trait Urls {
                 "parameter"
               case MethodReturn(methodName) =>
                 "method return: " + methodName
-              case FieldAccess =>
-                "field access"
+              case FieldAccess(name) =>
+                "field access: " + name
               case UnknownSource =>
                 "other"
             }

@@ -19,14 +19,15 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
 
     override def apply(apkPath: Path): UrlsWithSources = {
       val urlsWithSources: Iterator[(Url, Method)] = for {
-        ir <- getIrs(apkPath)
-        formatted = getFormattedUrlStrings(ir)
-        constants = getConstantUrlStrings(ir) map {
+        ir        <- getIrs(apkPath)
+        defUse     = new DefUse(ir)
+        formatted  = getFormattedUrlStrings(ir, defUse)
+        constants  = getConstantUrlStrings(ir) map {
           constantUrl =>
             Url(Vector(UrlString(constantUrl)))
         }
-        appends   = getConcatUrlsForIr(ir)
-        url <- appends ++ constants ++ formatted // todo merge appends with formatted
+        appends    = getConcatUrlsForIr(ir, defUse)
+        url       <- appends ++ constants ++ formatted // todo merge appends with formatted
       } yield url -> ir.getMethod.toString
       val urlWithSourcesMap = urlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
         case (prevMap, (url, method)) =>
@@ -36,7 +37,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
       UrlsWithSources(urlWithSourcesMap)
     }
 
-    def getFormattedUrlStrings(ir: IR): Set[Url] = {
+    def getFormattedUrlStrings(ir: IR, defUse: DefUse): Set[Url] = {
       (ir.getInstructions flatMap {
         case instr: SSAInvokeInstruction =>
           getUrlFromStringFormat(instr, ir.getSymbolTable) map {
@@ -49,7 +50,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
                 case (parts, Specifier(argNum))           =>
                   val newVariable =
                     if (missingArguments) MissingArgument
-                    else getAppendArgumentForVn(ir, instr getUse argNum)
+                    else getAppendArgumentForVn(ir, defUse, instr getUse argNum)
                   parts :+ newVariable
               }
               Url(urlParts)
@@ -70,8 +71,8 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
         else None
       } else None
 
-    private[this] def getConcatUrlsForIr(ir: IR): Set[Url] =
-      asboSolver(ir) match {
+    private[this] def getConcatUrlsForIr(ir: IR, defUse: DefUse): Set[Url] =
+      asboSolver(ir, defUse) match {
         case Some(solver) =>
           val valNumToAsbo = valueNumberToAsbo(solver)
           val appends      = stringAppends(ir, valNumToAsbo)
@@ -81,7 +82,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
           }
           urlAppends map {
             string =>
-              Url(parseUrl(ir, string))
+              Url(parseUrl(ir, defUse, string))
           }
         case None =>
           Set.empty[Url]
@@ -136,25 +137,25 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
 
     private[this] val typeInferenceMap = mutable.Map.empty[IR, TypeInference]
 
-    private[this] def parseUrl(ir: IR, string: SingleStringConcatenation): Vector[UrlPart] = {
+    private[this] def parseUrl(ir: IR, defUse: DefUse, string: SingleStringConcatenation): Vector[UrlPart] = {
       val table = ir.getSymbolTable
       string match {
         case SingleStringList(strings) =>
           // todo tail recursion
           strings.foldLeft(Vector.empty[UrlPart]) {
             case (prefix, s) =>
-              prefix ++ parseUrl(ir, s)
+              prefix ++ parseUrl(ir, defUse, s)
           }
         case SingleAppendArgument(vn) =>
           // todo we could add more URL-part-types and be more precise about the type of value
-          Vector(getAppendArgumentForVn(ir, vn))
+          Vector(getAppendArgumentForVn(ir, defUse, vn))
         // todo there is also the case where the append argument is a StringBuilder! This is not handled currently!
         case SingleCycle =>
           Vector(UrlWithCycle)
       }
     }
 
-    private[this] def getAppendArgumentForVn(ir: IR, vn: ValueNumber): UrlPart = {
+    private[this] def getAppendArgumentForVn(ir: IR, defUse: DefUse, vn: ValueNumber): UrlPart = {
       val table = ir.getSymbolTable
       if (table isConstant vn)
         UrlString((table getConstantValue vn).toString)
@@ -167,17 +168,17 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
           case _: UnimplementedError =>
             "undefined"
         }
-        VariableType(typeName, getSource(ir, vn))
+        VariableType(typeName, getSource(ir, defUse, vn))
       }
     }
 
-    private[this] def getSource(ir: IR, vn: ValueNumber): VariableSource =
+    private[this] def getSource(ir: IR, defUse: DefUse, vn: ValueNumber): VariableSource =
       if (ir.getSymbolTable.isParameter(vn))
         Parameter
       else
-        new DefUse(ir).getDef(vn) match {
+        defUse.getDef(vn) match {
           case fieldAccess: SSAFieldAccessInstruction =>
-            FieldAccess
+            FieldAccess(fieldAccess.getDeclaredField.toString)
           case invoke: SSAInvokeInstruction           =>
             MethodReturn(invoke.getDeclaredTarget.toString)
           case _                                      =>
