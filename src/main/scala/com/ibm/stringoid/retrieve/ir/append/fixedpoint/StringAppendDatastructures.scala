@@ -17,6 +17,10 @@ trait StringAppendDatastructures {
    */
   sealed trait AltStringConcatenation extends StringConcatenation[AltStringConcatenation] {
 
+    def myHashCode: Int
+
+    override def hashCode(): Int = myHashCode
+
     def size: Long
 
     /**
@@ -59,6 +63,8 @@ trait StringAppendDatastructures {
         (prevSize, string) =>
           prevSize + string.size
       }
+
+    override lazy val myHashCode = strings.hashCode()
   }
   
   case class AltStringSeq(strings: Seq[AltStringConcatenation]) extends AltStringConcatenation {
@@ -94,6 +100,8 @@ trait StringAppendDatastructures {
         (prevSize, string) =>
           prevSize * string.size
       }
+
+    override lazy val myHashCode: Int = strings.hashCode()
   }
 
   case class AltAppendArgument(vn: ValueNumber) extends AltStringConcatenation {
@@ -101,6 +109,8 @@ trait StringAppendDatastructures {
     override def flatten: Set[SingleStringConcatenation] = Set(SingleAppendArgument(vn))
 
     override def size: Long = 1
+
+    override lazy val myHashCode: Int = vn.hashCode()
   }
 
   case object AltCycle extends AltStringConcatenation {
@@ -112,6 +122,8 @@ trait StringAppendDatastructures {
     override def flatten: Set[SingleStringConcatenation] = Set(SingleCycle)
 
     override def size: Long = 1
+
+    override lazy val myHashCode = "AltCycle".hashCode
   }
 
   /**
