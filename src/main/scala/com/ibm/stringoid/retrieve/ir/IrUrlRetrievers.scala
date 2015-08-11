@@ -35,8 +35,7 @@ trait IrUrlRetrievers extends UrlRetrievers {
           case node if includeLib || isApplicationClass(node.getMethod.getDeclaringClass) =>
             node.getIR
         }
-      }
-      else {
+      } else {
         val scope = AnalysisScope(Seq.empty[Dependency])
         val cha = getCha(scope)
         val irFactory = getIrFactory(scope)

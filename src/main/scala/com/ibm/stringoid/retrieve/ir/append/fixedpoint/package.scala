@@ -8,4 +8,8 @@ package object fixedpoint {
   case class AbstractStringBuilderObject(vn: Int)
 
   type ASBO = AbstractStringBuilderObject
+
+  sealed trait StringPart
+  case class StringValNum(vn: ValueNumber) extends StringPart
+  case object StringCycle extends StringPart
 }

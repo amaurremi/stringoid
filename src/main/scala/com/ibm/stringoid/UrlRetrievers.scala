@@ -51,7 +51,7 @@ trait UrlRetrievers extends AnalysisTypes with Urls {
     def apply(apkPath: Path): UrlsWithSources
 
     protected final def configWithApk(apkPath: Path): Config =
-      ConfigFactory.load().withValue(
+      ConfigFactory.load() withValue (
         "wala.dependencies.apk",
         ConfigValueFactory.fromIterable(Seq(apkPath.toString)))
   }
@@ -59,7 +59,7 @@ trait UrlRetrievers extends AnalysisTypes with Urls {
   object UrlRetriever {
 
     private val URL_PREFIX = "https?://[^\" ]*"
-    val URL_REGEX  = "https?://[^\" ]+"
+    val URL_REGEX          = "https?://[^\" ]+"
 
     val urlPrefixPattern = Pattern.compile(URL_PREFIX)
     val urlRegexPattern = Pattern.compile(URL_REGEX)

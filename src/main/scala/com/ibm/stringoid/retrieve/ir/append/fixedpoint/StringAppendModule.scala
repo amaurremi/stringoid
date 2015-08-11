@@ -9,22 +9,25 @@ import com.ibm.wala.ssa._
 import com.ibm.wala.ssa.analysis.{ExplodedControlFlowGraph, IExplodedBasicBlock}
 import com.ibm.wala.util.graph.impl.NodeWithNumber
 import com.ibm.wala.util.graph.traverse.SCCIterator
+import trie.Trie
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.{breakOut, mutable}
 
-trait StringAppendModule extends StringAppendDatastructures {
+trait StringAppendModule {
 
   private[this] val MISSING_STRING_BUILDER_MESSAGE: String =
     "Value-number-to-ASBO map should contain the value number for this StringBuilder."
   private[this] val EDGE_FUNCTIONS_NOT_SUPPORTED_MESSAGE: String =
     "No edge transfer functions for StringAppend fixed-point solver."
 
+  type ValNumTrie = Trie[StringPart]
+
   /**
    * Get the string concatenation results.
    */
-  def stringAppends(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]): Set[AltStringConcatenation] = {
+  def stringAppends(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]): ValNumTrie = {
     val solver  = new StringAppendFixedPointSolver(ir, vnToAsbo)
     val result  = solver.result
     val mapping = solver.atsRefMapping
@@ -32,24 +35,25 @@ trait StringAppendModule extends StringAppendDatastructures {
       bb =>
         result.getOut(bb).index
     })(breakOut)
-    atsRefs flatMap {
-      ref =>
-        mapping(ref).asboToString.values
+    atsRefs.foldLeft(Trie.empty[StringPart]) {
+      (trie, ref) =>
+        val tries = mapping(ref).asboToTrie.values
+        trie | tries.foldLeft(Trie.empty[StringPart]) { _ | _ }
     }
   }
 
   private class StringAppendFixedPointSolver(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]) {
 
-    type BB = IExplodedBasicBlock
-    type AsboMap = mutable.Map[ASBO, AltStringConcatenation]
+    type BB      = IExplodedBasicBlock
+    type AsboMap = mutable.Map[ASBO, ValNumTrie]
 
     def graph = getGraph
 
     /**
-     * For efficiency we store our AsboToString in this array. The analysis operates on its indices
-     * that serve as references to the stored AsboToString objects.
+     * For efficiency we store our AsboToTrie in this array. The analysis operates on its indices
+     * that serve as references to the stored AsboToTrie objects.
      */
-    val atsRefMapping = ArrayBuffer.empty[AsboToString]
+    val atsRefMapping = ArrayBuffer.empty[AsboToTrie]
 
     // ITransferFunctionProvider's methods force the lattice elements to be mutable
     /**
@@ -57,10 +61,10 @@ trait StringAppendModule extends StringAppendDatastructures {
      * @param bb we need to keep track of the basic block in order to see whether a statement
      *           appears in a strongly connected component
      */
-    case class AsboToString(asboToString: AsboMap, bb: BB)
+    case class AsboToTrie(asboToTrie: AsboMap, bb: BB)
 
     /**
-     * A reference to an AsboToString in the [[atsRefMapping]] array
+     * A reference to an AsboToTrie in the [[atsRefMapping]] array
      */
     sealed trait AtsReference extends NodeWithNumber with IVariable[AtsReference]  {
 
@@ -73,9 +77,9 @@ trait StringAppendModule extends StringAppendDatastructures {
       override def setOrderNumber(i: Int): Unit = orderNumber = i
 
       override def copyState(ref: AtsReference): Unit = {
-        val asboToString = atsRefMapping(index).asboToString
+        val asboToString = atsRefMapping(index).asboToTrie
         asboToString.clear()
-        asboToString ++= atsRefMapping(ref.index).asboToString
+        asboToString ++= atsRefMapping(ref.index).asboToTrie
       }
     }
 
@@ -106,7 +110,7 @@ trait StringAppendModule extends StringAppendDatastructures {
 
         override def makeNodeVariable(bb: BB, in: Boolean): AtsReference = {
           val nextIndex = atsRefMapping.size
-          atsRefMapping += AsboToString(mutable.Map.empty[ASBO, AltStringConcatenation], bb)
+          atsRefMapping += AsboToTrie(mutable.Map.empty[ASBO, ValNumTrie], bb)
           if (in)
             AtsRefIn(nextIndex)
           else
@@ -134,15 +138,15 @@ trait StringAppendModule extends StringAppendDatastructures {
               scc.size > 1 && (scc contains lhsAts.bb)
           }
 
-          def addRhsToLhs(l: AsboMap, r: AsboToString): Unit =
+          def addRhsToLhs(l: AsboMap, r: AsboToTrie): Unit =
             sccForLhs match  {
               case Some(scc) if scc contains r.bb =>
-                r.asboToString foreach {
+                r.asboToTrie foreach {
                   case (asbo, _) =>
-                    l += asbo -> AltCycle
+                    l += asbo -> (Trie.empty[StringPart] + Seq(StringCycle))
                 }
               case _                              =>
-                r.asboToString foreach {
+                r.asboToTrie foreach {
                   case (asbo, sb1) =>
                     l get asbo match {
                       case Some(sb2) =>
@@ -153,15 +157,15 @@ trait StringAppendModule extends StringAppendDatastructures {
                 }
             }
 
-          val newMap = mutable.Map.empty[ASBO, AltStringConcatenation]
+          val newMap = mutable.Map.empty[ASBO, ValNumTrie]
           rhs foreach {
             rmapRef =>
               addRhsToLhs(newMap, atsRefMapping(rmapRef.index))
           }
-          if (newMap == lhsAts.asboToString)
+          if (newMap == lhsAts.asboToTrie)
             NOT_CHANGED
           else {
-            lhsAts.asboToString ++= newMap
+            lhsAts.asboToTrie ++= newMap
             CHANGED
           }
         }
@@ -172,7 +176,8 @@ trait StringAppendModule extends StringAppendDatastructures {
           case instr: SSAInvokeInstruction if isSbAppend(instr)                =>
             vnToAsbo get getFirstSbAppendDef(instr) match {
               case Some(asbos) =>
-                new AppendOperator(asbos, AltAppendArgument(getAppendArgument(instr))) // todo what if the argument is in itself a StringBuilder? will we handle that case outside?
+                val appendArgument = Trie.empty[StringPart] + Seq(StringValNum(getAppendArgument(instr)))
+                new AppendOperator(asbos, appendArgument) // todo what if the argument is in itself a StringBuilder? will we handle that case outside?
               case None =>
                 // todo note that this means that we are appending to a StringBuilder for which we haven't added an ASBO to the vnToAsbo map.
                 // todo I think this means that the StringBuilder has been passed as a parameter or is a field. We should handle this case too at some point.
@@ -181,7 +186,8 @@ trait StringAppendModule extends StringAppendDatastructures {
           case inv: SSAInvokeInstruction if isSbConstructorWithStringParam(inv) =>
             vnToAsbo get getSbConstructorDef(inv) match {
               case Some(asbos) =>
-                new AppendOperator(asbos, AltAppendArgument(getSbConstructorArgument(inv)))
+                val appendArgument = Trie.empty[StringPart] + Seq(StringValNum(getSbConstructorArgument(inv)))
+                new AppendOperator(asbos, appendArgument)
               case None =>
                 throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
             }
@@ -189,22 +195,22 @@ trait StringAppendModule extends StringAppendDatastructures {
             IdentityOperator()
         }
 
-        private[this] case class AppendOperator(asbos: Set[ASBO], string: AltStringConcatenation) extends UnaryOperator[AtsReference] {
+        private[this] case class AppendOperator(asbos: Set[ASBO], string: ValNumTrie) extends UnaryOperator[AtsReference] {
 
           override def evaluate(lhs: AtsReference, rhs: AtsReference): Byte = {
-            val rhsMap = atsRefMapping(rhs.index).asboToString
-            val newMap = mutable.Map.empty[ASBO, AltStringConcatenation] ++= rhsMap
+            val rhsMap = atsRefMapping(rhs.index).asboToTrie
+            val newMap = mutable.Map.empty[ASBO, ValNumTrie] ++= rhsMap
             asbos foreach {
               asbo =>
                 val newString = rhsMap get asbo match {
                   case Some(sb) =>
-                    sb ++ string
+                    sb +++ string
                   case None =>
                     string
                 }
                 newMap += asbo -> newString
             }
-            val lhsMap: AsboMap = atsRefMapping(lhs.index).asboToString
+            val lhsMap: AsboMap = atsRefMapping(lhs.index).asboToTrie
             if (lhsMap == newMap) // todo note: currently lhs will never be equal to newMap, so this method will always return CHANGED!
               NOT_CHANGED
             else {
@@ -217,8 +223,8 @@ trait StringAppendModule extends StringAppendDatastructures {
         private[this] case class IdentityOperator() extends UnaryOperator[AtsReference] {
 
           override def evaluate(lhs: AtsReference, rhs: AtsReference): Byte = {
-            val lhsMap = atsRefMapping(lhs.index).asboToString
-            val rhsMap = atsRefMapping(rhs.index).asboToString
+            val lhsMap = atsRefMapping(lhs.index).asboToTrie
+            val rhsMap = atsRefMapping(rhs.index).asboToTrie
             if (lhsMap == rhsMap)
               NOT_CHANGED
             else {

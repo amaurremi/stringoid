@@ -64,7 +64,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
     private[this] def getUrlFromStringFormat(instr: SSAInvokeInstruction, table: SymbolTable): Option[String] =
       if (instr.getNumberOfUses > 0) {
         val stringFormatSig = "Ljava/lang/String, format(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String"
-        val firstArg = instr getUse 0 // todo getUse 0 or 1?
+        val firstArg = instr getUse 0
         if ((instr.getDeclaredTarget.toString contains stringFormatSig)
           && (table isStringConstant firstArg)
           && isUrlPrefix(table getStringValue firstArg))
@@ -72,93 +72,40 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
         else None
       } else None
 
+    private[this] def isUrlPrefixVn(vn: ValueNumber, table: SymbolTable): Boolean =
+      (table isStringConstant vn) && isUrlPrefix(table getStringValue vn)
+
     private[this] def getConcatUrlsForIr(ir: IR, defUse: DefUse): Set[Url] =
       asboSolver(ir, defUse) match {
         case Some(solver) =>
           val valNumToAsbo = valueNumberToAsbo(solver)
-          val appends      = stringAppends(ir, valNumToAsbo)
-//          val contains     = ir.getMethod.toString.contains("appends")
-          val urlAppends   = appends flatMap {
-            altStringConcatenation =>
-//              if (contains) {
-//                println("flattened size: " + altStringConcatenation.size)
-//                println("number of nodes: " + altStringConcatenation.nodeNum)
-//                println("head size : " + altStringConcatenation.headSize)
-//              }
-              getUrlSingleStringConcatenations(altStringConcatenation, ir)
+          val appendTrie   = stringAppends(ir, valNumToAsbo)
+          val table = ir.getSymbolTable
+          val urlValNums = 1 to table.getMaxValueNumber filter {
+            isUrlPrefixVn(_, table)
           }
-          urlAppends map {
-            string =>
-              Url(parseUrl(ir, defUse, string))
+          val urlStringSeqs = urlValNums flatMap {
+            vn =>
+              (appendTrie postfixes StringValNum(vn)).iterator
           }
+          (urlStringSeqs map {
+            stringSeq =>
+              Url(parseUrl(ir, defUse, stringSeq))
+          })(breakOut)
         case None =>
           Set.empty[Url]
       }
 
-    private[this] def getUrlSingleStringConcatenations(
-      string: AltStringConcatenation,
-      ir: IR
-    ): Set[SingleStringConcatenation] = {
-      string match {
-        case AltStringAlternatives(strings) =>
-          strings flatMap {
-            getUrlSingleStringConcatenations(_, ir)
-          }
-        case AltStringSeq(head :: tail) =>
-          val headSingleStrings = getUrlSingleStringConcatenations(head, ir)
-          val withTail = for {
-            concat  <- headSingleStrings
-            flatEnd <- AltStringSeq(tail).flatten
-          } yield concat ++ flatEnd
-          if (withTail.nonEmpty)
-            withTail
-          else
-            headSingleStrings
-        case AltStringSeq(Seq()) =>
-          Set.empty[SingleStringConcatenation]
-        case AltAppendArgument(vn) =>
-          val singleArg = SingleAppendArgument(vn)
-          if (hasUrlPrefix(ir.getSymbolTable, singleArg))
-            Set(singleArg)
-          else
-            Set.empty[SingleStringConcatenation]
-        case AltCycle =>
-          Set.empty[SingleStringConcatenation]
-      }
-    }
-
-    private[this] def hasUrlPrefix(table: SymbolTable, string: SingleStringConcatenation): Boolean = {
-      def matchesUrlPrefix(vn: ValueNumber) =
-        (table isStringConstant vn) && isUrlPrefix(table getStringValue vn)
-      string match {
-        case SingleAppendArgument(vn) =>
-          matchesUrlPrefix(vn)
-        case SingleStringList(s :: _) =>
-          // todo trim empty strings?
-          hasUrlPrefix(table, s)
-        case _ =>
-          false
-      }
-    }
-
     private[this] val typeInferenceMap = mutable.Map.empty[IR, TypeInference]
 
-    private[this] def parseUrl(ir: IR, defUse: DefUse, string: SingleStringConcatenation): Vector[UrlPart] = {
+    private[this] def parseUrl(ir: IR, defUse: DefUse, string: Seq[StringPart]): Vector[UrlPart] = {
       val table = ir.getSymbolTable
-      string match {
-        case SingleStringList(strings) =>
-          // todo tail recursion
-          strings.foldLeft(Vector.empty[UrlPart]) {
-            case (prefix, s) =>
-              prefix ++ parseUrl(ir, defUse, s)
-          }
-        case SingleAppendArgument(vn) =>
-          // todo we could add more URL-part-types and be more precise about the type of value
-          Vector(getAppendArgumentForVn(ir, defUse, vn))
-        // todo there is also the case where the append argument is a StringBuilder! This is not handled currently!
-        case SingleCycle =>
-          Vector(UrlWithCycle)
-      }
+      (string map {
+        case StringValNum(vn) =>
+          getAppendArgumentForVn(ir, defUse, vn)
+        case StringCycle =>
+          UrlWithCycle
+      })(breakOut)
     }
 
     private[this] def getAppendArgumentForVn(ir: IR, defUse: DefUse, vn: ValueNumber): UrlPart = {
