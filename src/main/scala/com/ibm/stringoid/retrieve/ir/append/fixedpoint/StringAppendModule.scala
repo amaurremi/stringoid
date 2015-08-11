@@ -147,12 +147,12 @@ trait StringAppendModule {
                 }
               case _                              =>
                 r.asboToTrie foreach {
-                  case (asbo, sb1) =>
+                  case (asbo, trie1) =>
                     l get asbo match {
-                      case Some(sb2) =>
-                        l += asbo -> (sb1 | sb2)
+                      case Some(trie2) =>
+                        l += asbo -> (trie1 | trie2)
                       case None =>
-                        l += asbo -> sb1
+                        l += asbo -> trie1
                     }
                 }
             }
