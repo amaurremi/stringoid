@@ -37,28 +37,29 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
       UrlsWithSources(urlWithSourcesMap)
     }
 
-    def getFormattedUrlStrings(ir: IR, defUse: DefUse): Set[Url] = {
-      (ir.getInstructions flatMap {
-        case instr: SSAInvokeInstruction =>
-          getUrlFromStringFormat(instr, ir.getSymbolTable) map {
-            urlPrefix =>
-              val (formattedParts, specifierNum) = parse(urlPrefix, instr)
-              val missingArguments               = specifierNum >= instr.getNumberOfUses
-              val urlParts = formattedParts.foldLeft(Vector.empty[UrlPart]) {
-                case (parts, FormattedStringPart(string)) =>
-                  parts :+ UrlString(string)
-                case (parts, Specifier(argNum))           =>
-                  val newVariable =
-                    if (missingArguments) MissingArgument
-                    else getAppendArgumentForVn(ir, defUse, instr getUse argNum)
-                  parts :+ newVariable
-              }
-              Url(urlParts)
-          }
-        case _                           =>
-          None
-      })(breakOut)
-    }
+    def getFormattedUrlStrings(ir: IR, defUse: DefUse): Set[Url] =
+      if (config.stringFormat) {
+        (ir.getInstructions flatMap {
+          case instr: SSAInvokeInstruction =>
+            getUrlFromStringFormat(instr, ir.getSymbolTable) map {
+              urlPrefix =>
+                val (formattedParts, specifierNum) = parse(urlPrefix, instr)
+                val missingArguments = specifierNum >= instr.getNumberOfUses
+                val urlParts = formattedParts.foldLeft(Vector.empty[UrlPart]) {
+                  case (parts, FormattedStringPart(string)) =>
+                    parts :+ UrlString(string)
+                  case (parts, Specifier(argNum)) =>
+                    val newVariable =
+                      if (missingArguments) MissingArgument
+                      else getAppendArgumentForVn(ir, defUse, instr getUse argNum)
+                    parts :+ newVariable
+                }
+                Url(urlParts)
+            }
+          case _ =>
+            None
+        })(breakOut)
+      } else Set.empty[Url]
 
     private[this] def getUrlFromStringFormat(instr: SSAInvokeInstruction, table: SymbolTable): Option[String] =
       if (instr.getNumberOfUses > 0) {
@@ -76,8 +77,14 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
         case Some(solver) =>
           val valNumToAsbo = valueNumberToAsbo(solver)
           val appends      = stringAppends(ir, valNumToAsbo)
+//          val contains     = ir.getMethod.toString.contains("appends")
           val urlAppends   = appends flatMap {
             altStringConcatenation =>
+//              if (contains) {
+//                println("flattened size: " + altStringConcatenation.size)
+//                println("number of nodes: " + altStringConcatenation.nodeNum)
+//                println("head size : " + altStringConcatenation.headSize)
+//              }
               getUrlSingleStringConcatenations(altStringConcatenation, ir)
           }
           urlAppends map {
@@ -120,7 +127,6 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
       }
     }
 
-    // todo make lazy (avoid flattening of unnecessary data structures)
     private[this] def hasUrlPrefix(table: SymbolTable, string: SingleStringConcatenation): Boolean = {
       def matchesUrlPrefix(vn: ValueNumber) =
         (table isStringConstant vn) && isUrlPrefix(table getStringValue vn)

@@ -23,6 +23,10 @@ trait StringAppendDatastructures {
 
     def size: Long
 
+    def headSize: Long
+
+    def nodeNum: Long
+
     /**
      * add an alternative string
      */
@@ -55,7 +59,7 @@ trait StringAppendDatastructures {
           AltStringAlternatives(strings + alts)
       }
 
-    override def flatten: Set[SingleStringConcatenation] =
+    override lazy val flatten: Set[SingleStringConcatenation] =
       strings flatMap { _.flatten }
 
     override def size: Long =
@@ -65,6 +69,18 @@ trait StringAppendDatastructures {
       }
 
     override lazy val myHashCode = strings.hashCode()
+
+    override def headSize: Long =
+      strings.foldLeft(0L) {
+        (prevSize, string) =>
+          prevSize + string.headSize
+      }
+
+    override def nodeNum: Long =
+      strings.foldLeft(1L) {
+        (prevSize, string) =>
+          prevSize + string.nodeNum
+      }
   }
   
   case class AltStringSeq(strings: Seq[AltStringConcatenation]) extends AltStringConcatenation {
@@ -78,7 +94,7 @@ trait StringAppendDatastructures {
       }
 
     // simplify this method
-    override def flatten: Set[SingleStringConcatenation] =
+    override lazy val flatten: Set[SingleStringConcatenation] =
       strings match {
         case Seq() =>
           Set.empty[SingleStringConcatenation]
@@ -102,15 +118,30 @@ trait StringAppendDatastructures {
       }
 
     override lazy val myHashCode: Int = strings.hashCode()
+
+    override def headSize: Long =
+      if (strings.isEmpty)
+        0
+      else strings.head.headSize
+
+    override def nodeNum: Long =
+      strings.foldLeft(1L) {
+        (prevSize, string) =>
+          prevSize + string.nodeNum
+      }
   }
 
   case class AltAppendArgument(vn: ValueNumber) extends AltStringConcatenation {
 
-    override def flatten: Set[SingleStringConcatenation] = Set(SingleAppendArgument(vn))
+    override lazy val flatten: Set[SingleStringConcatenation] = Set(SingleAppendArgument(vn))
 
     override def size: Long = 1
 
     override lazy val myHashCode: Int = vn.hashCode()
+
+    override def headSize: Long = 1
+
+    override def nodeNum: Long = 1
   }
 
   case object AltCycle extends AltStringConcatenation {
@@ -119,11 +150,15 @@ trait StringAppendDatastructures {
 
     override def ++(string: AltStringConcatenation): AltStringConcatenation = AltCycle
 
-    override def flatten: Set[SingleStringConcatenation] = Set(SingleCycle)
+    override lazy val flatten: Set[SingleStringConcatenation] = Set(SingleCycle)
 
     override def size: Long = 1
 
     override lazy val myHashCode = "AltCycle".hashCode
+
+    override def headSize: Long = 1
+
+    override def nodeNum: Long = 1
   }
 
   /**
