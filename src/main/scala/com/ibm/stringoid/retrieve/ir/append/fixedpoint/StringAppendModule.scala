@@ -30,7 +30,7 @@ trait StringAppendModule {
   def stringAppends(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]): ValNumTrie = {
     val solver  = new StringAppendFixedPointSolver(ir, vnToAsbo)
     val result  = solver.result
-    val mapping = solver.atsRefMapping
+    val mapping = solver.attRefMapping
     val atsRefs: Set[Int] = (solver.graph map {
       bb =>
         result.getOut(bb).index
@@ -53,7 +53,7 @@ trait StringAppendModule {
      * For efficiency we store our AsboToTrie in this array. The analysis operates on its indices
      * that serve as references to the stored AsboToTrie objects.
      */
-    val atsRefMapping = ArrayBuffer.empty[AsboToTrie]
+    val attRefMapping = ArrayBuffer.empty[AsboToTrie]
 
     // ITransferFunctionProvider's methods force the lattice elements to be mutable
     /**
@@ -64,7 +64,7 @@ trait StringAppendModule {
     case class AsboToTrie(asboToTrie: AsboMap, bb: BB)
 
     /**
-     * A reference to an AsboToTrie in the [[atsRefMapping]] array
+     * A reference to an AsboToTrie in the [[attRefMapping]] array
      */
     sealed trait AtsReference extends NodeWithNumber with IVariable[AtsReference]  {
 
@@ -77,9 +77,9 @@ trait StringAppendModule {
       override def setOrderNumber(i: Int): Unit = orderNumber = i
 
       override def copyState(ref: AtsReference): Unit = {
-        val asboToString = atsRefMapping(index).asboToTrie
+        val asboToString = attRefMapping(index).asboToTrie
         asboToString.clear()
-        asboToString ++= atsRefMapping(ref.index).asboToTrie
+        asboToString ++= attRefMapping(ref.index).asboToTrie
       }
     }
 
@@ -109,8 +109,8 @@ trait StringAppendModule {
       new DataflowSolver[BB, AtsReference](framework) {
 
         override def makeNodeVariable(bb: BB, in: Boolean): AtsReference = {
-          val nextIndex = atsRefMapping.size
-          atsRefMapping += AsboToTrie(mutable.Map.empty[ASBO, ValNumTrie], bb)
+          val nextIndex = attRefMapping.size
+          attRefMapping += AsboToTrie(mutable.Map.empty[ASBO, ValNumTrie], bb)
           if (in)
             AtsRefIn(nextIndex)
           else
@@ -131,7 +131,7 @@ trait StringAppendModule {
       case class StringMeetOperator() extends AbstractMeetOperator[AtsReference] {
 
         override def evaluate(lhs: AtsReference, rhs: Array[AtsReference]): Byte = {
-          val lhsAts = atsRefMapping(lhs.index)
+          val lhsAts = attRefMapping(lhs.index)
 
           val sccForLhs = stronglyConnectedComponents find {
             scc =>
@@ -160,7 +160,7 @@ trait StringAppendModule {
           val newMap = mutable.Map.empty[ASBO, ValNumTrie]
           rhs foreach {
             rmapRef =>
-              addRhsToLhs(newMap, atsRefMapping(rmapRef.index))
+              addRhsToLhs(newMap, attRefMapping(rmapRef.index))
           }
           if (newMap == lhsAts.asboToTrie)
             NOT_CHANGED
@@ -198,7 +198,7 @@ trait StringAppendModule {
         private[this] case class AppendOperator(asbos: Set[ASBO], string: ValNumTrie) extends UnaryOperator[AtsReference] {
 
           override def evaluate(lhs: AtsReference, rhs: AtsReference): Byte = {
-            val rhsMap = atsRefMapping(rhs.index).asboToTrie
+            val rhsMap = attRefMapping(rhs.index).asboToTrie
             val newMap = mutable.Map.empty[ASBO, ValNumTrie] ++= rhsMap
             asbos foreach {
               asbo =>
@@ -210,8 +210,8 @@ trait StringAppendModule {
                 }
                 newMap += asbo -> newString
             }
-            val lhsMap: AsboMap = atsRefMapping(lhs.index).asboToTrie
-            if (lhsMap == newMap) // todo note: currently lhs will never be equal to newMap, so this method will always return CHANGED!
+            val lhsMap: AsboMap = attRefMapping(lhs.index).asboToTrie
+            if (lhsMap == newMap)
               NOT_CHANGED
             else {
               lhsMap ++= newMap
@@ -223,8 +223,8 @@ trait StringAppendModule {
         private[this] case class IdentityOperator() extends UnaryOperator[AtsReference] {
 
           override def evaluate(lhs: AtsReference, rhs: AtsReference): Byte = {
-            val lhsMap = atsRefMapping(lhs.index).asboToTrie
-            val rhsMap = atsRefMapping(rhs.index).asboToTrie
+            val lhsMap = attRefMapping(lhs.index).asboToTrie
+            val rhsMap = attRefMapping(rhs.index).asboToTrie
             if (lhsMap == rhsMap)
               NOT_CHANGED
             else {
