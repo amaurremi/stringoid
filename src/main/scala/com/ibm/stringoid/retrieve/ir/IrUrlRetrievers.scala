@@ -12,6 +12,7 @@ import com.ibm.wala.types.ClassLoaderReference
 import edu.illinois.wala.ipa.callgraph.{AnalysisScope, Dependency, FlexibleCallGraphBuilder}
 
 import scala.collection.JavaConversions._
+import scala.collection.breakOut
 
 trait IrUrlRetrievers extends UrlRetrievers {
 
