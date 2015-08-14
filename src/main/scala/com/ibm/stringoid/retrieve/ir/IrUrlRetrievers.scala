@@ -66,7 +66,7 @@ trait IrUrlRetrievers extends UrlRetrievers {
     def getConstantUrlStrings(ir: IR): Set[String] = {
       val table = ir.getSymbolTable
       (1 to table.getMaxValueNumber collect {
-        case v if (table isStringConstant v) && isUrlRegex(table getStringValue v) =>
+        case v if (table isStringConstant v) && isUrlPrefix(table getStringValue v) =>
           table getStringValue v
       })(breakOut)
     }
