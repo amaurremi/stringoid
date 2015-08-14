@@ -42,18 +42,20 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
         (ir.getInstructions flatMap {
           case instr: SSAInvokeInstruction =>
             getUrlFromStringFormat(instr, ir.getSymbolTable) map {
-              urlPrefix =>
-                val (formattedParts, specifierNum) = parse(urlPrefix, instr)
-                val missingArguments = specifierNum >= instr.getNumberOfUses
-                val urlParts = formattedParts.foldLeft(Vector.empty[UrlPart]) {
-                  case (parts, FormattedStringPart(string)) =>
-                    parts :+ UrlString(string)
-                  case (parts, Specifier(argNum)) =>
-                    val newVariable =
-                      if (missingArguments) MissingArgument
-                      else getAppendArgumentForVn(ir, defUse, instr getUse argNum)
-                    parts :+ newVariable
-                }
+              case (urlPrefix, hasLocale) =>
+                val (formattedParts, specifierNum) = parse(urlPrefix)
+                val offset = if (hasLocale) 1 else 0
+                val missingArguments               = specifierNum >= instr.getNumberOfUses - offset
+                val urlParts                       =
+                  formattedParts.foldLeft(Vector.empty[UrlPart]) {
+                    case (parts, FormattedStringPart(string)) =>
+                      parts :+ UrlString(string)
+                    case (parts, Specifier(count))           =>
+                      val newVariable =
+                        if (missingArguments) MissingArgument
+                        else getAppendArgumentForVn(ir, defUse, instr getUse (count + offset))
+                      parts :+ newVariable
+                  }
                 Url(urlParts)
             }
           case _ =>
@@ -61,15 +63,22 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
         })(breakOut)
       } else Set.empty[Url]
 
-    private[this] def getUrlFromStringFormat(instr: SSAInvokeInstruction, table: SymbolTable): Option[String] =
+    /**
+     * If instr is a String.format call that builds a URL, returns the prefix of that URL and
+     * a boolean flag indicating whether the first argument to String.format is a Locale.
+     */
+    private[this] def getUrlFromStringFormat(instr: SSAInvokeInstruction, table: SymbolTable): Option[(String, Boolean)] =
       if (instr.getNumberOfUses > 0) {
-        val stringFormatSig = "Ljava/lang/String, format(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String"
-        val firstArg = instr getUse 0
-        if ((instr.getDeclaredTarget.toString contains stringFormatSig)
-          && (table isStringConstant firstArg)
-          && isUrlPrefix(table getStringValue firstArg))
-          Some(table getStringValue firstArg)
-        else None
+        val stringFormatPrefix = "Ljava/lang/String, format("
+        val targetSig = instr.getDeclaredTarget.toString
+        val locale = targetSig contains "Locale"
+        if (targetSig contains stringFormatPrefix) {
+          val firstArg = if (locale) instr getUse 1 else instr getUse 0
+          if ((table isStringConstant firstArg)
+            && isUrlPrefix(table getStringValue firstArg))
+            Some((table getStringValue firstArg, locale))
+          else None
+        } else None
       } else None
 
     private[this] def isUrlPrefixVn(vn: ValueNumber, table: SymbolTable): Boolean =

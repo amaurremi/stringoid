@@ -24,7 +24,7 @@ trait StringFormatSpecifiers {
   /**
    * Returns the sequence of string parts and specifiers, along with the number of specifiers.
    */
-  def parse(s: String, instr: SSAInvokeInstruction): (Iterable[FormattedString], Int) = {
+  def parse(s: String): (Iterable[FormattedString], Int) = {
     var specifierCount = 0
     val matcher = fsPattern matcher s
     val buffer  = mutable.UnrolledBuffer.empty[FormattedString]
