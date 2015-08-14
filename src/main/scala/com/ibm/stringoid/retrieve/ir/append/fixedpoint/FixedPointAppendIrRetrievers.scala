@@ -36,10 +36,10 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
       if (constants.isEmpty)
         Set.empty[Url]
       else {
-        val constantUrls: Set[Url] = (constants map {
+        val constantUrls = constants map {
           c =>
             Url(Vector(UrlString(c)))
-        })(breakOut)
+        }
         val formatted = getFormattedUrlStrings(ir, defUse)
         val appends   = getConcatUrlsForIr(ir, defUse)
         constantUrls ++ formatted ++ appends
