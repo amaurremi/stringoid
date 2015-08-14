@@ -44,7 +44,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
             getUrlFromStringFormat(instr, ir.getSymbolTable) map {
               case (urlPrefix, hasLocale) =>
                 val (formattedParts, specifierNum) = parse(urlPrefix)
-                val offset = if (hasLocale) 1 else 0
+                val offset                         = if (hasLocale) 1 else 0
                 val missingArguments               = specifierNum >= instr.getNumberOfUses - offset
                 val urlParts                       =
                   formattedParts.foldLeft(Vector.empty[UrlPart]) {

@@ -30,19 +30,15 @@ trait StringFormatSpecifiers {
     val buffer  = mutable.UnrolledBuffer.empty[FormattedString]
     var index   = 0
     val length  = s.length
-    while (index < length) {
-      if (matcher find index) {
-        if (matcher.start != index)
-          buffer add FormattedStringPart(s substring (index, matcher.start))
-        specifierCount = specifierCount + 1
-        buffer add Specifier(specifierCount)
-        index = matcher.end
-      } else {
-        specifierCount = specifierCount + 1
-        buffer add Specifier(specifierCount)
-        return (buffer.toIterable, specifierCount)
-      }
+    while ((index < length) && (matcher find index)) {
+      if (matcher.start != index)
+        buffer add FormattedStringPart(s substring (index, matcher.start))
+      specifierCount = specifierCount + 1
+      buffer add Specifier(specifierCount)
+      index = matcher.end
     }
+    if (index < length)
+      buffer add FormattedStringPart(s substring index)
     (buffer.toIterable, specifierCount)
   }
 }
