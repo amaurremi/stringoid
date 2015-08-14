@@ -90,17 +90,12 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
           val valNumToAsbo = valueNumberToAsbo(solver)
           val appendTrie   = stringAppends(ir, valNumToAsbo)
           val table = ir.getSymbolTable
-          val urlValNums = 1 to table.getMaxValueNumber filter {
-            isUrlPrefixVn(_, table)
-          }
-          val urlStringSeqs = urlValNums flatMap {
-            vn =>
-              (appendTrie postfixes StringValNum(vn)).iterator
-          }
-          (urlStringSeqs map {
-            stringSeq =>
-              Url(parseUrl(ir, defUse, stringSeq))
-          })(breakOut)
+          (for {
+            vn <- 1 to table.getMaxValueNumber
+            if isUrlPrefixVn(vn, table)
+            stringValNum = StringValNum(vn)
+            stringTail <- (appendTrie tails stringValNum).iterator
+          } yield Url(parseUrl(ir, defUse, stringValNum +: stringTail)))(breakOut)
         case None =>
           Set.empty[Url]
       }

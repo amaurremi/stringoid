@@ -9,7 +9,7 @@ import com.ibm.wala.ssa._
 import com.ibm.wala.ssa.analysis.{ExplodedControlFlowGraph, IExplodedBasicBlock}
 import com.ibm.wala.util.graph.impl.NodeWithNumber
 import com.ibm.wala.util.graph.traverse.SCCIterator
-import trie.Trie
+import seqset.regular.Automaton
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
@@ -22,7 +22,7 @@ trait StringAppendModule {
   private[this] val EDGE_FUNCTIONS_NOT_SUPPORTED_MESSAGE: String =
     "No edge transfer functions for StringAppend fixed-point solver."
 
-  type ValNumTrie = Trie[StringPart]
+  type ValNumTrie = Automaton[StringPart]
 
   /**
    * Get the string concatenation results.
@@ -35,10 +35,10 @@ trait StringAppendModule {
       bb =>
         result.getOut(bb).index
     })(breakOut)
-    atsRefs.foldLeft(Trie.empty[StringPart]) {
+    atsRefs.foldLeft(Automaton.empty[StringPart]) {
       (trie, ref) =>
         val tries = mapping(ref).asboToTrie.values
-        trie | tries.foldLeft(Trie.empty[StringPart]) { _ | _ }
+        trie | tries.foldLeft(Automaton.empty[StringPart]) { _ | _ }
     }
   }
 
@@ -143,7 +143,7 @@ trait StringAppendModule {
               case Some(scc) if scc contains r.bb =>
                 r.asboToTrie foreach {
                   case (asbo, _) =>
-                    l += asbo -> (Trie.empty[StringPart] + Seq(StringCycle))
+                    l += asbo -> (Automaton.empty[StringPart] + Seq(StringCycle))
                 }
               case _                              =>
                 r.asboToTrie foreach {
@@ -176,7 +176,7 @@ trait StringAppendModule {
           case instr: SSAInvokeInstruction if isSbAppend(instr)                =>
             vnToAsbo get getFirstSbAppendDef(instr) match {
               case Some(asbos) =>
-                val appendArgument = Trie.empty[StringPart] + Seq(StringValNum(getAppendArgument(instr)))
+                val appendArgument = Automaton.empty[StringPart] + Seq(StringValNum(getAppendArgument(instr)))
                 new AppendOperator(asbos, appendArgument) // todo what if the argument is in itself a StringBuilder? will we handle that case outside?
               case None =>
                 // todo note that this means that we are appending to a StringBuilder for which we haven't added an ASBO to the vnToAsbo map.
@@ -186,7 +186,7 @@ trait StringAppendModule {
           case inv: SSAInvokeInstruction if isSbConstructorWithStringParam(inv) =>
             vnToAsbo get getSbConstructorDef(inv) match {
               case Some(asbos) =>
-                val appendArgument = Trie.empty[StringPart] + Seq(StringValNum(getSbConstructorArgument(inv)))
+                val appendArgument = Automaton.empty[StringPart] + Seq(StringValNum(getSbConstructorArgument(inv)))
                 new AppendOperator(asbos, appendArgument)
               case None =>
                 throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
