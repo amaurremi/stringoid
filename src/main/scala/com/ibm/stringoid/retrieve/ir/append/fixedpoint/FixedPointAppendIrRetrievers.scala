@@ -19,15 +19,9 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
 
     override def apply(apkPath: Path): UrlsWithSources = {
       val urlsWithSources: Iterator[(Url, Method)] = for {
-        ir        <- getIrs(apkPath)
-        defUse     = new DefUse(ir)
-        formatted  = getFormattedUrlStrings(ir, defUse)
-        constants  = getConstantUrlStrings(ir) map {
-          constantUrl =>
-            Url(Vector(UrlString(constantUrl)))
-        }
-        appends    = getConcatUrlsForIr(ir, defUse)
-        url       <- appends ++ constants ++ formatted // todo merge appends with formatted
+        ir       <- getIrs(apkPath)
+        defUse    = new DefUse(ir)
+        url      <- getAllUrls(ir, defUse)
       } yield url -> ir.getMethod.toString
       val urlWithSourcesMap = urlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
         case (prevMap, (url, method)) =>
@@ -35,6 +29,21 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
           prevMap updated(url, prevMethods + method)
       }
       UrlsWithSources(urlWithSourcesMap)
+    }
+
+    private[this] def getAllUrls(ir: IR, defUse: DefUse): Set[Url] = {  // todo merge appends with formatted
+      val constants = getConstantUrlStrings(ir)
+      if (constants.isEmpty)
+        Set.empty[Url]
+      else {
+        val constantUrls: Set[Url] = (constants map {
+          c =>
+            Url(Vector(UrlString(c)))
+        })(breakOut)
+        val formatted = getFormattedUrlStrings(ir, defUse)
+        val appends   = getConcatUrlsForIr(ir, defUse)
+        constantUrls ++ formatted ++ appends
+      }
     }
 
     def getFormattedUrlStrings(ir: IR, defUse: DefUse): Set[Url] =
