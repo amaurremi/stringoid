@@ -19,7 +19,7 @@ trait GrepUrlRetrievers extends UrlRetrievers {
       UrlsWithSources((cmd.lines map {
         l =>
           Url(Vector(UrlString(l))) -> Set.empty[Method]
-      })(breakOut))
+      })(breakOut), 0)
     }
   }
 

@@ -4,6 +4,7 @@ import java.nio.file.Path
 
 import com.ibm.stringoid.retrieve.ir.IrUrlRetrievers
 import com.ibm.stringoid.retrieve.ir.append.ValueNumber
+import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.analysis.typeInference.TypeInference
 import com.ibm.wala.ssa._
 import com.ibm.wala.util.debug.UnimplementedError
@@ -18,8 +19,9 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
     with StringAppendModule {
 
     override def apply(apkPath: Path): UrlsWithSources = {
+      val TimeResult(irs, walaTime) = TimeResult(getIrs(apkPath))
       val urlsWithSources: Iterator[(Url, Method)] = for {
-        ir       <- getIrs(apkPath)
+        ir       <- irs
         defUse    = new DefUse(ir)
         url      <- getAllUrls(ir, defUse)
       } yield url -> ir.getMethod.toString
@@ -28,7 +30,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
           val prevMethods = prevMap getOrElse (url, Set.empty[Method])
           prevMap updated(url, prevMethods + method)
       }
-      UrlsWithSources(urlWithSourcesMap)
+      UrlsWithSources(urlWithSourcesMap, walaTime)
     }
 
     private[this] def getAllUrls(ir: IR, defUse: DefUse): Set[Url] = {  // todo merge appends with formatted
@@ -125,7 +127,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
         UrlString((table getConstantValue vn).toString)
       else {
         val typeName = try {
-          val typeInference = typeInferenceMap getOrElseUpdate(ir, TypeInference.make(ir, true))
+          val typeInference = typeInferenceMap getOrElseUpdate (ir, TypeInference.make(ir, true))
           val abstraction = typeInference.getType(vn)
           abstraction.toString
         } catch {

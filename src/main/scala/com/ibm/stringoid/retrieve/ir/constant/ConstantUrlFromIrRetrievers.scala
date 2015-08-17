@@ -3,6 +3,7 @@ package com.ibm.stringoid.retrieve.ir.constant
 import java.nio.file.Path
 
 import com.ibm.stringoid.retrieve.ir.IrUrlRetrievers
+import com.ibm.stringoid.util.TimeResult
 
 trait ConstantUrlFromIrRetrievers extends IrUrlRetrievers {
 
@@ -13,7 +14,8 @@ trait ConstantUrlFromIrRetrievers extends IrUrlRetrievers {
   final class ConstantUrlFromIrRetriever(override val config: AnalysisConfig) extends IrUrlRetriever {
 
     override def apply(apkPath: Path): UrlsWithSources = {
-      val urlMethodPairs: Iterator[(Url, Method)] = getIrs(apkPath) flatMap {
+      val TimeResult(irs, walaTime) = TimeResult(getIrs(apkPath))
+      val urlMethodPairs: Iterator[(Url, Method)] = irs flatMap {
         ir =>
           getConstantUrlStrings(ir) map {
             url =>
@@ -25,7 +27,7 @@ trait ConstantUrlFromIrRetrievers extends IrUrlRetrievers {
         case (prev, (wu, m)) =>
           prev.updated(wu, prev.getOrElse(wu, Set.empty[Method]) + m)
       }
-      UrlsWithSources(urlWithSources)
+      UrlsWithSources(urlWithSources, walaTime)
     }
   }
 

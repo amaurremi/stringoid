@@ -27,7 +27,7 @@ trait IrUrlRetrievers extends UrlRetrievers {
     private[this] def isApplicationClass(c: IClass): Boolean =
       c.getClassLoader.getReference == ClassLoaderReference.Application
 
-    protected final def getIrs(apkPath: Path): Iterator[IR] = { // todo some immutable stream collection?
+    protected final def getIrs(apkPath: Path): Iterator[IR] = {
       implicit val analysisConfig = configWithApk(apkPath)
       val includeLib = !config.ignoreLibs
       val processed = mutable.Set.empty[IR]

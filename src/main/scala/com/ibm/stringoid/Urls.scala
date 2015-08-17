@@ -93,10 +93,10 @@ trait Urls {
   }
 
   // todo List should be a Set but Argonaut doesn't understand it
-  case class UrlsWithSources(uws: Map[Url, Set[Method]]) {
+  case class UrlsWithSources(uws: Map[Url, Set[Method]], walaTime: Double) {
 
     def filter(p: ((Url, Set[Method])) => Boolean): UrlsWithSources =
-      UrlsWithSources(uws filter p)
+      UrlsWithSources(uws filter p, walaTime)
   }
 
   case class UrlToMethodsPair(url: Url, methods: Set[Method])
@@ -108,10 +108,10 @@ trait Urls {
           case (url, methods) =>
             UrlToMethodsPair(url, methods)
         })(breakOut)
-      jencode1L(
+      jencode2L(
         (uws: UrlsWithSources) =>
-          jsonMap(uws.uws)
-      )("url2methods")
+          (jsonMap(uws.uws), uws.walaTime)
+      )("url2methods", "wala-time")
     }
   }
 }
