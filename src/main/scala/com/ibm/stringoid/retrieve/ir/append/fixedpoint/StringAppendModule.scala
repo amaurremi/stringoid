@@ -21,12 +21,12 @@ trait StringAppendModule {
   private[this] val EDGE_FUNCTIONS_NOT_SUPPORTED_MESSAGE: String =
     "No edge transfer functions for StringAppend fixed-point solver."
 
-  type ValNumTrie = Automaton[StringPart]
+  type ValNumAutomaton = Automaton[StringPart]
 
   /**
    * Get the string concatenation results.
    */
-  def stringAppends(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]): ValNumTrie = {
+  def stringAppends(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]): ValNumAutomaton = {
     val solver  = new StringAppendFixedPointSolver(ir, vnToAsbo)
     val result  = solver.result
     val mapping = solver.ataRefMapping
@@ -35,16 +35,16 @@ trait StringAppendModule {
         result.getOut(bb).index
     })(breakOut)
     ataRefs.foldLeft(Automaton.empty[StringPart]) {
-      (trie, ref) =>
-        val tries = mapping(ref).asboToAutomaton.values
-        trie | tries.foldLeft(Automaton.empty[StringPart]) { _ | _ }
+      (automaton, ref) =>
+        val automata = mapping(ref).asboToAutomaton.values
+        automaton | automata.foldLeft(Automaton.empty[StringPart]) { _ | _ }
     }
   }
 
   private class StringAppendFixedPointSolver(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]) {
 
     type BB      = IExplodedBasicBlock
-    type AsboMap = mutable.Map[ASBO, ValNumTrie]
+    type AsboMap = mutable.Map[ASBO, ValNumAutomaton]
 
     def graph = getGraph
 
@@ -110,7 +110,7 @@ trait StringAppendModule {
 
         override def makeNodeVariable(bb: BB, in: Boolean): AtaReference = {
           val nextIndex = ataRefMapping.size
-          ataRefMapping += AsboToAutomaton(mutable.Map.empty[ASBO, ValNumTrie], bb)
+          ataRefMapping += AsboToAutomaton(mutable.Map.empty[ASBO, ValNumAutomaton], bb)
           if (in)
             AtaRefIn(nextIndex)
           else
@@ -144,17 +144,17 @@ trait StringAppendModule {
                 }
               case _                              =>
                 r.asboToAutomaton foreach {
-                  case (asbo, trie1) =>
+                  case (asbo, auto1) =>
                     l get asbo match {
-                      case Some(trie2) =>
-                        l += asbo -> (trie1 | trie2)
+                      case Some(auto2) =>
+                        l += asbo -> (auto1 | auto2)
                       case None =>
-                        l += asbo -> trie1
+                        l += asbo -> auto1
                     }
                 }
             }
 
-          val newMap = mutable.Map.empty[ASBO, ValNumTrie]
+          val newMap = mutable.Map.empty[ASBO, ValNumAutomaton]
           rhs foreach {
             rmapRef =>
               addRhsToLhs(newMap, ataRefMapping(rmapRef.index))
@@ -192,11 +192,11 @@ trait StringAppendModule {
             IdentityOperator()
         }
 
-        private[this] case class AppendOperator(asbos: Set[ASBO], string: ValNumTrie) extends UnaryOperator[AtaReference] {
+        private[this] case class AppendOperator(asbos: Set[ASBO], string: ValNumAutomaton) extends UnaryOperator[AtaReference] {
 
           override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {
             val rhsMap = ataRefMapping(rhs.index).asboToAutomaton
-            val newMap = mutable.Map.empty[ASBO, ValNumTrie] ++= rhsMap
+            val newMap = mutable.Map.empty[ASBO, ValNumAutomaton] ++= rhsMap
             asbos foreach {
               asbo =>
                 val newString = rhsMap get asbo match {
