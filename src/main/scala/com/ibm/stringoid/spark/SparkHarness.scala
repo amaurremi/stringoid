@@ -5,6 +5,7 @@ import java.net.URI
 import java.nio.file.{Files, Path, Paths}
 
 import org.apache.hadoop.conf.Configuration
+
 import org.apache.hadoop.fs.{FileSystem, Path => HadoopPath, RemoteIterator}
 import org.apache.spark.{Logging, SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
@@ -23,31 +24,6 @@ object SparkHarness extends Logging {
     } else {
       mainSpark(args)
     }
-  }
-
-  def mainNoSpark(args: Array[String]) : Unit = {
-    val analysisType = args(0)
-    val apkDirPath   = args(1)
-    val outDirPath   = args(2)
-    val numApps      = args(3).toInt
-
-    val ds = Files.newDirectoryStream(Paths.get(apkDirPath))
-    val apkPaths: List[Path] = JavaConversions.asScalaIterator(ds.iterator()).toList
-
-
-    val results: List[Try[String]] = apkPaths.map { p =>
-      // println(p)
-
-      com.ibm.stringoid.Main.analyseAPK(
-        analysisType,
-        p,
-        useCallGraph = false,
-        ignoreLibraries = true,
-        stringFormat = false
-      ) 
-    }
-
-    println(results.mkString("\n\n"))
   }
 
   def mainSpark(args : Array[String]) : Unit = {
@@ -87,23 +63,19 @@ object SparkHarness extends Logging {
       val localFile = toLocalFile(fs, apkUri)
       val localPath = localFile.toPath()
 
-      // logInfo(s"Now looking at $apkUri...")
+      logWarning(s"Now looking at $apkUri...")
 
-      val result = com.ibm.stringoid.Main.analyseAPK(
-        analysisType,
-        localPath,
-        useCallGraph = false,
-        ignoreLibraries = true,
-        stringFormat = false)
+      val result: Try[String] = com.ibm.stringoid.Main.analyseAPK(analysisType, localPath, useCallGraph = false, ignoreLibraries = true, stringFormat = true)
 
       localFile.delete()
 
-      // logInfo(s"Done with $apkUri.")
+      logWarning(s"Done with $apkUri.")
 
       (apkUri.toString(), result)
     }
 
-    results.repartition(sc.defaultParallelism).saveAsTextFile(outDirPath)
+    //results.repartition(sc.defaultParallelism).saveAsTextFile(outDirPath)
+    results.saveAsTextFile(outDirPath)
 
     sc.stop()
   }
