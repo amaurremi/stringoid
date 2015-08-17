@@ -103,7 +103,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
             vn           <- 1 to table.getMaxValueNumber
             if isUrlPrefixVn(vn, table)
             stringValNum  = StringValNum(vn)
-            stringTail   <- (appendAutomaton tails stringValNum).iterator
+            stringTail   <- (appendAutomaton tails stringValNum).iterator take 100
           } yield Url(parseUrl(ir, defUse, stringValNum +: stringTail)))(breakOut)
         case None =>
           Set.empty[Url]
@@ -111,15 +111,13 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
 
     private[this] val typeInferenceMap = mutable.Map.empty[IR, TypeInference]
 
-    private[this] def parseUrl(ir: IR, defUse: DefUse, string: Seq[StringPart]): Vector[UrlPart] = {
-      val table = ir.getSymbolTable
+    private[this] def parseUrl(ir: IR, defUse: DefUse, string: Seq[StringPart]): Vector[UrlPart] =
       (string map {
         case StringValNum(vn) =>
           getAppendArgumentForVn(ir, defUse, vn)
         case StringCycle =>
           UrlWithCycle
       })(breakOut)
-    }
 
     private[this] def getAppendArgumentForVn(ir: IR, defUse: DefUse, vn: ValueNumber): UrlPart = {
       val table = ir.getSymbolTable
