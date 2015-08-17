@@ -28,12 +28,9 @@ object SparkHarness extends Logging {
   def mainNoSpark(args: Array[String]) : Unit = {
     val analysisType = args(0)
     val apkDirPath   = args(1)
-    val outDirPath   = args(2)
-    val numApps      = args(3).toInt
 
     val ds = Files.newDirectoryStream(Paths.get(apkDirPath))
     val apkPaths: List[Path] = JavaConversions.asScalaIterator(ds.iterator()).toList
-
 
     val results: List[Try[String]] = apkPaths.map { p =>
       // println(p)
@@ -54,11 +51,11 @@ object SparkHarness extends Logging {
     import java.text.SimpleDateFormat
     import java.util.Date
 
-    val now = (new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss")).format(new Date())
+    val now = new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss").format(new Date())
 
     val analysisType = args(0)
     val apkDirPath   = args(1)
-    val outDirPath   = s"${args(2).trim}-${now}"
+    val outDirPath   = s"${args(2).trim}-$now"
     val numApps      = args(3).toInt
 
     val conf = new SparkConf().setAppName("Stringoid")
@@ -70,7 +67,7 @@ object SparkHarness extends Logging {
 
     val apkPaths: List[HadoopPath] = iteratorFromRemoteIterator(
       fs.listFiles(new HadoopPath(apkDirPath), true)
-    ).toList.map(_.getPath())
+    ).toList.map(_.getPath)
 
     val selectedApkPaths : List[HadoopPath] = if(numApps <= 0) {
       apkPaths
@@ -80,12 +77,12 @@ object SparkHarness extends Logging {
       rand.shuffle(apkPaths).take(numApps)
     }
 
-    val apkPathsRDD: RDD[URI] = sc.parallelize(selectedApkPaths.map(_.toUri()), selectedApkPaths.length)
+    val apkPathsRDD: RDD[URI] = sc.parallelize(selectedApkPaths.map(_.toUri), selectedApkPaths.length)
 
     val results: RDD[(String,Try[String])] = apkPathsRDD.map { apkUri =>
       val fs = FileSystem.get(apkUri, new Configuration())
       val localFile = toLocalFile(fs, apkUri)
-      val localPath = localFile.toPath()
+      val localPath = localFile.toPath
 
       // logInfo(s"Now looking at $apkUri...")
 
@@ -100,7 +97,7 @@ object SparkHarness extends Logging {
 
       // logInfo(s"Done with $apkUri.")
 
-      (apkUri.toString(), result)
+      (apkUri.toString, result)
     }
 
     results.repartition(sc.defaultParallelism).saveAsTextFile(outDirPath)
@@ -120,13 +117,13 @@ object SparkHarness extends Logging {
     val hadoopPath = new HadoopPath(uri)
     val tmp = File.createTempFile("stringoid-", ".apk")
     tmp.deleteOnExit()
-    fs.copyToLocalFile(hadoopPath, new HadoopPath(tmp.getAbsolutePath()))
+    fs.copyToLocalFile(hadoopPath, new HadoopPath(tmp.getAbsolutePath))
     tmp
   }
 
   /* Not the most sophisticated code. */
   private def iteratorFromRemoteIterator[T](ri: RemoteIterator[T]) = new Iterator[T] {
-    def hasNext() = ri.hasNext()
+    def hasNext = ri.hasNext
     def next() : T = ri.next()
   }
 
