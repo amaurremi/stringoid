@@ -1,26 +1,16 @@
 package com.ibm.stringoid.spark
 
-import com.ibm.stringoid._
-
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkConf
-import org.apache.spark.rdd.RDD
-import org.apache.spark.Logging
+import java.io.File
+import java.net.URI
+import java.nio.file.{Files, Path, Paths}
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileSystem
-import org.apache.hadoop.fs.{ Path => HadoopPath }
-import org.apache.hadoop.fs.RemoteIterator
-
-
-import java.net.URI
+import org.apache.hadoop.fs.{FileSystem, Path => HadoopPath, RemoteIterator}
+import org.apache.spark.{Logging, SparkConf, SparkContext}
+import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConversions
-
-import scala.util.{ Success, Try, Failure }
-
-import java.io.File
-import java.nio.file.{ Path, Paths, Files }
+import scala.util.Try
 
 object SparkHarness extends Logging {
   def main(args: Array[String]) : Unit = {
@@ -61,8 +51,8 @@ object SparkHarness extends Logging {
   }
 
   def mainSpark(args : Array[String]) : Unit = {
-    import java.util.Date
     import java.text.SimpleDateFormat
+    import java.util.Date
 
     val now = (new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss")).format(new Date())
 

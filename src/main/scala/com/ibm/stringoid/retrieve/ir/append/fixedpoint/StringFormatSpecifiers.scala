@@ -2,8 +2,6 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
 import java.util.regex.Pattern
 
-import com.ibm.wala.ssa.SSAInvokeInstruction
-
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
