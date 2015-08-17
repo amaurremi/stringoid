@@ -3,7 +3,7 @@ package com.ibm.stringoid.retrieve.ir
 import java.nio.file.Path
 
 import com.ibm.stringoid.UrlRetrievers
-import com.ibm.wala.classLoader.{ClassLoaderFactoryImpl, IClass}
+import com.ibm.wala.classLoader.{ClassLoaderFactoryImpl, IClass, IMethod}
 import com.ibm.wala.dalvik.classLoader.{DexFileModule, DexIRFactory}
 import com.ibm.wala.ipa.callgraph.AnalysisCache
 import com.ibm.wala.ipa.cha.ClassHierarchy
@@ -12,7 +12,7 @@ import com.ibm.wala.types.ClassLoaderReference
 import edu.illinois.wala.ipa.callgraph.{AnalysisScope, Dependency, FlexibleCallGraphBuilder}
 
 import scala.collection.JavaConversions._
-import scala.collection.breakOut
+import scala.collection.{breakOut, mutable}
 
 trait IrUrlRetrievers extends UrlRetrievers {
 
@@ -30,10 +30,19 @@ trait IrUrlRetrievers extends UrlRetrievers {
     protected final def getIrs(apkPath: Path): Iterator[IR] = { // todo some immutable stream collection?
       implicit val analysisConfig = configWithApk(apkPath)
       val includeLib = !config.ignoreLibs
-      val irs = if (config.irFromCg) {
-        new FlexibleCallGraphBuilder().cg.iterator collect {
+      val processed = mutable.Set.empty[IR]
+      if (config.irFromCg) {
+        new FlexibleCallGraphBuilder().cg.iterator flatMap {
           case node if includeLib || isApplicationClass(node.getMethod.getDeclaringClass) =>
-            node.getIR
+            val ir = node.getIR
+            if (processed contains ir)
+              None
+            else {
+              processed += ir
+              Some(ir)
+            }
+          case _ =>
+            None
         }
       } else {
         val scope = AnalysisScope(Seq.empty[Dependency])
@@ -44,11 +53,19 @@ trait IrUrlRetrievers extends UrlRetrievers {
           c <- cha.iterator()
           if includeLib || isApplicationClass(c)
           m <- c.getAllMethods
-        } yield cache getIR m
+          ir <- getIr(cache, m, processed)
+        } yield ir
       }
-      irs filter {
-        Option(_).isDefined
-      }
+    }
+
+    private[this] def getIr(cache: AnalysisCache, m: IMethod, processed: mutable.Set[IR]): Option[IR] = {
+      val ir = cache getIR m
+      if (Option(ir).isDefined) {
+        if (!(processed contains ir)) {
+          processed += ir
+          Some(ir)
+        } else None
+      } else None
     }
 
     private[this] def getIrFactory(scope: AnalysisScope) =

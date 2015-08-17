@@ -30,14 +30,14 @@ trait StringAppendModule {
   def stringAppends(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]): ValNumTrie = {
     val solver  = new StringAppendFixedPointSolver(ir, vnToAsbo)
     val result  = solver.result
-    val mapping = solver.attRefMapping
-    val atsRefs: Set[Int] = (solver.graph map {
+    val mapping = solver.ataRefMapping
+    val ataRefs: Set[Int] = (solver.graph map {
       bb =>
         result.getOut(bb).index
     })(breakOut)
-    atsRefs.foldLeft(Automaton.empty[StringPart]) {
+    ataRefs.foldLeft(Automaton.empty[StringPart]) {
       (trie, ref) =>
-        val tries = mapping(ref).asboToTrie.values
+        val tries = mapping(ref).asboToAutomaton.values
         trie | tries.foldLeft(Automaton.empty[StringPart]) { _ | _ }
     }
   }
@@ -50,10 +50,10 @@ trait StringAppendModule {
     def graph = getGraph
 
     /**
-     * For efficiency we store our AsboToTrie in this array. The analysis operates on its indices
-     * that serve as references to the stored AsboToTrie objects.
+     * For efficiency we store our AsboToAutomaton in this array. The analysis operates on its indices
+     * that serve as references to the stored AsboToAutomaton objects.
      */
-    val attRefMapping = ArrayBuffer.empty[AsboToTrie]
+    val ataRefMapping = ArrayBuffer.empty[AsboToAutomaton]
 
     // ITransferFunctionProvider's methods force the lattice elements to be mutable
     /**
@@ -61,12 +61,12 @@ trait StringAppendModule {
      * @param bb we need to keep track of the basic block in order to see whether a statement
      *           appears in a strongly connected component
      */
-    case class AsboToTrie(asboToTrie: AsboMap, bb: BB)
+    case class AsboToAutomaton(asboToAutomaton: AsboMap, bb: BB)
 
     /**
-     * A reference to an AsboToTrie in the [[attRefMapping]] array
+     * A reference to an AsboToAutomaton in the [[ataRefMapping]] array
      */
-    sealed trait AtsReference extends NodeWithNumber with IVariable[AtsReference]  {
+    sealed trait AtaReference extends NodeWithNumber with IVariable[AtaReference]  {
 
       val index: Int
 
@@ -76,20 +76,20 @@ trait StringAppendModule {
 
       override def setOrderNumber(i: Int): Unit = orderNumber = i
 
-      override def copyState(ref: AtsReference): Unit = {
-        val asboToString = attRefMapping(index).asboToTrie
+      override def copyState(ref: AtaReference): Unit = {
+        val asboToString = ataRefMapping(index).asboToAutomaton
         asboToString.clear()
-        asboToString ++= attRefMapping(ref.index).asboToTrie
+        asboToString ++= ataRefMapping(ref.index).asboToAutomaton
       }
     }
 
-    case class AtsRefIn(override val index: Int) extends AtsReference
-    case class AtsRefOut(override val index: Int) extends AtsReference
+    case class AtaRefIn(override val index: Int) extends AtaReference
+    case class AtaRefOut(override val index: Int) extends AtaReference
 
     import com.ibm.wala.fixpoint.FixedPointConstants._
 
-    def result: DataflowSolver[BB, AtsReference] = {
-      val framework = new IKilldallFramework[BB, AtsReference] {
+    def result: DataflowSolver[BB, AtaReference] = {
+      val framework = new IKilldallFramework[BB, AtaReference] {
 
         override def getFlowGraph = getGraph
 
@@ -101,52 +101,50 @@ trait StringAppendModule {
       solver
     }
 
-    private[this] lazy val getGraph = ExceptionPrunedCFG.make(ExplodedControlFlowGraph.make(ir))
+    private[this] lazy val getGraph = ExplodedControlFlowGraph.make(ir)
 
-    private[this] lazy val stronglyConnectedComponents = new SCCIterator(getGraph).toSet
+    private[this] lazy val stronglyConnectedComponents =
+      (new SCCIterator(getGraph) filter { _.size() > 1 }).toSet
 
-    private[this] def getSolver(framework: IKilldallFramework[BB, AtsReference]) =
-      new DataflowSolver[BB, AtsReference](framework) {
+    private[this] def getSolver(framework: IKilldallFramework[BB, AtaReference]) =
+      new DataflowSolver[BB, AtaReference](framework) {
 
-        override def makeNodeVariable(bb: BB, in: Boolean): AtsReference = {
-          val nextIndex = attRefMapping.size
-          attRefMapping += AsboToTrie(mutable.Map.empty[ASBO, ValNumTrie], bb)
+        override def makeNodeVariable(bb: BB, in: Boolean): AtaReference = {
+          val nextIndex = ataRefMapping.size
+          ataRefMapping += AsboToAutomaton(mutable.Map.empty[ASBO, ValNumTrie], bb)
           if (in)
-            AtsRefIn(nextIndex)
+            AtaRefIn(nextIndex)
           else
-            AtsRefOut(nextIndex)
+            AtaRefOut(nextIndex)
         }
 
-        override def makeEdgeVariable(src: BB, dst: BB): AtsReference =
+        override def makeEdgeVariable(src: BB, dst: BB): AtaReference =
           throw new UnsupportedOperationException(EDGE_FUNCTIONS_NOT_SUPPORTED_MESSAGE)
 
-        override def makeStmtRHS(size: ValueNumber): Array[AtsReference] =
-          new Array[AtsReference](size)
+        override def makeStmtRHS(size: ValueNumber): Array[AtaReference] =
+          new Array[AtaReference](size)
       }
     
-    private[this] def transferFunctions = new ITransferFunctionProvider[BB, AtsReference] {
+    private[this] def transferFunctions = new ITransferFunctionProvider[BB, AtaReference] {
 
-      override def getMeetOperator: AbstractMeetOperator[AtsReference] = StringMeetOperator()
+      override def getMeetOperator: AbstractMeetOperator[AtaReference] = StringMeetOperator()
 
-      case class StringMeetOperator() extends AbstractMeetOperator[AtsReference] {
+      case class StringMeetOperator() extends AbstractMeetOperator[AtaReference] {
 
-        override def evaluate(lhs: AtsReference, rhs: Array[AtsReference]): Byte = {
-          val lhsAts = attRefMapping(lhs.index)
+        override def evaluate(lhs: AtaReference, rhs: Array[AtaReference]): Byte = {
+          val lhsAta = ataRefMapping(lhs.index)
 
-          val sccForLhs = stronglyConnectedComponents find {
-            scc =>
-              scc.size > 1 && (scc contains lhsAts.bb)
-          }
+          val sccForLhs = stronglyConnectedComponents find { _ contains lhsAta.bb }
 
-          def addRhsToLhs(l: AsboMap, r: AsboToTrie): Unit =
+          def addRhsToLhs(l: AsboMap, r: AsboToAutomaton): Unit =
             sccForLhs match  {
               case Some(scc) if scc contains r.bb =>
-                r.asboToTrie foreach {
+                r.asboToAutomaton foreach {
                   case (asbo, _) =>
                     l += asbo -> (Automaton.empty[StringPart] + Seq(StringCycle))
                 }
               case _                              =>
-                r.asboToTrie foreach {
+                r.asboToAutomaton foreach {
                   case (asbo, trie1) =>
                     l get asbo match {
                       case Some(trie2) =>
@@ -160,18 +158,18 @@ trait StringAppendModule {
           val newMap = mutable.Map.empty[ASBO, ValNumTrie]
           rhs foreach {
             rmapRef =>
-              addRhsToLhs(newMap, attRefMapping(rmapRef.index))
+              addRhsToLhs(newMap, ataRefMapping(rmapRef.index))
           }
-          if (newMap == lhsAts.asboToTrie)
+          if (newMap == lhsAta.asboToAutomaton)
             NOT_CHANGED
           else {
-            lhsAts.asboToTrie ++= newMap
+            lhsAta.asboToAutomaton ++= newMap
             CHANGED
           }
         }
       }
 
-      override def getNodeTransferFunction(node: BB): UnaryOperator[AtsReference] =
+      override def getNodeTransferFunction(node: BB): UnaryOperator[AtaReference] =
         node.getInstruction match {
           case instr: SSAInvokeInstruction if isSbAppend(instr)                =>
             vnToAsbo get getFirstSbAppendDef(instr) match {
@@ -195,10 +193,10 @@ trait StringAppendModule {
             IdentityOperator()
         }
 
-        private[this] case class AppendOperator(asbos: Set[ASBO], string: ValNumTrie) extends UnaryOperator[AtsReference] {
+        private[this] case class AppendOperator(asbos: Set[ASBO], string: ValNumTrie) extends UnaryOperator[AtaReference] {
 
-          override def evaluate(lhs: AtsReference, rhs: AtsReference): Byte = {
-            val rhsMap = attRefMapping(rhs.index).asboToTrie
+          override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {
+            val rhsMap = ataRefMapping(rhs.index).asboToAutomaton
             val newMap = mutable.Map.empty[ASBO, ValNumTrie] ++= rhsMap
             asbos foreach {
               asbo =>
@@ -210,7 +208,9 @@ trait StringAppendModule {
                 }
                 newMap += asbo -> newString
             }
-            val lhsMap: AsboMap = attRefMapping(lhs.index).asboToTrie
+
+            val lhsMap: AsboMap = ataRefMapping(lhs.index).asboToAutomaton
+
             if (lhsMap == newMap)
               NOT_CHANGED
             else {
@@ -220,11 +220,11 @@ trait StringAppendModule {
           }
         }
 
-        private[this] case class IdentityOperator() extends UnaryOperator[AtsReference] {
+        private[this] case class IdentityOperator() extends UnaryOperator[AtaReference] {
 
-          override def evaluate(lhs: AtsReference, rhs: AtsReference): Byte = {
-            val lhsMap = attRefMapping(lhs.index).asboToTrie
-            val rhsMap = attRefMapping(rhs.index).asboToTrie
+          override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {
+            val lhsMap = ataRefMapping(lhs.index).asboToAutomaton
+            val rhsMap = ataRefMapping(rhs.index).asboToAutomaton
             if (lhsMap == rhsMap)
               NOT_CHANGED
             else {
@@ -236,7 +236,7 @@ trait StringAppendModule {
           override def isIdentity: Boolean = true
         }
 
-      override def getEdgeTransferFunction(src: BB, dst: BB): UnaryOperator[AtsReference] =
+      override def getEdgeTransferFunction(src: BB, dst: BB): UnaryOperator[AtaReference] =
         throw new UnsupportedOperationException(EDGE_FUNCTIONS_NOT_SUPPORTED_MESSAGE)
 
       override def hasNodeTransferFunctions: Boolean = true

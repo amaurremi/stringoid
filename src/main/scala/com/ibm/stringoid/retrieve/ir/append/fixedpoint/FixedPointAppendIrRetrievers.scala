@@ -25,7 +25,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
       } yield url -> ir.getMethod.toString
       val urlWithSourcesMap = urlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
         case (prevMap, (url, method)) =>
-          val prevMethods = prevMap getOrElse(url, Set.empty[Method])
+          val prevMethods = prevMap getOrElse (url, Set.empty[Method])
           prevMap updated(url, prevMethods + method)
       }
       UrlsWithSources(urlWithSourcesMap)
@@ -96,14 +96,14 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
     private[this] def getConcatUrlsForIr(ir: IR, defUse: DefUse): Set[Url] =
       asboSolver(ir, defUse) match {
         case Some(solver) =>
-          val valNumToAsbo = valueNumberToAsbo(solver)
-          val appendTrie   = stringAppends(ir, valNumToAsbo)
-          val table = ir.getSymbolTable
+          val valNumToAsbo    = valueNumberToAsbo(solver)
+          val appendAutomaton = stringAppends(ir, valNumToAsbo)
+          val table           = ir.getSymbolTable
           (for {
-            vn <- 1 to table.getMaxValueNumber
+            vn           <- 1 to table.getMaxValueNumber
             if isUrlPrefixVn(vn, table)
-            stringValNum = StringValNum(vn)
-            stringTail <- (appendTrie tails stringValNum).iterator
+            stringValNum  = StringValNum(vn)
+            stringTail   <- (appendAutomaton tails stringValNum).iterator
           } yield Url(parseUrl(ir, defUse, stringValNum +: stringTail)))(breakOut)
         case None =>
           Set.empty[Url]
