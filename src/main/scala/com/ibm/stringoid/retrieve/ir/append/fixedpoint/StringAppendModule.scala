@@ -207,6 +207,7 @@ trait StringAppendModule {
                 }
                 newMap += asbo -> newString
             }
+//            replaceStringBuilders(newMap)
 
             val lhsMap: AsboMap = ataRefMapping(lhs.index).asboToAutomaton
 
@@ -218,6 +219,28 @@ trait StringAppendModule {
             }
           }
         }
+
+//        private[this] def replaceStringBuilders(map: AsboMap) = {
+//          def valNum(part: StringPart): Option[ValueNumber] =
+//            part match {
+//              case StringValNum(vn) =>
+//                Some (vn)
+//              case StringCycle      =>
+//                None
+//            }
+//
+//          def getAsbo(vn: ValueNumber): Option[ASBO] = ???
+//
+//          for {
+//            (asbo, automaton) <- map
+//            stringPart        <- automaton.edges
+//            vn                <- valNum(stringPart)
+//            asbo              <- getAsbo(vn)
+//            toReplace         <- map get asbo
+//          } {
+//            val newAutomaton = automaton replace ()
+//          }
+//        }
 
         private[this] case class IdentityOperator() extends UnaryOperator[AtaReference] {
 
