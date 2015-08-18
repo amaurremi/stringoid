@@ -52,12 +52,14 @@ trait AbstractStringBuilderModule {
   /**
    * The resulting map from value numbers to abstract StringBuilder objects
    */
-  def valueNumberToAsbo(solver: AsboFixedPointSolver): Map[ValueNumber, Set[ASBO]] =
+  def valueNumberToAsbo(solver: AsboFixedPointSolver): Map[ValueNumber, Set[ASBO]] = {
+    val result = getResult(solver)
     (for {
-      vn     <- solver.valueNumberGraph
-      intSet <- Option(getResult(solver).getOut(vn).getValue)
-      i2a     = intSetToAsbo(intSet, solver.abstractObjectNumbering)
+      vn <- solver.valueNumberGraph
+      intSet <- Option((result getOut vn).getValue)
+      i2a = intSetToAsbo(intSet, solver.abstractObjectNumbering)
     } yield vn -> i2a)(breakOut)
+  }
 
   private[this] def intSetToAsbo(intSet: IntSet, numbering: AsboMapping): Set[ASBO] = {
     val walaIterator = intSet.intIterator
