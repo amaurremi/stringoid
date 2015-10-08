@@ -47,4 +47,16 @@ public class Example {
     String getQuery() {
         return "key=val";
     }
+    
+    /**
+     * Actual result:
+     * "http://domain.com?key=" + [ ]
+     *
+     * Desired result:
+     * "http://domain.com?key=val"
+     */
+    void knownFunctions() {
+        import java.net.URLEncoder
+        String url = "http://domain.com?key=" + URLEncoder.encode("val");
+    }
 }
