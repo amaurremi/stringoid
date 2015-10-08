@@ -76,7 +76,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
           UrlWithCycle
         case MissingStringFormatArgument =>
           MissingArgument
-        case StringFormatPart(s)    =>
+        case StringFormatPart(s)         =>
           UrlString(s)
       })(breakOut)
 
