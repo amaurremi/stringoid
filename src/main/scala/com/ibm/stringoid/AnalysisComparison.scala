@@ -13,14 +13,14 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
 
   import AnalysisType._
 
-  def retriever(config: AnalysisConfig, apkPath: Path): UrlsWithSources =
+  def retriever(config: AnalysisConfig, file: Path): UrlsWithSources =
     config.analysis match {
       case Constants =>
-        (new ConstantUrlFromIrRetriever(config))(apkPath)
+        (new ConstantUrlFromIrRetriever(config))(file)
       case Append =>
-        (new FixedPointAppendIrRetriever(config))(apkPath)
+        (new FixedPointAppendIrRetriever(config))(file)
       case Grep =>
-        GrepUrlRetriever(apkPath)
+        GrepUrlRetriever(file)
     }
 
   case class AnalysisResult private[AnalysisComparison](
@@ -41,9 +41,9 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
 
     def fromConfig(
       config: AnalysisConfig,
-      apkPath: Path
+      file: Path
     ): AnalysisResult = {
-      val TimeResult(result, time) = TimeResult(retriever(config, apkPath))
+      val TimeResult(result, time) = TimeResult(retriever(config, file))
       AnalysisResult(config, time, result, result.uws.size)
     }
   }

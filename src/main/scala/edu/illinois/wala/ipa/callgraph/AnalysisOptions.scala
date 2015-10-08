@@ -32,7 +32,7 @@ object AnalysisOptions {
     implicit val scope = AnalysisScope(extraDependencies)
 
     val classLoaderImpl = new ClassLoaderFactoryImpl(scope.getExclusions())
-    //      if (!srcDep.isEmpty) 
+    //      if (!srcDep.isEmpty)
     //      new PolyglotClassLoaderFactory(scope.getExclusions(), new JavaIRTranslatorExtension())
     //    else
 

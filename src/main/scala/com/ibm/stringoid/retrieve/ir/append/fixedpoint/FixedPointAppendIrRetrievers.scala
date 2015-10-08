@@ -18,12 +18,12 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
     with AbstractStringBuilderModule
     with StringAppendModule {
 
-    override def apply(apkPath: Path): UrlsWithSources = {
-      val TimeResult(irs, walaTime) = TimeResult(getIrs(apkPath))
+    override def apply(file: Path): UrlsWithSources = {
+      val TimeResult(irs, walaTime) = TimeResult(getIrs(file))
       val urlsWithSources: Iterator[(Url, Method)] = for {
-        ir       <- irs
-        defUse    = new DefUse(ir)
-        url      <- getAllUrls(ir, defUse)
+        ir     <- irs
+        defUse  = new DefUse(ir)
+        url    <- getAllUrls(ir, defUse)
       } yield url -> ir.getMethod.toString
       val urlWithSourcesMap = urlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
         case (prevMap, (url, method)) =>

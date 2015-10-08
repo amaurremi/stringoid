@@ -34,15 +34,15 @@ object Main extends AnalysisComparison {
       }
     }
 
-  def analyseAPK(
+  def analyseFile(
     analysis: String,
-    apkPath: Path,
+    file: Path,
     useCallGraph: Boolean,
     ignoreLibraries: Boolean,
     stringFormat: Boolean
   ) : Try[String] = {
     val config = AnalysisConfig(useCallGraph, ignoreLibraries, stringFormat, AnalysisType.withName(analysis))
-    Try(AnalysisResult.fromConfig(config, apkPath).asJson.nospaces)
+    Try(AnalysisResult.fromConfig(config, file).asJson.nospaces)
   }
 
   /**

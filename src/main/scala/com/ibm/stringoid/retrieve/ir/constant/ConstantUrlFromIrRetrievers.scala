@@ -13,8 +13,8 @@ trait ConstantUrlFromIrRetrievers extends IrUrlRetrievers {
    */
   final class ConstantUrlFromIrRetriever(override val config: AnalysisConfig) extends IrUrlRetriever {
 
-    override def apply(apkPath: Path): UrlsWithSources = {
-      val TimeResult(irs, walaTime) = TimeResult(getIrs(apkPath))
+    override def apply(file: Path): UrlsWithSources = {
+      val TimeResult(irs, walaTime) = TimeResult(getIrs(file))
       val urlMethodPairs: Iterator[(Url, Method)] = irs flatMap {
         ir =>
           getConstantUrlStrings(ir) map {

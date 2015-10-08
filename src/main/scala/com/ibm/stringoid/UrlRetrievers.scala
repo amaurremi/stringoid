@@ -54,6 +54,11 @@ trait UrlRetrievers extends AnalysisTypes with Urls {
       ConfigFactory.load() withValue (
         "wala.dependencies.apk",
         ConfigValueFactory.fromIterable(Seq(apkPath.toString)))
+
+    protected final def configWithSrc(srcDir: Path): Config =
+      ConfigFactory.load() withValue (
+        "wala.dependencies.source",
+        ConfigValueFactory.fromIterable(Seq(srcDir.toString)))
   }
 
   object UrlRetriever {
