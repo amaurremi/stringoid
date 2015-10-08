@@ -23,7 +23,7 @@ trait AnalysisTypes {
         case Grep      =>
           "grep"
         case Append    =>
-          "append (extracting string concatentations through StringBuilders and '+'"
+          "append (extracting string concatentations through StringBuilders and '+')"
         case Unset     =>
           throw new UnsupportedOperationException("no analysis set")
       }
