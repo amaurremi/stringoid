@@ -173,8 +173,7 @@ trait StringAppendModule {
           case instr: SSAInvokeInstruction if isSbAppend(instr)                =>
             vnToAsbo get getFirstSbAppendDef(instr) match {
               case Some(asbos) =>
-                val appendArgument = Automaton.empty[StringPart] + Seq(StringValNum(getAppendArgument(instr)))
-                new AppendOperator(asbos, appendArgument) // todo what if the argument is in itself a StringBuilder? will we handle that case outside?
+                new AppendOperator(asbos, getAppendArgument(instr)) // todo what if the argument is in itself a StringBuilder? will we handle that case outside?
               case None =>
                 // todo note that this means that we are appending to a StringBuilder for which we haven't added an ASBO to the vnToAsbo map.
                 // todo I think this means that the StringBuilder has been passed as a parameter or is a field. We should handle this case too at some point.
@@ -183,7 +182,7 @@ trait StringAppendModule {
           case inv: SSAInvokeInstruction if isSbConstructorWithStringParam(inv) =>
             vnToAsbo get getSbConstructorDef(inv) match {
               case Some(asbos) =>
-                val appendArgument = Automaton.empty[StringPart] + Seq(StringValNum(getSbConstructorArgument(inv)))
+                val appendArgument = getSbConstructorArgument(inv)
                 new AppendOperator(asbos, appendArgument)
               case None =>
                 throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
@@ -192,22 +191,31 @@ trait StringAppendModule {
             IdentityOperator()
         }
 
-        private[this] case class AppendOperator(asbos: Set[ASBO], string: ValNumAutomaton) extends UnaryOperator[AtaReference] {
+        private[this] case class AppendOperator(asbos: Set[ASBO], appendVn: ValueNumber) extends UnaryOperator[AtaReference] {
 
           override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {
             val rhsMap = ataRefMapping(rhs.index).asboToAutomaton
             val newMap = mutable.Map.empty[ASBO, ValNumAutomaton] ++= rhsMap
+            val appendAutomata: Iterable[ValNumAutomaton] = for {
+              asbos     <- (vnToAsbo get appendVn).toIterable
+              asbo      <- asbos
+              automaton <- rhsMap get asbo
+            } yield automaton
+            val appendAutomaton =
+              if (appendAutomata.isEmpty)
+                Automaton.empty[StringPart] + Seq(StringValNum(appendVn))
+              else
+                appendAutomata.foldLeft(Automaton.empty[StringPart]) { _ | _ }
             asbos foreach {
               asbo =>
                 val newString = rhsMap get asbo match {
                   case Some(sb) =>
-                    sb +++ string
+                    sb +++ appendAutomaton
                   case None =>
-                    string
+                    appendAutomaton
                 }
                 newMap += asbo -> newString
             }
-//            replaceStringBuilders(newMap)
 
             val lhsMap: AsboMap = ataRefMapping(lhs.index).asboToAutomaton
 
@@ -219,28 +227,6 @@ trait StringAppendModule {
             }
           }
         }
-
-//        private[this] def replaceStringBuilders(map: AsboMap) = {
-//          def valNum(part: StringPart): Option[ValueNumber] =
-//            part match {
-//              case StringValNum(vn) =>
-//                Some (vn)
-//              case StringCycle      =>
-//                None
-//            }
-//
-//          def getAsbo(vn: ValueNumber): Option[ASBO] = ???
-//
-//          for {
-//            (asbo, automaton) <- map
-//            stringPart        <- automaton.edges
-//            vn                <- valNum(stringPart)
-//            asbo              <- getAsbo(vn)
-//            toReplace         <- map get asbo
-//          } {
-//            val newAutomaton = automaton replace ()
-//          }
-//        }
 
         private[this] case class IdentityOperator() extends UnaryOperator[AtaReference] {
 
