@@ -88,7 +88,6 @@ trait AbstractStringBuilderModule {
      * If a method has deals with StringBuilders, returns Some solver, otherwise None
      */
     def result: BitVectorSolver[ValueNumber] = {
-      val graph = valueNumberGraph
       val framework = new BitVectorFramework[ValueNumber, ASBO](
         valueNumberGraph,
         new StringBuilderTransferFunctions,
@@ -110,7 +109,7 @@ trait AbstractStringBuilderModule {
      * 5 -> 4 -> 2 -> 1
      *   -> 7
      */
-    def valueNumberGraph: Graph[ValueNumber] = {
+    lazy val valueNumberGraph: Graph[ValueNumber] = {
       // 1 = new SB();
       // 2 = 1.append(3);
       // ...
