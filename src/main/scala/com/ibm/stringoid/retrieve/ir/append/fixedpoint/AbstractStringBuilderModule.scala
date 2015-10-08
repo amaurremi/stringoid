@@ -128,7 +128,7 @@ trait AbstractStringBuilderModule {
           graph addNode firstDef
           graph addNode secondDef
           graph addEdge(secondDef, firstDef)
-        case inv: SSAInstanceofInstruction if isSbTostring(inv) =>  // in 1 = 2.toString, 1 is sbDef and 2 is sbUse
+        case inv: SSAInvokeInstruction if isSbTostring(inv) =>  // in 1 = 2.toString, 1 is sbDef and 2 is sbUse
           val sbDef = getSbToStringDef(inv)
           val sbUse = getSbToStringUse(inv)
           graph addNode sbDef

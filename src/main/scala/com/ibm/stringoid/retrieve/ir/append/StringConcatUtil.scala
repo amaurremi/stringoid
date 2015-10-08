@@ -25,7 +25,7 @@ object StringConcatUtil {
   def isSbConstructor(instr: SSAInvokeInstruction): Boolean =
     instr.toString() contains SB_CONSTRUCTOR_PREFIX
 
-  def isSbTostring(instr: SSAInstanceofInstruction) =
+  def isSbTostring(instr: SSAInvokeInstruction) =
     instr.toString() contains SB_TOSTRING_PREFIX
 
   /**
@@ -64,7 +64,7 @@ object StringConcatUtil {
       case n: Int if (instr getUse n) >= 0 => instr getUse n
     } // todo this is to filter out -1 instructions. is this good? should it be > 0?
 
-  def getSbToStringDef(inv: SSAInstanceofInstruction) = inv.getDef
+  def getSbToStringDef(inv: SSAInvokeInstruction) = inv.getDef
 
-  def getSbToStringUse(inv: SSAInstanceofInstruction) = inv.getUse(0)
+  def getSbToStringUse(inv: SSAInvokeInstruction) = inv.getUse(0)
 }
