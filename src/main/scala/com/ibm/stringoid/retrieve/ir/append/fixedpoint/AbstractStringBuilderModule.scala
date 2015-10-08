@@ -128,20 +128,20 @@ trait AbstractStringBuilderModule {
           val (firstDef, secondDef) = getSbAppendDefs(inv) // in 1 = 2.append(3), 1 is firstDef and 2 is secondDef
           graph addNode firstDef
           graph addNode secondDef
-          graph addEdge(firstDef, secondDef)
+          graph addEdge(secondDef, firstDef)
         case inv: SSAInstanceofInstruction if isSbTostring(inv) =>  // in 1 = 2.toString, 1 is sbDef and 2 is sbUse
           val sbDef = getSbToStringDef(inv)
           val sbUse = getSbToStringUse(inv)
           graph addNode sbDef
           graph addNode sbUse
-          graph addEdge(sbDef, sbUse)
+          graph addEdge(sbUse, sbDef)
         case phi: SSAPhiInstruction                             =>
           val defNode = phi.getDef
           graph addNode defNode
           getPhiUses(phi) foreach {
             use =>
               addNode(use)
-              graph addEdge (defNode, use)
+              graph addEdge (use, defNode)
           }
         case _                                                  =>
           // do  nothing
