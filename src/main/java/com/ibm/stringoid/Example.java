@@ -1,5 +1,7 @@
 package com.ibm.stringoid;
 
+import java.net.URLEncoder;
+
 public class Example {
 
     /**
@@ -56,7 +58,6 @@ public class Example {
      * "http://domain.com?key=val"
      */
     void knownFunctions() {
-        import java.net.URLEncoder
         String url = "http://domain.com?key=" + URLEncoder.encode("val");
     }
 }
