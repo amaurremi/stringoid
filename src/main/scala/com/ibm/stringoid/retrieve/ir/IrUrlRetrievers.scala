@@ -59,7 +59,7 @@ trait IrUrlRetrievers extends UrlRetrievers {
     }
 
     private[this] def getIr(cache: AnalysisCache, m: IMethod, processed: mutable.Set[IR]): Option[IR] = {
-      println(m.toString)
+//      println(m.toString)
       val ir = cache getIR m
       if (Option(ir).isDefined) {
         if (!(processed contains ir)) {

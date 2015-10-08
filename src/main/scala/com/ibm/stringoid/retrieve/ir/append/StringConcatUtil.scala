@@ -1,11 +1,12 @@
 package com.ibm.stringoid.retrieve.ir.append
 
-import com.ibm.wala.ssa.{SSAInvokeInstruction, SSAPhiInstruction}
+import com.ibm.wala.ssa.{SSAInstanceofInstruction, SSAInvokeInstruction, SSAPhiInstruction}
 
 object StringConcatUtil {
 
   private val SB_CONSTRUCTOR_PREFIX = "invokespecial < Application, Ljava/lang/StringBuilder, <init>("
   private val SB_APPEND_PREFIX      = "invokevirtual < Application, Ljava/lang/StringBuilder, append("
+  private val SB_TOSTRING_PREFIX    = "invokevirtual < Application, Ljava/lang/StringBuilder, toString()Ljava/lang/String;"
 
   val INVOKE_INSTR_MSG = "String concatenation SSA conversion handles only invoke and phi instructions"
 
@@ -23,6 +24,9 @@ object StringConcatUtil {
    */
   def isSbConstructor(instr: SSAInvokeInstruction): Boolean =
     instr.toString() contains SB_CONSTRUCTOR_PREFIX
+
+  def isSbTostring(instr: SSAInstanceofInstruction) =
+    instr.toString() contains SB_TOSTRING_PREFIX
 
   /**
    * Does this instruction correspond to a StringBuilder.append() that takes exactly one argument?
@@ -59,4 +63,8 @@ object StringConcatUtil {
     0 until instr.getNumberOfUses collect {
       case n: Int if (instr getUse n) >= 0 => instr getUse n
     } // todo this is to filter out -1 instructions. is this good? should it be > 0?
+
+  def getSbToStringDef(inv: SSAInstanceofInstruction) = inv.getDef
+
+  def getSbToStringUse(inv: SSAInstanceofInstruction) = inv.getUse(0)
 }

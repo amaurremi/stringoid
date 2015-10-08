@@ -103,11 +103,12 @@ trait AbstractStringBuilderModule {
      *
      * 1 = new StringBuilder()
      * 2 = 1.append(3)
-     * 4 = 2.append(4)
+     * 4 = 2.append(6)
      * 5 = phi(4, 7)
      *
      * there will be a graph
-     * 1 -> 2 -> 4 -> 5 <- 7
+     * 5 -> 4 -> 2 -> 1
+     *   -> 7
      */
     def valueNumberGraph: Graph[ValueNumber] = {
       // 1 = new SB();
@@ -116,27 +117,33 @@ trait AbstractStringBuilderModule {
       // 4 = 1.append(5);
       // For this case, we need to add three nodes that contain VN 1, and the nodes need to be connected with each other.
       // Since append is mutable (it changes 1's object) we cannot connect the nodes to the first node where 1 is defined.
-      // So we need to remember the previous instruction that appended something to 1, which is the purpoe of this map.
+      // So we need to remember the previous instruction that appended something to 1, which is the purpose of this map.
       // todo test this case in unit tests
       val graph = new SlowSparseNumberedGraph[ValueNumber](1)
       def addNode(n: ValueNumber) = if (!(graph containsNode n)) graph addNode n
       ir.iterateAllInstructions foreach {
-        case inv: SSAInvokeInstruction if isSbConstructor(inv) =>
-          getDefs(inv) foreach addNode
-        case inv: SSAInvokeInstruction if isSbAppend(inv)      =>
+        case inv: SSAInvokeInstruction if isSbConstructor(inv)  =>
+          getDefs(inv) foreach addNode // todo unnecessary?
+        case inv: SSAInvokeInstruction if isSbAppend(inv)       =>
           val (firstDef, secondDef) = getSbAppendDefs(inv) // in 1 = 2.append(3), 1 is firstDef and 2 is secondDef
           graph addNode firstDef
           graph addNode secondDef
-          graph addEdge(secondDef, firstDef)
-        case phi: SSAPhiInstruction                            =>
+          graph addEdge(firstDef, secondDef)
+        case inv: SSAInstanceofInstruction if isSbTostring(inv) =>  // in 1 = 2.toString, 1 is sbDef and 2 is sbUse
+          val sbDef = getSbToStringDef(inv)
+          val sbUse = getSbToStringUse(inv)
+          graph addNode sbDef
+          graph addNode sbUse
+          graph addEdge(sbDef, sbUse)
+        case phi: SSAPhiInstruction                             =>
           val defNode = phi.getDef
           graph addNode defNode
           getPhiUses(phi) foreach {
             use =>
               addNode(use)
-              graph addEdge (use, defNode)
+              graph addEdge (defNode, use)
           }
-        case _                                                 =>
+        case _                                                  =>
           // do  nothing
       }
       graph
