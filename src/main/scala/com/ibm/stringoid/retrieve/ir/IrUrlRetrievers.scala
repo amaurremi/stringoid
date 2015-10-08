@@ -1,6 +1,6 @@
 package com.ibm.stringoid.retrieve.ir
 
-import java.nio.file.Path
+import java.nio.file.{Files, Path}
 
 import com.ibm.stringoid.UrlRetrievers
 import com.ibm.wala.classLoader.{ClassLoaderFactoryImpl, IClass, IMethod}
@@ -28,7 +28,9 @@ trait IrUrlRetrievers extends UrlRetrievers {
       c.getClassLoader.getReference == ClassLoaderReference.Application
 
     protected final def getIrs(file: Path): Iterator[IR] = {
-      implicit val analysisConfig = if (file endsWith ".apk") configWithApk(file) else configWithSrc(file)
+      implicit val analysisConfig =
+        if (file.toString.toLowerCase endsWith ".apk") configWithApk(file)
+        else configWithSrc(file)
       val includeLib = !config.ignoreLibs
       val processed = mutable.Set.empty[IR]
       if (config.irFromCg) {
