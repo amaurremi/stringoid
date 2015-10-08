@@ -1,32 +1,34 @@
 package com.ibm.stringoid.retrieve.ir.append
 
-import com.ibm.wala.ssa.{SSAInstanceofInstruction, SSAInvokeInstruction, SSAPhiInstruction}
+import com.ibm.wala.ssa.{SSAInvokeInstruction, SSAPhiInstruction}
 
 object StringConcatUtil {
 
   private val SB_CONSTRUCTOR_PREFIX = "invokespecial < Application, Ljava/lang/StringBuilder, <init>("
   private val SB_APPEND_PREFIX      = "invokevirtual < Application, Ljava/lang/StringBuilder, append("
   private val SB_TOSTRING_PREFIX    = "invokevirtual < Application, Ljava/lang/StringBuilder, toString()Ljava/lang/String;"
+  private val STRING_FORMAT_PREFIX  = "Ljava/lang/String, format("
 
   val INVOKE_INSTR_MSG = "String concatenation SSA conversion handles only invoke and phi instructions"
 
   /**
    * Does this instruction correspond to a new StringBuilder constructor invocation
    * that takes a String or CharSequence as a parameter?
-   * todo StringBuffer
    */
   def isSbConstructorWithStringParam(instr: SSAInvokeInstruction): Boolean =
-    instr.toString() contains SB_CONSTRUCTOR_PREFIX + "L"
+    hasPrefix(instr, SB_CONSTRUCTOR_PREFIX + "L")
 
   /**
    * Does this instruction correspond to a new StringBuilder constructor invocation?
-   * todo StringBuffer
    */
   def isSbConstructor(instr: SSAInvokeInstruction): Boolean =
-    instr.toString() contains SB_CONSTRUCTOR_PREFIX
+    hasPrefix(instr, SB_CONSTRUCTOR_PREFIX)
 
   def isSbTostring(instr: SSAInvokeInstruction) =
-    instr.toString() contains SB_TOSTRING_PREFIX
+    hasPrefix(instr, SB_TOSTRING_PREFIX)
+
+  def isStringFormat(instr: SSAInvokeInstruction) =
+    hasPrefix(instr, STRING_FORMAT_PREFIX)
 
   /**
    * Does this instruction correspond to a StringBuilder.append() that takes exactly one argument?
@@ -34,7 +36,10 @@ object StringConcatUtil {
    */
   def isSbAppend(instr: SSAInvokeInstruction): Boolean =
     instr.getNumberOfParameters == 2 && // one for 'this', one for argument
-      (instr.toString() contains SB_APPEND_PREFIX)
+      hasPrefix(instr, SB_APPEND_PREFIX)
+
+  private[this] def hasPrefix(instr: SSAInvokeInstruction, prefix: String): Boolean =
+    instr.toString() contains prefix
 
   def getDefs(instr: SSAInvokeInstruction): Array[ValueNumber] =
     if (isSbAppend(instr))
@@ -67,4 +72,11 @@ object StringConcatUtil {
   def getSbToStringDef(inv: SSAInvokeInstruction) = inv.getDef
 
   def getSbToStringUse(inv: SSAInvokeInstruction) = inv.getUse(0)
+
+  def hasStringFormatLocale(instr: SSAInvokeInstruction) =
+    instr.getDeclaredTarget.toString contains "Locale"
+
+  def getFirstStringFormatArg(instr: SSAInvokeInstruction) = {
+    if (hasStringFormatLocale(instr)) instr getUse 1 else instr getUse 0
+  }
 }

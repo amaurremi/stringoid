@@ -1,6 +1,6 @@
 package com.ibm.stringoid.retrieve.ir
 
-import java.nio.file.{Files, Path}
+import java.nio.file.Path
 
 import com.ibm.stringoid.UrlRetrievers
 import com.ibm.wala.classLoader.{ClassLoaderFactoryImpl, IClass, IMethod}

@@ -74,6 +74,8 @@ trait AbstractStringBuilderModule {
     val abstractObjects = ir.iterateNormalInstructions collect {
       case inv: SSAInvokeInstruction if isSbConstructor(inv) =>
         AbstractStringBuilderObject(getSbConstructorDef(inv))
+      case inv: SSAInvokeInstruction if isStringFormat(inv)  =>
+        AbstractStringBuilderObject(inv.getDef)
     }
     new ObjectArrayMapping[ASBO](abstractObjects.toArray[ASBO])
   }
@@ -128,12 +130,14 @@ trait AbstractStringBuilderModule {
           graph addNode firstDef
           graph addNode secondDef
           graph addEdge(secondDef, firstDef)
-        case inv: SSAInvokeInstruction if isSbTostring(inv) =>  // in 1 = 2.toString, 1 is sbDef and 2 is sbUse
+        case inv: SSAInvokeInstruction if isSbTostring(inv)     =>  // in 1 = 2.toString, 1 is sbDef and 2 is sbUse
           val sbDef = getSbToStringDef(inv)
           val sbUse = getSbToStringUse(inv)
           graph addNode sbDef
           graph addNode sbUse
           graph addEdge(sbUse, sbDef)
+        case inv: SSAInvokeInstruction if isStringFormat(inv)   =>
+          graph addNode inv.getDef
         case phi: SSAPhiInstruction                             =>
           val defNode = phi.getDef
           graph addNode defNode

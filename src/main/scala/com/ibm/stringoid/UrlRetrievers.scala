@@ -13,20 +13,20 @@ trait UrlRetrievers extends AnalysisTypes with Urls {
 
   import AnalysisType._
 
-  case class AnalysisConfig(irFromCg: Boolean, ignoreLibs: Boolean, stringFormat: Boolean, analysis: AnalysisType)
+  case class AnalysisConfig(irFromCg: Boolean, ignoreLibs: Boolean, analysis: AnalysisType)
 
   object AnalysisConfig {
     implicit def AnalysisConfigEncodeJson: EncodeJson[AnalysisConfig] =
-      jencode4L(
+      jencode3L(
         (ac: AnalysisConfig) => {
           import ac._
           val lib = if (ignoreLibs) "ignoring" else "including"
           val cg  = if (irFromCg) "call graph" else "class hierarchy"
-          (prettyPrint(analysis), lib, cg, stringFormat)
+          (prettyPrint(analysis), lib, cg)
         }
-      )("analysis", "libs", "reachability", "string-format")
+      )("analysis", "libs", "reachability")
 
-    val default = AnalysisConfig(irFromCg = false, ignoreLibs = true, stringFormat = true, analysis = Unset)
+    val default = AnalysisConfig(irFromCg = false, ignoreLibs = true, analysis = Unset)
   }
 
   import UrlRetriever._

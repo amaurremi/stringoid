@@ -4,6 +4,7 @@ import java.io.{ByteArrayInputStream, File}
 import java.util.Collections
 import java.util.jar.JarFile
 
+import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope
 import com.ibm.wala.classLoader._
 import com.ibm.wala.dalvik.classLoader.DexFileModule
 import com.ibm.wala.types.ClassLoaderReference
@@ -16,7 +17,6 @@ import edu.illinois.wala.ipa.callgraph.AnalysisScope._
 import scala.Array.canBuildFrom
 import scala.collection.JavaConversions._
 import scala.collection._
-import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope
 
 object AnalysisScope {
 

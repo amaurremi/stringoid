@@ -33,7 +33,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
       UrlsWithSources(urlWithSourcesMap, walaTime)
     }
 
-    private[this] def getAllUrls(ir: IR, defUse: DefUse): Set[Url] = {  // todo merge appends with formatted
+    private[this] def getAllUrls(ir: IR, defUse: DefUse): Set[Url] = {
       val constants = getConstantUrlStrings(ir)
       if (constants.isEmpty)
         Set.empty[Url]
@@ -42,55 +42,10 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
           c =>
             Url(Vector(UrlString(c)))
         }
-        val formatted = getFormattedUrlStrings(ir, defUse)
         val appends   = getConcatUrlsForIr(ir, defUse)
-        constantUrls ++ formatted ++ appends
+        constantUrls ++ appends
       }
     }
-
-    def getFormattedUrlStrings(ir: IR, defUse: DefUse): Set[Url] =
-      if (config.stringFormat) {
-        (ir.getInstructions flatMap {
-          case instr: SSAInvokeInstruction =>
-            getUrlFromStringFormat(instr, ir.getSymbolTable) map {
-              case (urlPrefix, hasLocale) =>
-                val (formattedParts, specifierNum) = parse(urlPrefix)
-                val offset                         = if (hasLocale) 1 else 0
-                val missingArguments               = specifierNum >= instr.getNumberOfUses - offset
-                val urlParts                       =
-                  formattedParts.foldLeft(Vector.empty[UrlPart]) {
-                    case (parts, FormattedStringPart(string)) =>
-                      parts :+ UrlString(string)
-                    case (parts, Specifier(count))           =>
-                      val newVariable =
-                        if (missingArguments) MissingArgument
-                        else getAppendArgumentForVn(ir, defUse, instr getUse (count + offset))
-                      parts :+ newVariable
-                  }
-                Url(urlParts)
-            }
-          case _ =>
-            None
-        })(breakOut)
-      } else Set.empty[Url]
-
-    /**
-     * If instr is a String.format call that builds a URL, returns the prefix of that URL and
-     * a boolean flag indicating whether the first argument to String.format is a Locale.
-     */
-    private[this] def getUrlFromStringFormat(instr: SSAInvokeInstruction, table: SymbolTable): Option[(String, Boolean)] =
-      if (instr.getNumberOfUses > 0) {
-        val stringFormatPrefix = "Ljava/lang/String, format("
-        val targetSig = instr.getDeclaredTarget.toString
-        val locale = targetSig contains "Locale"
-        if (targetSig contains stringFormatPrefix) {
-          val firstArg = if (locale) instr getUse 1 else instr getUse 0
-          if ((table isStringConstant firstArg)
-            && isUrlPrefix(table getStringValue firstArg))
-            Some((table getStringValue firstArg, locale))
-          else None
-        } else None
-      } else None
 
     private[this] def isUrlPrefixVn(vn: ValueNumber, table: SymbolTable): Boolean =
       (table isStringConstant vn) && isUrlPrefix(table getStringValue vn)
@@ -115,10 +70,14 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
 
     private[this] def parseUrl(ir: IR, defUse: DefUse, string: Seq[StringPart]): Vector[UrlPart] =
       (string map {
-        case StringValNum(vn) =>
+        case StringValNum(vn)            =>
           getAppendArgumentForVn(ir, defUse, vn)
-        case StringCycle =>
+        case StringCycle                 =>
           UrlWithCycle
+        case MissingStringFormatArgument =>
+          MissingArgument
+        case StringFormatPart(s)    =>
+          UrlString(s)
       })(breakOut)
 
     private[this] def getAppendArgumentForVn(ir: IR, defUse: DefUse, vn: ValueNumber): UrlPart = {

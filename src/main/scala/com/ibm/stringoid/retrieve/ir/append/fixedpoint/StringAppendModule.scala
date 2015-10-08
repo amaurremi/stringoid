@@ -187,25 +187,47 @@ trait StringAppendModule {
               case None =>
                 throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
             }
+          case inv: SSAInvokeInstruction if isStringFormat(inv)                 =>
+            new StringFormatAppendOperator(inv)
           case _                                                                =>
             IdentityOperator()
         }
 
-        private[this] case class AppendOperator(asbos: Set[ASBO], appendVn: ValueNumber) extends UnaryOperator[AtaReference] {
+        private[this] def getAppendAutomaton(vn: ValueNumber, map: AsboMap): ValNumAutomaton = {
+          val automata = for {
+            asbos <- (vnToAsbo get vn).toIterable
+            asbo <- asbos
+            automaton <- map get asbo
+          } yield automaton
+          if (automata.isEmpty)
+            Automaton.empty[StringPart] + Seq(StringValNum(vn))
+          else
+            automata.foldLeft(Automaton.empty[StringPart]) { _ | _ }
+        }
+
+        private[this] sealed trait AbstractAppendOperator extends UnaryOperator[AtaReference] {
+
+          def createNewMap(rhsMap: AsboMap): AsboMap
 
           override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {
             val rhsMap = ataRefMapping(rhs.index).asboToAutomaton
+            val newMap = createNewMap(rhsMap)
+            val lhsMap: AsboMap = ataRefMapping(lhs.index).asboToAutomaton
+
+            if (lhsMap == newMap)
+              NOT_CHANGED
+            else {
+              lhsMap ++= newMap
+              CHANGED
+            }
+          }
+        }
+
+        private[this] case class AppendOperator(asbos: Set[ASBO], appendVn: ValueNumber) extends AbstractAppendOperator {
+
+          override def createNewMap(rhsMap: AsboMap) = {
             val newMap = mutable.Map.empty[ASBO, ValNumAutomaton] ++= rhsMap
-            val appendAutomata: Iterable[ValNumAutomaton] = for {
-              asbos     <- (vnToAsbo get appendVn).toIterable
-              asbo      <- asbos
-              automaton <- rhsMap get asbo
-            } yield automaton
-            val appendAutomaton =
-              if (appendAutomata.isEmpty)
-                Automaton.empty[StringPart] + Seq(StringValNum(appendVn))
-              else
-                appendAutomata.foldLeft(Automaton.empty[StringPart]) { _ | _ }
+            val appendAutomaton = getAppendAutomaton(appendVn, rhsMap)
             asbos foreach {
               asbo =>
                 val newString = rhsMap get asbo match {
@@ -216,15 +238,53 @@ trait StringAppendModule {
                 }
                 newMap += asbo -> newString
             }
+            newMap
+          }
+        }
 
-            val lhsMap: AsboMap = ataRefMapping(lhs.index).asboToAutomaton
+        private[this] case class StringFormatAppendOperator(instr: SSAInvokeInstruction)
+          extends AbstractAppendOperator
+          with StringFormatSpecifiers {
 
-            if (lhsMap == newMap)
-              NOT_CHANGED
-            else {
-              lhsMap ++= newMap
-              CHANGED
+          override def createNewMap(rhsMap: AsboMap): AsboMap = {
+            val newMap = mutable.Map.empty[ASBO, ValNumAutomaton] ++= rhsMap
+
+            val stringFormatArgs: Seq[StringPart] = reorderStringFormatArgs
+            val automaton = stringFormatArgs.foldLeft(Automaton.empty[StringPart]) {
+              case (resultAutomaton, stringFormatArg) =>
+                stringFormatArg match {
+                  case StringValNum(vn) =>
+                    resultAutomaton +++ getAppendAutomaton(vn, rhsMap)
+                  case other            =>
+                    resultAutomaton + Seq(other)
+                }
             }
+            // the ASBO corresponding to String.format can't be already contained in rhsMap,
+            // so we just add the result to the map
+            newMap + (AbstractStringBuilderObject(instr.getDef) -> automaton)
+          }
+
+          /**
+           * Produce sequence of [[StringPart]]s for String.format arguments in the right concatenation order.
+           * This method does not substitute the value numbers with the corresponding automata or [[ASBO]]s.
+           */
+          def reorderStringFormatArgs: Seq[StringPart] = {
+            val firstArg = getFirstStringFormatArg(instr)
+            val table = ir.getSymbolTable
+            if (table isStringConstant firstArg) {
+              val (formattedParts, specifierNum) = parse(table getStringValue firstArg)
+              val offset = if (hasStringFormatLocale(instr)) 1 else 0
+              val missingArguments = specifierNum >= instr.getNumberOfUses - offset
+              formattedParts.foldLeft(Vector.empty[StringPart]) {
+                case (parts, FormattedStringPart(string)) =>
+                  parts :+ StringFormatPart(string)
+                case (parts, Specifier(count)) =>
+                  val newVariable =
+                    if (missingArguments) MissingStringFormatArgument
+                    else StringValNum(instr getUse (count + offset))
+                  parts :+ newVariable
+              }
+            } else Seq.empty[StringPart]
           }
         }
 

@@ -62,7 +62,7 @@ object SparkHarness extends Logging {
 
       logWarning(s"Now looking at $apkUri...")
 
-      val result: Try[String] = com.ibm.stringoid.Main.analyseFile(analysisType, localPath, useCallGraph = false, ignoreLibraries = true, stringFormat = true)
+      val result: Try[String] = com.ibm.stringoid.Main.analyseFile(analysisType, localPath, useCallGraph = false, ignoreLibraries = true)
 
       localFile.delete()
 
