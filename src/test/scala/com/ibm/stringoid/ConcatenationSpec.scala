@@ -22,8 +22,7 @@ class ConcatenationSpec extends FunSpec with AnalysisComparison {
           if isSourceIr(ir)
           assertionCall <- getAssertionInstruction(ir)
         } yield {
-          val urlValNum = assertionCall.getUse(0)
-          val url       = assertionCall.getUse(1)
+          val url = assertionCall.getUse(0)
           (ir.getMethod, ir.getSymbolTable.getStringValue(url))
         }
 

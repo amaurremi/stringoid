@@ -11,6 +11,6 @@ public class UrlConcatenation {
         String url = sb.toString();
         System.out.println(url);
 
-        Assertions.shouldContainUrl(url, "http://domain.com?key1=query1,key2=query2");
+        Assertions.shouldContainUrl("http://domain.com?key1=query1,key2=query2");
     }
 }
