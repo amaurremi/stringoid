@@ -16,7 +16,7 @@ class ConcatenationSpec extends FunSpec with AnalysisComparison {
     it("merges results correctly") {
       val retriever = new FixedPointAppendIrRetriever(analysisConfig)
       val expectedUrlParts: Option[Vector[UrlPart]] = retriever.getIrs collectFirst {
-        case ir if ir.getMethod.toString contains "Assertions" =>
+        case ir if ir.getMethod.toString contains "shouldContainUrl" =>
           val table = ir.getSymbolTable
           (for {
             paramNum <- 1 until ir.getNumberOfParameters

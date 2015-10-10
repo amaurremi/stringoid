@@ -10,6 +10,8 @@ public class UrlConcatenation {
         sb.append(query);
         System.out.println(sb);
 
-        Assertions.shouldContainUrl("http://", "domain.com?", "key1=", "query1", ",key2=", "query2");
+        shouldContainUrl("http://", "domain.com?", "key1=", "query1", ",key2=", "query2");
     }
+
+    public static void shouldContainUrl(String... stringSequence) {}
 }
