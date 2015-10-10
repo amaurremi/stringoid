@@ -3,7 +3,8 @@ package com.ibm.stringoid
 import java.nio.file.Paths
 
 import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope
-import com.ibm.wala.ssa.SSAInvokeInstruction
+import com.ibm.wala.classLoader.IMethod
+import com.ibm.wala.ssa.{IR, SSAInstruction, SSAInvokeInstruction}
 import org.scalatest.FunSpec
 
 class ConcatenationSpec extends FunSpec with AnalysisComparison {
@@ -15,29 +16,44 @@ class ConcatenationSpec extends FunSpec with AnalysisComparison {
 
     it("merges results correctly") {
       val retriever = new FixedPointAppendIrRetriever(analysisConfig)
-      val expectedUrls: Iterator[Method] = retriever.getIrs flatMap {
-        case ir if ir.getMethod.getDeclaringClass.getClassLoader.getReference == JavaSourceAnalysisScope.SOURCE =>
-          val assertionCall = ir.getInstructions find {
-            case instr: SSAInvokeInstruction =>
-              instr.getDeclaredTarget.toString contains "shouldContainUrl"
-          }
-          assertionCall map {
-            instr =>
-              val url = instr.getUse(0)
-              ir.getSymbolTable.getStringValue(url)
-          }
-      }
-      val actualUrls = retriever.getUrlsWithSources.uws.keysIterator collect {
-        case Url(urlparts) =>
-          urlparts.foldLeft("") {
+      val expectedUrls: Iterator[(IMethod, String)] =
+        for {
+          ir            <- retriever.getIrs
+          if isSourceIr(ir)
+          assertionCall <- getAssertionInstruction(ir)
+        } yield {
+          val urlValNum = assertionCall.getUse(0)
+          val url       = assertionCall.getUse(1)
+          (ir.getMethod, ir.getSymbolTable.getStringValue(url))
+        }
+
+      val actualUrls = retriever.getUrlsWithSources.uws collect {
+        case (Url(urlParts), methods) =>
+          val actualUrl = urlParts.foldLeft("") {
             case (result, UrlString(string)) =>
               result + string
+            case (result, _) =>
+              result
           }
+          (methods, actualUrl)
       }
       expectedUrls foreach {
-        expectedUrl =>
-          assert(actualUrls contains expectedUrls, s"URL '$expectedUrl' should be contained in result")
+        case(method, expectedUrl) =>
+          val hasUrl = actualUrls exists {
+            case (methods, `expectedUrl`) =>
+              methods contains method.toString
+          }
+          assert(hasUrl, s"URL '$expectedUrl' should be contained in result")
       }
     }
   }
+
+  private[this] def isSourceIr(ir: IR) =
+    ir.getMethod.getDeclaringClass.getClassLoader.getReference == JavaSourceAnalysisScope.SOURCE
+
+  private[this] def getAssertionInstruction(ir: IR): Option[SSAInstruction] =
+    ir.getInstructions find {
+      case instr: SSAInvokeInstruction =>
+        instr.getDeclaredTarget.toString contains "shouldContainUrl"
+    }
 }

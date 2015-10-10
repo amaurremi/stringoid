@@ -92,7 +92,6 @@ trait Urls {
       )("url", "methods")
   }
 
-  // todo List should be a Set but Argonaut doesn't understand it
   case class UrlsWithSources(uws: Map[Url, Set[Method]], walaTime: Double) {
 
     def filter(p: ((Url, Set[Method])) => Boolean): UrlsWithSources =
