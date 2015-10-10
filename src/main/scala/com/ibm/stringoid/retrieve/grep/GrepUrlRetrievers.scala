@@ -8,9 +8,9 @@ import scala.collection.breakOut
 
 trait GrepUrlRetrievers extends UrlRetrievers {
 
-  object GrepUrlRetriever extends UrlRetriever {
+  final class GrepUrlRetriever(apkPath: Path) extends UrlRetriever {
 
-    override def apply(apkPath: Path): UrlsWithSources = {
+    override def getUrlsWithSources: UrlsWithSources = {
       import scala.sys.process._
       val dexdump = Seq("dexdump", "-d", apkPath.toString)
       val grep = Seq("grep", "-iIohE", "\"" + UrlRetriever.URL_REGEX)

@@ -1,7 +1,5 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
-import java.nio.file.Path
-
 import com.ibm.stringoid.retrieve.ir.IrUrlRetrievers
 import com.ibm.stringoid.retrieve.ir.append.ValueNumber
 import com.ibm.stringoid.util.TimeResult
@@ -18,8 +16,8 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
     with AbstractStringBuilderModule
     with StringAppendModule {
 
-    override def apply(file: Path): UrlsWithSources = {
-      val TimeResult(irs, walaTime) = TimeResult(getIrs(file))
+    override def getUrlsWithSources: UrlsWithSources = {
+      val TimeResult(irs, walaTime) = TimeResult(getIrs)
       val urlsWithSources: Iterator[(Url, Method)] = for {
         ir     <- irs
         defUse  = new DefUse(ir)

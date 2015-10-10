@@ -4,10 +4,10 @@ import com.ibm.wala.ssa.{SSAInvokeInstruction, SSAPhiInstruction}
 
 object StringConcatUtil {
 
-  private val SB_CONSTRUCTOR_PREFIX = "invokespecial < Application, Ljava/lang/StringBuilder, <init>("
-  private val SB_APPEND_PREFIX      = "invokevirtual < Application, Ljava/lang/StringBuilder, append("
-  private val SB_TOSTRING_PREFIX    = "invokevirtual < Application, Ljava/lang/StringBuilder, toString()Ljava/lang/String;"
-  private val STRING_FORMAT_PREFIX  = "Ljava/lang/String, format("
+  private val SB_CONSTRUCTOR_PATTERN = "java/lang/StringBuilder, <init>("
+  private val SB_APPEND_PATTERN      = "java/lang/StringBuilder, append("
+  private val SB_TOSTRING_PATTERN    = "java/lang/StringBuilder, toString()Ljava/lang/String;"
+  private val STRING_FORMAT_PATTERN  = "java/lang/String, format("
 
   val INVOKE_INSTR_MSG = "String concatenation SSA conversion handles only invoke and phi instructions"
 
@@ -16,19 +16,19 @@ object StringConcatUtil {
    * that takes a String or CharSequence as a parameter?
    */
   def isSbConstructorWithStringParam(instr: SSAInvokeInstruction): Boolean =
-    hasPrefix(instr, SB_CONSTRUCTOR_PREFIX + "L")
+    hasPrefix(instr, SB_CONSTRUCTOR_PATTERN + "L")
 
   /**
    * Does this instruction correspond to a new StringBuilder constructor invocation?
    */
   def isSbConstructor(instr: SSAInvokeInstruction): Boolean =
-    hasPrefix(instr, SB_CONSTRUCTOR_PREFIX)
+    hasPrefix(instr, SB_CONSTRUCTOR_PATTERN)
 
   def isSbTostring(instr: SSAInvokeInstruction) =
-    hasPrefix(instr, SB_TOSTRING_PREFIX)
+    hasPrefix(instr, SB_TOSTRING_PATTERN)
 
   def isStringFormat(instr: SSAInvokeInstruction) =
-    hasPrefix(instr, STRING_FORMAT_PREFIX)
+    hasPrefix(instr, STRING_FORMAT_PATTERN)
 
   /**
    * Does this instruction correspond to a StringBuilder.append() that takes exactly one argument?
@@ -36,7 +36,7 @@ object StringConcatUtil {
    */
   def isSbAppend(instr: SSAInvokeInstruction): Boolean =
     instr.getNumberOfParameters == 2 && // one for 'this', one for argument
-      hasPrefix(instr, SB_APPEND_PREFIX)
+      hasPrefix(instr, SB_APPEND_PATTERN)
 
   private[this] def hasPrefix(instr: SSAInvokeInstruction, prefix: String): Boolean =
     instr.toString() contains prefix

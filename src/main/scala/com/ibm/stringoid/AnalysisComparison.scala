@@ -13,15 +13,17 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
 
   import AnalysisType._
 
-  def retriever(config: AnalysisConfig, file: Path): UrlsWithSources =
-    config.analysis match {
+  def retriever(config: AnalysisConfig): UrlsWithSources = {
+    val retriever: UrlRetriever = config.analysis match {
       case Constants =>
-        (new ConstantUrlFromIrRetriever(config))(file)
+        new ConstantUrlFromIrRetriever(config)
       case Append =>
-        (new FixedPointAppendIrRetriever(config))(file)
+        new FixedPointAppendIrRetriever(config)
       case Grep =>
-        GrepUrlRetriever(file)
+        new GrepUrlRetriever(config.file)
     }
+    retriever.getUrlsWithSources
+  }
 
   case class AnalysisResult private[AnalysisComparison](
     config: AnalysisConfig,
@@ -40,10 +42,9 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
       )("config", "runtime", "result", "url-num")
 
     def fromConfig(
-      config: AnalysisConfig,
-      file: Path
+      config: AnalysisConfig
     ): AnalysisResult = {
-      val TimeResult(result, time) = TimeResult(retriever(config, file))
+      val TimeResult(result, time) = TimeResult(retriever(config))
       AnalysisResult(config, time, result, result.uws.size)
     }
   }
@@ -79,8 +80,8 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
       config2: AnalysisConfig,
       apkPath: Path
     ): AnalysisComparisonResult = {
-      val ar1 = AnalysisResult.fromConfig(config1, apkPath)
-      val ar2 = AnalysisResult.fromConfig(config2, apkPath)
+      val ar1 = AnalysisResult.fromConfig(config1)
+      val ar2 = AnalysisResult.fromConfig(config2)
       val urls1 = ar1.urlsWithSources.uws.keySet
       val urls2 = ar2.urlsWithSources.uws.keySet
       val in1not2 = (urls1 diff urls2).toSet

@@ -1,6 +1,6 @@
 package com.ibm.stringoid
 
-import java.nio.file.Path
+import java.nio.file.{Path, Paths}
 import java.util.regex.Pattern
 
 import argonaut.Argonaut._
@@ -13,7 +13,7 @@ trait UrlRetrievers extends AnalysisTypes with Urls {
 
   import AnalysisType._
 
-  case class AnalysisConfig(irFromCg: Boolean, ignoreLibs: Boolean, analysis: AnalysisType)
+  case class AnalysisConfig(irFromCg: Boolean, ignoreLibs: Boolean, analysis: AnalysisType, file: Path)
 
   object AnalysisConfig {
     implicit def AnalysisConfigEncodeJson: EncodeJson[AnalysisConfig] =
@@ -26,7 +26,7 @@ trait UrlRetrievers extends AnalysisTypes with Urls {
         }
       )("analysis", "libs", "reachability")
 
-    val default = AnalysisConfig(irFromCg = false, ignoreLibs = true, analysis = Unset)
+    val default = AnalysisConfig(irFromCg = false, ignoreLibs = true, analysis = Unset, Paths.get("src/test/java/testPrograms"))
   }
 
   import UrlRetriever._
@@ -48,7 +48,7 @@ trait UrlRetrievers extends AnalysisTypes with Urls {
    */
   trait UrlRetriever {
 
-    def apply(apkPath: Path): UrlsWithSources
+    def getUrlsWithSources: UrlsWithSources
 
     protected final def configWithApk(apkPath: Path): Config =
       ConfigFactory.load() withValue (

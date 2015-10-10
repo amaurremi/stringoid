@@ -1,7 +1,5 @@
 package com.ibm.stringoid.retrieve.ir
 
-import java.nio.file.Path
-
 import com.ibm.stringoid.UrlRetrievers
 import com.ibm.wala.cast.ir.ssa.AstIRFactory.AstDefaultIRFactory
 import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope
@@ -29,7 +27,8 @@ trait IrUrlRetrievers extends UrlRetrievers {
     private[this] def isApplicationClass(c: IClass): Boolean =
       Set(ClassLoaderReference.Application, JavaSourceAnalysisScope.SOURCE) contains c.getClassLoader.getReference
 
-    protected final def getIrs(file: Path): Iterator[IR] = {
+    final def getIrs: Iterator[IR] = {
+      val file = config.file
       val isApk = file.toString.toLowerCase endsWith ".apk"
       implicit val analysisConfig =
         if (isApk) configWithApk(file)

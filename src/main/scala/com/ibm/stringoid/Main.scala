@@ -28,7 +28,7 @@ object Main extends AnalysisComparison {
               case Compare        =>
                 writeComparison(AnalysisComparisonResult.fromConfigs(config1, config2, file), file, outDir)
               case SingleAnalysis =>
-                writeSingleAnalysis(AnalysisResult.fromConfig(config1, file), file, outDir)
+                writeSingleAnalysis(AnalysisResult.fromConfig(config1), file, outDir)
             }
           }
       }
@@ -40,8 +40,8 @@ object Main extends AnalysisComparison {
     useCallGraph: Boolean,
     ignoreLibraries: Boolean
   ) : Try[String] = {
-    val config = AnalysisConfig(useCallGraph, ignoreLibraries, AnalysisType.withName(analysis))
-    Try(AnalysisResult.fromConfig(config, file).asJson.nospaces)
+    val config = AnalysisConfig(useCallGraph, ignoreLibraries, AnalysisType.withName(analysis), file)
+    Try(AnalysisResult.fromConfig(config).asJson.nospaces)
   }
 
   /**
