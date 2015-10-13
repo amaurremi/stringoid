@@ -12,12 +12,13 @@ import scala.util.Try
 
 object SparkHarness extends Logging {
   def main(args: Array[String]) : Unit = {
-    if(args.length != 4) {
+    if(args.length != 5) {
       Console.err.println("Please specify:")
       Console.err.println("  1) an analysis type ('constants' | 'append'),")
       Console.err.println("  2) an input directory containing apks,")
       Console.err.println("  3) an output directory name prefix,")
       Console.err.println("  4) the number of apps to analyze (0 = all).")
+      Console.err.println("  5) the index of the first app to analyze.")
     } else {
       mainSpark(args)
     }
@@ -31,8 +32,11 @@ object SparkHarness extends Logging {
 
     val analysisType = args(0)
     val apkDirPath   = args(1)
-    val outDirPath   = s"${args(2).trim}-$now"
     val numApps      = args(3).toInt
+    val firstApp     = args(4).toInt
+    val outDirPath   = s"${args(2).trim}-$now-$firstApp-${firstApp+numApps}"
+
+    val useCG = if(args.length > 5 && args(5) == "useCallGraph") true else false
 
     val conf = new SparkConf().setAppName("Stringoid")
     val sc = new SparkContext(conf)
@@ -50,7 +54,7 @@ object SparkHarness extends Logging {
     } else {
       // Inefficient way of doing sampling, but that's not really where the time goes. PS
       val rand = new scala.util.Random(42L)
-      rand.shuffle(apkPaths).take(numApps)
+      rand.shuffle(apkPaths).drop(firstApp).take(numApps)
     }
 
     val apkPathsRDD: RDD[URI] = sc.parallelize(selectedApkPaths.map(_.toUri), selectedApkPaths.length)
@@ -62,7 +66,7 @@ object SparkHarness extends Logging {
 
       logWarning(s"Now looking at $apkUri...")
 
-      val result: Try[String] = com.ibm.stringoid.Main.analyseFile(analysisType, localPath, useCallGraph = false, ignoreLibraries = true)
+      val result: Try[String] = com.ibm.stringoid.Main.analyseFile(analysisType, localPath, useCallGraph = useCG, ignoreLibraries = true)
 
       localFile.delete()
 
