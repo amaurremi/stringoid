@@ -21,6 +21,8 @@ libraryDependencies ++= Seq(
   "com.ibm.wala" % "com.ibm.wala.ide.jdt" % "1.3.9-SNAPSHOT",
   "io.argonaut" %% "argonaut" % "6.0.4",
   "junit" % "junit" % "4.+",
+  "org.eclipse.equinox" % "common" % "3.6.200-v20130402-1505",
+  "org.eclipse.core" % "runtime" % "3.10.0-v20140318-2214",
   "org.scalatest" %% "scalatest" % "2.2.1" % "test",
   "org.scalamock" %% "scalamock-scalatest-support" % "3.2" % "test",
   "org.mockito" % "mockito-core" % "1.9.5",
