@@ -70,7 +70,7 @@ trait IrUrlRetrievers extends UrlRetrievers {
     private[this] val typeInferenceMap = mutable.Map.empty[IR, TypeInference]
     private[this] val javaAstTypeInferenceMap = mutable.Map.empty[IR, AstJavaTypeInference]
 
-    def getTypeAbstraction(ir: IR, vn: ValueNumber): TypeAbstraction =
+    protected def getTypeAbstraction(ir: IR, vn: ValueNumber): TypeAbstraction =
       if (isApk) {
         val typeInference = typeInferenceMap getOrElseUpdate(ir, TypeInference.make(ir, true))
         typeInference getType vn
@@ -80,7 +80,6 @@ trait IrUrlRetrievers extends UrlRetrievers {
       }
 
     private[this] def getIr(cache: AnalysisCache, m: IMethod, processed: mutable.Set[IR]): Option[IR] = {
-//      println(m.toString)
       val ir = cache getIR m
       if (Option(ir).isDefined) {
         if (!(processed contains ir)) {

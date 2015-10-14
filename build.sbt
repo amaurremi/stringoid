@@ -18,7 +18,7 @@ libraryDependencies ++= Seq(
   "com.ibm.wala" % "com.ibm.wala.util" % "1.3.7",
   "com.ibm.wala" % "com.ibm.wala.cast" % "1.3.8-SNAPSHOT",
   "com.ibm.wala" % "com.ibm.wala.cast.java" % "1.3.8-SNAPSHOT",
-  "com.ibm.wala" % "com.ibm.wala.cast.java.polyglot" % "1.3.8-SNAPSHOT",
+  "com.ibm.wala" % "com.ibm.wala.ide.jdt" % "1.3.9-SNAPSHOT",
   "io.argonaut" %% "argonaut" % "6.0.4",
   "junit" % "junit" % "4.+",
   "org.scalatest" %% "scalatest" % "2.2.1" % "test",
