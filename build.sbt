@@ -16,8 +16,8 @@ libraryDependencies ++= Seq(
   "com.ibm.wala" % "com.ibm.wala.core" % "1.3.7",
   "com.ibm.wala" % "com.ibm.wala.shrike" % "1.3.7",
   "com.ibm.wala" % "com.ibm.wala.util" % "1.3.7",
-  "com.ibm.wala" % "com.ibm.wala.cast" % "1.3.8-SNAPSHOT",
-  "com.ibm.wala" % "com.ibm.wala.cast.java" % "1.3.8-SNAPSHOT",
+  "com.ibm.wala" % "com.ibm.wala.cast" % "1.3.9-SNAPSHOT",
+  "com.ibm.wala" % "com.ibm.wala.cast.java" % "1.3.9-SNAPSHOT",
   "com.ibm.wala" % "com.ibm.wala.ide.jdt" % "1.3.9-SNAPSHOT",
   "io.argonaut" %% "argonaut" % "6.0.4",
   "junit" % "junit" % "4.+",
@@ -26,7 +26,7 @@ libraryDependencies ++= Seq(
   "org.mockito" % "mockito-core" % "1.9.5",
   "org.scalaz" %% "scalaz-core" % "7.0.6",
   "com.github.scopt" %% "scopt" % "3.3.0",
-  "org.apache.spark" %% "spark-core" % "1.4.0" % "provided"
+  "org.apache.spark" %% "spark-core" % "1.5.0" % "provided"
 )
 
 org.scalastyle.sbt.ScalastylePlugin.Settings
