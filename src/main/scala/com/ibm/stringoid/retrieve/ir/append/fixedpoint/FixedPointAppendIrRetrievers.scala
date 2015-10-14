@@ -3,11 +3,10 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 import com.ibm.stringoid.retrieve.ir.IrUrlRetrievers
 import com.ibm.stringoid.retrieve.ir.append.ValueNumber
 import com.ibm.stringoid.util.TimeResult
-import com.ibm.wala.analysis.typeInference.TypeInference
 import com.ibm.wala.ssa._
 import com.ibm.wala.util.debug.UnimplementedError
 
-import scala.collection.{breakOut, mutable}
+import scala.collection.breakOut
 
 trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpecifiers {
 
@@ -51,8 +50,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
     private[this] def getConcatUrlsForIr(ir: IR, defUse: DefUse): Set[Url] =
       asboSolver(ir, defUse) match {
         case Some(solver) =>
-          val valNumToAsbo    = valueNumberToAsbo(solver)
-          val appendAutomaton = stringAppends(ir, valNumToAsbo)
+          val appendAutomaton = stringAppends(ir, valueNumberToAsbo(solver))
           val table           = ir.getSymbolTable
           (for {
             vn           <- 1 to table.getMaxValueNumber
@@ -63,8 +61,6 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
         case None =>
           Set.empty[Url]
       }
-
-    private[this] val typeInferenceMap = mutable.Map.empty[IR, TypeInference]
 
     private[this] def parseUrl(ir: IR, defUse: DefUse, string: Seq[StringPart]): Vector[UrlPart] =
       (string map {
@@ -83,14 +79,12 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
       if (table isConstant vn)
         UrlString((table getConstantValue vn).toString)
       else {
-        val typeName = try {
-          val typeInference = typeInferenceMap getOrElseUpdate (ir, TypeInference.make(ir, true))
-          val abstraction = typeInference.getType(vn)
-          abstraction.toString
-        } catch {
-          case _: UnimplementedError =>
-            "undefined"
-        }
+        val typeName =
+          try getTypeAbstraction(ir, vn).toString
+          catch {
+            case _: UnimplementedError =>
+              "undefined"
+          }
         VariableType(typeName, getSource(ir, defUse, vn))
       }
     }
@@ -102,7 +96,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
         defUse.getDef(vn) match {
           case fieldAccess: SSAFieldAccessInstruction =>
             FieldAccess(fieldAccess.getDeclaredField.toString)
-          case invoke: SSAInvokeInstruction           =>
+          case invoke: SSAAbstractInvokeInstruction   =>
             MethodReturn(invoke.getDeclaredTarget.toString)
           case _                                      =>
             UnknownSource

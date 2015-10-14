@@ -4,8 +4,10 @@ import java.nio.file.Paths
 
 import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope
 import com.ibm.wala.classLoader.IMethod
-import com.ibm.wala.ssa.{IR, SSAInstruction, SSAInvokeInstruction}
+import com.ibm.wala.ssa.{IR, SSAAbstractInvokeInstruction, SSAInstruction}
 import org.scalatest.FunSpec
+
+import scala.collection.{Map, Set}
 
 class ConcatenationSpec extends FunSpec with AnalysisComparison {
 
@@ -23,10 +25,10 @@ class ConcatenationSpec extends FunSpec with AnalysisComparison {
           assertionCall <- getAssertionInstruction(ir)
         } yield {
           val url = assertionCall.getUse(0)
-          (ir.getMethod, ir.getSymbolTable.getStringValue(url))
+          (ir.getMethod, "http://" + ir.getSymbolTable.getStringValue(url))
         }
 
-      val actualUrls = retriever.getUrlsWithSources.uws collect {
+      val actualUrls: Map[Set[Method], Method] = retriever.getUrlsWithSources.uws collect {
         case (Url(urlParts), methods) =>
           val actualUrl = urlParts.foldLeft("") {
             case (result, UrlString(string)) =>
@@ -37,12 +39,12 @@ class ConcatenationSpec extends FunSpec with AnalysisComparison {
           (methods, actualUrl)
       }
       expectedUrls foreach {
-        case(method, expectedUrl) =>
+        case (method, expectedUrl) =>
           val hasUrl = actualUrls exists {
-            case (methods, `expectedUrl`) =>
-              methods contains method.toString
+            case (methods, url) =>
+              url == expectedUrl && (methods contains method.toString)
           }
-          assert(hasUrl, s"URL '$expectedUrl' should be contained in result")
+          assert(hasUrl, s"(URL '$expectedUrl' should be contained in result)")
       }
     }
   }
@@ -52,7 +54,8 @@ class ConcatenationSpec extends FunSpec with AnalysisComparison {
 
   private[this] def getAssertionInstruction(ir: IR): Option[SSAInstruction] =
     ir.getInstructions find {
-      case instr: SSAInvokeInstruction =>
-        instr.getDeclaredTarget.toString contains "shouldContainUrl"
+      case instr: SSAAbstractInvokeInstruction =>
+        instr.getDeclaredTarget.toString contains "LtestPrograms/Assertions, shouldContainHttp(Ljava/lang/String;)V"
+      case _ => false
     }
 }

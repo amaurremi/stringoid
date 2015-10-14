@@ -55,9 +55,9 @@ trait AbstractStringBuilderModule {
   def valueNumberToAsbo(solver: AsboFixedPointSolver): Map[ValueNumber, Set[ASBO]] = {
     val result = getResult(solver)
     (for {
-      vn <- solver.valueNumberGraph
+      vn     <- solver.valueNumberGraph
       intSet <- Option((result getOut vn).getValue)
-      i2a = intSetToAsbo(intSet, solver.abstractObjectNumbering)
+      i2a     = intSetToAsbo(intSet, solver.abstractObjectNumbering)
     } yield vn -> i2a)(breakOut)
   }
 
@@ -72,9 +72,9 @@ trait AbstractStringBuilderModule {
 
   private[this] def createAbstractObjectNumbering(ir: IR): AsboMapping = {
     val abstractObjects = ir.iterateNormalInstructions collect {
-      case inv: SSAInvokeInstruction if isSbConstructor(inv) =>
+      case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv) =>
         AbstractStringBuilderObject(getSbConstructorDef(inv))
-      case inv: SSAInvokeInstruction if isStringFormat(inv)  =>
+      case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)  =>
         AbstractStringBuilderObject(inv.getDef)
     }
     new ObjectArrayMapping[ASBO](abstractObjects.toArray[ASBO])
@@ -123,22 +123,22 @@ trait AbstractStringBuilderModule {
       val graph = new SlowSparseNumberedGraph[ValueNumber](1)
       def addNode(n: ValueNumber) = if (!(graph containsNode n)) graph addNode n
       ir.iterateAllInstructions foreach {
-        case inv: SSAInvokeInstruction if isSbConstructor(inv)  =>
+        case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv)  =>
           getDefs(inv) foreach addNode // todo unnecessary?
-        case inv: SSAInvokeInstruction if isSbAppend(inv)       =>
+        case inv: SSAAbstractInvokeInstruction if isSbAppend(inv)       =>
           val (firstDef, secondDef) = getSbAppendDefs(inv) // in 1 = 2.append(3), 1 is firstDef and 2 is secondDef
           graph addNode firstDef
           graph addNode secondDef
           graph addEdge(secondDef, firstDef)
-        case inv: SSAInvokeInstruction if isSbTostring(inv)     =>  // in 1 = 2.toString, 1 is sbDef and 2 is sbUse
+        case inv: SSAAbstractInvokeInstruction if isSbTostring(inv)     =>  // in 1 = 2.toString, 1 is sbDef and 2 is sbUse
           val sbDef = getSbToStringDef(inv)
           val sbUse = getSbToStringUse(inv)
           graph addNode sbDef
           graph addNode sbUse
           graph addEdge(sbUse, sbDef)
-        case inv: SSAInvokeInstruction if isStringFormat(inv)   =>
+        case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)   =>
           graph addNode inv.getDef
-        case phi: SSAPhiInstruction                             =>
+        case phi: SSAPhiInstruction                             => // todo will phi instruction in java source code be different?
           val defNode = phi.getDef
           graph addNode defNode
           getPhiUses(phi) foreach {
@@ -161,10 +161,14 @@ trait AbstractStringBuilderModule {
 
       /**
        * We need to redefine isSbConstructor because in DefUse the instruction is stored in a different form
-       * and it is not an instance of [[SSAInvokeInstruction]]
+       * and it is not an invoke instruction
        */
-      private[this] def isSbConstructorInDefUse(instr: SSAInstruction): Boolean =
-        Option(instr).isDefined && (instr.toString contains "= new <Application,Ljava/lang/StringBuilder>")
+      private[this] def isSbConstructorInDefUse(instr: SSAInstruction): Boolean = {
+        val name = instr.toString
+        Option(instr).isDefined && (
+          (name contains "= new <Application,Ljava/lang/StringBuilder>") ||
+          (name contains "= new <Source,Ljava/lang/StringBuilder>"))
+      }
 
       override def getNodeTransferFunction(vn: ValueNumber): UnaryOperator[BitVectorVariable] = {
         defUse getDef vn match {

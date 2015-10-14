@@ -170,7 +170,7 @@ trait StringAppendModule {
 
       override def getNodeTransferFunction(node: BB): UnaryOperator[AtaReference] =
         node.getInstruction match {
-          case instr: SSAInvokeInstruction if isSbAppend(instr)                =>
+          case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                =>
             vnToAsbo get getFirstSbAppendDef(instr) match {
               case Some(asbos) =>
                 new AppendOperator(asbos, getAppendArgument(instr)) // todo what if the argument is in itself a StringBuilder? will we handle that case outside?
@@ -179,7 +179,7 @@ trait StringAppendModule {
                 // todo I think this means that the StringBuilder has been passed as a parameter or is a field. We should handle this case too at some point.
                 IdentityOperator()
             }
-          case inv: SSAInvokeInstruction if isSbConstructorWithStringParam(inv) =>
+          case inv: SSAAbstractInvokeInstruction if isSbConstructorWithStringParam(inv) =>
             vnToAsbo get getSbConstructorDef(inv) match {
               case Some(asbos) =>
                 val appendArgument = getSbConstructorArgument(inv)
@@ -187,7 +187,7 @@ trait StringAppendModule {
               case None =>
                 throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
             }
-          case inv: SSAInvokeInstruction if isStringFormat(inv)                 =>
+          case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)                 =>
             new StringFormatAppendOperator(inv)
           case _                                                                =>
             IdentityOperator()
@@ -242,7 +242,7 @@ trait StringAppendModule {
           }
         }
 
-        private[this] case class StringFormatAppendOperator(instr: SSAInvokeInstruction)
+        private[this] case class StringFormatAppendOperator(instr: SSAAbstractInvokeInstruction)
           extends AbstractAppendOperator
           with StringFormatSpecifiers {
 
