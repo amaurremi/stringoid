@@ -163,22 +163,25 @@ trait AbstractStringBuilderModule {
        * We need to redefine isSbConstructor because in DefUse the instruction is stored in a different form
        * and it is not an invoke instruction
        */
-      private[this] def isSbConstructorInDefUse(instr: SSAInstruction): Boolean = {
+      private[this] def isSbConstructorOrFormatInDefUse(instr: SSAInstruction): Boolean = {
         val name = instr.toString
         Option(instr).isDefined && (
-          (name contains "= new <Application,Ljava/lang/StringBuilder>") ||
-          (name contains "= new <Source,Ljava/lang/StringBuilder>"))
+          List("Ljava/lang/String, format(",
+            "new <Application,Ljava/lang/StringBuilder>",
+            "new <Source,Ljava/lang/StringBuilder>") exists {
+            name contains _
+          })
       }
 
       override def getNodeTransferFunction(vn: ValueNumber): UnaryOperator[BitVectorVariable] = {
         defUse getDef vn match {
-          case instr if isSbConstructorInDefUse(instr) =>
+          case instr if isSbConstructorOrFormatInDefUse(instr) =>
             val mappedIndex = abstractObjectNumbering getMappedIndex AbstractStringBuilderObject(vn)
             assert(mappedIndex >= 0)
             val gen = new BitVector()
             gen.set(mappedIndex)
             new BitVectorKillGen(new BitVector(), gen)
-          case _                                                     =>
+          case _                                               =>
             BitVectorIdentity.instance()
         }
       }
