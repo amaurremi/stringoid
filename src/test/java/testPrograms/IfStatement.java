@@ -7,16 +7,16 @@ public class IfStatement {
         if (args[0] == null) {
             sb.append("domain.com?");
         }
-        String query = "query1=key1";
+        String query = "key1=query1";
         if (args[1] == null) {
-            query = "query2=key2";
+            query = "key2=query2";
         }
         sb.append(query);
 
         String url = sb.toString();
         System.out.println(url);
 
-        Assertions.shouldContainHttp("domain.com?query1=key1");
-        Assertions.shouldContainHttp("domain.com?query2=key2");
+        Assertions.shouldContainHttp("domain.com?key1=query1");
+        Assertions.shouldContainHttp("domain.com?key2=query2");
     }
 }
