@@ -78,4 +78,7 @@ object StringConcatUtil {
 
   def getFirstStringFormatArg(instr: SSAAbstractInvokeInstruction) =
     if (hasStringFormatLocale(instr)) instr getUse 1 else instr getUse 0
+
+  def getStringFormatArray(instr: SSAAbstractInvokeInstruction) =
+    if (hasStringFormatLocale(instr)) instr getUse 2 else instr getUse 1
 }

@@ -50,7 +50,7 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
     private[this] def getConcatUrlsForIr(ir: IR, defUse: DefUse): Set[Url] =
       asboSolver(ir, defUse) match {
         case Some(solver) =>
-          val appendAutomaton = stringAppends(ir, valueNumberToAsbo(solver))
+          val appendAutomaton = stringAppends(ir, defUse, valueNumberToAsbo(solver))
           val table           = ir.getSymbolTable
           (for {
             vn           <- 1 to table.getMaxValueNumber

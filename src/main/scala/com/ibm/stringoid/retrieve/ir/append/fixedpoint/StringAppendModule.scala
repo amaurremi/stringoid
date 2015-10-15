@@ -26,8 +26,8 @@ trait StringAppendModule {
   /**
    * Get the string concatenation results.
    */
-  def stringAppends(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]): ValNumAutomaton = {
-    val solver  = new StringAppendFixedPointSolver(ir, vnToAsbo)
+  def stringAppends(ir: IR, defUse: DefUse, vnToAsbo: Map[ValueNumber, Set[ASBO]]): ValNumAutomaton = {
+    val solver  = new StringAppendFixedPointSolver(ir, defUse, vnToAsbo)
     val result  = solver.result
     val mapping = solver.ataRefMapping
     val ataRefs: Set[Int] = (solver.graph map {
@@ -41,7 +41,7 @@ trait StringAppendModule {
     }
   }
 
-  private class StringAppendFixedPointSolver(ir: IR, vnToAsbo: Map[ValueNumber, Set[ASBO]]) {
+  private class StringAppendFixedPointSolver(ir: IR, defUse: DefUse, vnToAsbo: Map[ValueNumber, Set[ASBO]]) {
 
     type BB      = IExplodedBasicBlock
     type AsboMap = mutable.Map[ASBO, ValNumAutomaton]
@@ -188,7 +188,7 @@ trait StringAppendModule {
                 throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
             }
           case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)                 =>
-            new StringFormatAppendOperator(inv)
+            new StringFormatAppendOperator(inv, defUse)
           case _                                                                =>
             IdentityOperator()
         }
@@ -242,7 +242,10 @@ trait StringAppendModule {
           }
         }
 
-        private[this] case class StringFormatAppendOperator(instr: SSAAbstractInvokeInstruction)
+        private[this] case class StringFormatAppendOperator(
+          instr: SSAAbstractInvokeInstruction,
+          defUse: DefUse
+        )
           extends AbstractAppendOperator
           with StringFormatSpecifiers {
 
@@ -256,7 +259,8 @@ trait StringAppendModule {
                   case StringValNum(vn) =>
                     resultAutomaton +++ getAppendAutomaton(vn, rhsMap)
                   case other            =>
-                    resultAutomaton + Seq(other)
+                    val appendAutomaton = Automaton.empty[StringPart] + Seq(other)
+                    resultAutomaton +++ appendAutomaton
                 }
             }
             // the ASBO corresponding to String.format can't be already contained in rhsMap,
@@ -264,24 +268,31 @@ trait StringAppendModule {
             newMap + (AbstractStringBuilderObject(instr.getDef) -> automaton)
           }
 
+          private[this] def getArrayValNums(arrayDef: ValueNumber): Iterator[ValueNumber] =
+            defUse getUses arrayDef collect {
+              case store: SSAArrayStoreInstruction =>
+                store getUse 2
+            }
+
           /**
            * Produce sequence of [[StringPart]]s for String.format arguments in the right concatenation order.
            * This method does not substitute the value numbers with the corresponding automata or [[ASBO]]s.
            */
           def reorderStringFormatArgs: Seq[StringPart] = {
             val firstArg = getFirstStringFormatArg(instr)
+            val formatArrayValNum = getStringFormatArray(instr)
             val table = ir.getSymbolTable
             if (table isStringConstant firstArg) {
+              val argValNums = getArrayValNums(formatArrayValNum)
               val (formattedParts, specifierNum) = parse(table getStringValue firstArg)
-              val offset = if (hasStringFormatLocale(instr)) 1 else 0
-              val missingArguments = specifierNum >= instr.getNumberOfUses - offset
               formattedParts.foldLeft(Vector.empty[StringPart]) {
                 case (parts, FormattedStringPart(string)) =>
                   parts :+ StringFormatPart(string)
                 case (parts, Specifier(count)) =>
                   val newVariable =
-                    if (missingArguments) MissingStringFormatArgument
-                    else StringValNum(instr getUse (count + offset))
+                    if (argValNums.hasNext)
+                      StringValNum(argValNums.next())
+                    else MissingStringFormatArgument
                   parts :+ newVariable
               }
             } else Seq.empty[StringPart]
