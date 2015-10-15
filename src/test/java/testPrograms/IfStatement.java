@@ -16,7 +16,7 @@ public class IfStatement {
         String url = sb.toString();
         System.out.println(url);
 
-        Assertions.shouldContainHttp("domain.com?key1=query1");
-        Assertions.shouldContainHttp("domain.com?key2=query2");
+        Assertions.shouldContainHttp("domain.com?query1=key1");
+        Assertions.shouldContainHttp("domain.com?query2=key2");
     }
 }
