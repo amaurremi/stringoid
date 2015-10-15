@@ -7,7 +7,7 @@ import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ssa.{IR, SSAAbstractInvokeInstruction, SSAInstruction}
 import org.scalatest.FunSpec
 
-import scala.collection.{Map, Set}
+import scala.collection.{Set, breakOut}
 
 class ConcatenationSpec extends FunSpec with AnalysisComparison {
 
@@ -28,7 +28,7 @@ class ConcatenationSpec extends FunSpec with AnalysisComparison {
           (ir.getMethod, "http://" + ir.getSymbolTable.getStringValue(url))
         }
 
-      val actualUrls: Map[Set[Method], Method] = retriever.getUrlsWithSources.uws collect {
+      val actualUrls: Seq[(Set[Method], Method)] = (retriever.getUrlsWithSources.uws collect {
         case (Url(urlParts), methods) =>
           val actualUrl = urlParts.foldLeft("") {
             case (result, UrlString(string)) =>
@@ -37,7 +37,7 @@ class ConcatenationSpec extends FunSpec with AnalysisComparison {
               result
           }
           (methods, actualUrl)
-      }
+      })(breakOut)
       expectedUrls foreach {
         case (method, expectedUrl) =>
           val hasUrl = actualUrls exists {
