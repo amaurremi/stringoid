@@ -252,8 +252,8 @@ trait StringAppendModule {
           override def createNewMap(rhsMap: AsboMap): AsboMap = {
             val newMap = mutable.Map.empty[ASBO, ValNumAutomaton] ++= rhsMap
 
-            val stringFormatArgs: Seq[StringPart] = reorderStringFormatArgs
-            val automaton = stringFormatArgs.foldLeft(Automaton.empty[StringPart]) {
+            val (sfHead :: sfTail): Seq[StringPart] = reorderStringFormatArgs
+            val automaton = sfTail.foldLeft(Automaton.empty[StringPart] + Seq(sfHead)) {
               case (resultAutomaton, stringFormatArg) =>
                 stringFormatArg match {
                   case StringValNum(vn) =>
