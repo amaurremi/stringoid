@@ -250,22 +250,26 @@ trait StringAppendModule {
           with StringFormatSpecifiers {
 
           override def createNewMap(rhsMap: AsboMap): AsboMap = {
-            val newMap = mutable.Map.empty[ASBO, ValNumAutomaton] ++= rhsMap
+            val sfArgs = reorderStringFormatArgs
+            if (sfArgs.isEmpty)
+              rhsMap
+            else {
+              val sfTail = sfArgs.tail
+              val automaton = sfTail.foldLeft(Automaton.empty[StringPart] + Seq(sfArgs.head)) {
+                case (resultAutomaton, stringFormatArg) =>
+                  stringFormatArg match {
+                    case StringValNum(vn) =>
+                      resultAutomaton +++ getAppendAutomaton(vn, rhsMap)
+                    case other =>
+                      val appendAutomaton = Automaton.empty[StringPart] + Seq(other)
+                      resultAutomaton +++ appendAutomaton
+                  }
+              }
 
-            val (sfHead :: sfTail): Seq[StringPart] = reorderStringFormatArgs
-            val automaton = sfTail.foldLeft(Automaton.empty[StringPart] + Seq(sfHead)) {
-              case (resultAutomaton, stringFormatArg) =>
-                stringFormatArg match {
-                  case StringValNum(vn) =>
-                    resultAutomaton +++ getAppendAutomaton(vn, rhsMap)
-                  case other            =>
-                    val appendAutomaton = Automaton.empty[StringPart] + Seq(other)
-                    resultAutomaton +++ appendAutomaton
-                }
+                // the ASBO corresponding to String.format can't be already contained in rhsMap,
+                // so we just add the result to the map
+                rhsMap + (AbstractStringBuilderObject(instr.getDef) -> automaton)
             }
-            // the ASBO corresponding to String.format can't be already contained in rhsMap,
-            // so we just add the result to the map
-            newMap + (AbstractStringBuilderObject(instr.getDef) -> automaton)
           }
 
           private[this] def getArrayValNums(arrayDef: ValueNumber): Iterator[ValueNumber] =
