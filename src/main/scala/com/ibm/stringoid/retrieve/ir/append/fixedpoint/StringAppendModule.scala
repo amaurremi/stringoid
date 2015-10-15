@@ -173,7 +173,7 @@ trait StringAppendModule {
           case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                =>
             vnToAsbo get getFirstSbAppendDef(instr) match {
               case Some(asbos) =>
-                new AppendOperator(asbos, getAppendArgument(instr)) // todo what if the argument is in itself a StringBuilder? will we handle that case outside?
+                new StringBuilderAppendOperator(asbos, getAppendArgument(instr)) // todo what if the argument is in itself a StringBuilder? will we handle that case outside?
               case None =>
                 // todo note that this means that we are appending to a StringBuilder for which we haven't added an ASBO to the vnToAsbo map.
                 // todo I think this means that the StringBuilder has been passed as a parameter or is a field. We should handle this case too at some point.
@@ -183,7 +183,7 @@ trait StringAppendModule {
             vnToAsbo get getSbConstructorDef(inv) match {
               case Some(asbos) =>
                 val appendArgument = getSbConstructorArgument(inv)
-                new AppendOperator(asbos, appendArgument)
+                new StringBuilderAppendOperator(asbos, appendArgument)
               case None =>
                 throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
             }
@@ -223,7 +223,7 @@ trait StringAppendModule {
           }
         }
 
-        private[this] case class AppendOperator(asbos: Set[ASBO], appendVn: ValueNumber) extends AbstractAppendOperator {
+        private[this] case class StringBuilderAppendOperator(asbos: Set[ASBO], appendVn: ValueNumber) extends AbstractAppendOperator {
 
           override def createNewMap(rhsMap: AsboMap) = {
             val newMap = mutable.Map.empty[ASBO, ValNumAutomaton] ++= rhsMap

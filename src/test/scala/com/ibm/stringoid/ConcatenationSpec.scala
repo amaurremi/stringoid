@@ -25,7 +25,10 @@ class ConcatenationSpec extends FunSpec with AnalysisComparison {
           assertionCall <- getAssertionInstruction(ir)
         } yield {
           val url = assertionCall.getUse(0)
-          (ir.getMethod, "http://" + ir.getSymbolTable.getStringValue(url))
+          val expectedUrl = ir.getSymbolTable.getStringValue(url)
+          assert(!(List("http://", "https://") exists expectedUrl.startsWith),
+            "To avoid false-positive test results, always pass URL without http/https prefix into 'shouldContainHttp'")
+          (ir.getMethod, "http://" + expectedUrl)
         }
 
       val actualUrls: Seq[(Set[Method], Method)] = (retriever.getUrlsWithSources.uws collect {
