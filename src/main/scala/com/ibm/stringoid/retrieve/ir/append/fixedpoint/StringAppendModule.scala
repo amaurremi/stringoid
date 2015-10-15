@@ -173,7 +173,7 @@ trait StringAppendModule {
           case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                =>
             vnToAsbo get getFirstSbAppendDef(instr) match {
               case Some(asbos) =>
-                new StringBuilderAppendOperator(asbos, getAppendArgument(instr)) // todo what if the argument is in itself a StringBuilder? will we handle that case outside?
+                new StringBuilderAppendOperator(asbos, getAppendArgument(instr))
               case None =>
                 // todo note that this means that we are appending to a StringBuilder for which we haven't added an ASBO to the vnToAsbo map.
                 // todo I think this means that the StringBuilder has been passed as a parameter or is a field. We should handle this case too at some point.
