@@ -1,6 +1,6 @@
 package testPrograms;
 
-public class UrlConcatenation {
+public class StringFormatWithStringBuilder {
 
     public static void main(String[] args) {
         String queryParam2 = "query2";

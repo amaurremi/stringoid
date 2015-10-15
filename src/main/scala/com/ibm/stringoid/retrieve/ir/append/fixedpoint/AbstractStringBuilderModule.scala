@@ -164,12 +164,11 @@ trait AbstractStringBuilderModule {
        * and it is not an invoke instruction
        */
       private[this] def isSbConstructorOrFormatInDefUse(instr: SSAInstruction): Boolean = {
-        val name = instr.toString
         Option(instr).isDefined && (
           List("Ljava/lang/String, format(",
             "new <Application,Ljava/lang/StringBuilder>",
             "new <Source,Ljava/lang/StringBuilder>") exists {
-            name contains _
+            instr.toString contains _
           })
       }
 
