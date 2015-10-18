@@ -48,6 +48,7 @@ class ConcatenationSpec extends FunSpec with AnalysisComparison {
               url == expectedUrl && (methods contains method.toString)
           }
           assert(hasUrl, s"(URL '$expectedUrl' should be contained in result)")
+          println(s"URL '$expectedUrl' found in $method.")
       }
     }
   }
