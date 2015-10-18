@@ -64,7 +64,7 @@ trait StringAppendModule {
     def initialAtaRefMapping: ArrayBuffer[AsboToAutomaton] = {
       val refMapping = ArrayBuffer.empty[AsboToAutomaton]
       val table = ir.getSymbolTable
-      1 until table.getMaxValueNumber foreach {
+      1 to table.getMaxValueNumber foreach {
         vn =>
           if (table isConstant vn) {
             val automaton = Automaton.empty[StringPart] + Seq(StringValNum(vn))

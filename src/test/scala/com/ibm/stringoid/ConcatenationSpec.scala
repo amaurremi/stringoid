@@ -31,7 +31,7 @@ class ConcatenationSpec extends FunSpec with AnalysisComparison {
           (ir.getMethod, "http://" + expectedUrl)
         }
 
-      val actualUrls: Seq[(Set[Method], Method)] = (retriever.getUrlsWithSources.uws collect {
+      val actualUrls: Seq[(Set[Method], String)] = (retriever.getUrlsWithSources.uws collect {
         case (Url(urlParts), methods) =>
           val actualUrl = urlParts.foldLeft("") {
             case (result, UrlString(string)) =>

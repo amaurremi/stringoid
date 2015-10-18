@@ -31,16 +31,16 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
     }
 
     private[this] def getAllUrls(ir: IR, defUse: DefUse): Set[Url] = {
-      val constants = getConstantUrlStrings(ir)
-      if (constants.isEmpty)
+      if (hasUrls(ir))
+        getConcatUrlsForIr(ir, defUse)
+      else
         Set.empty[Url]
-      else {
-        val constantUrls = constants map {
-          c =>
-            Url(Vector(UrlString(c)))
-        }
-        val appends   = getConcatUrlsForIr(ir, defUse)
-        constantUrls ++ appends
+    }
+
+    private[this] def hasUrls(ir: IR): Boolean = {
+      val table = ir.getSymbolTable
+      1 to table.getMaxValueNumber exists {
+        isUrlPrefixVn(_, table)
       }
     }
 
