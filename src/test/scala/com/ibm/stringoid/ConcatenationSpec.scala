@@ -22,7 +22,7 @@ class ConcatenationSpec extends FunSpec with AnalysisComparison {
         for {
           ir            <- retriever.getIrs
           if isSourceIr(ir)
-          assertionCall <- getAssertionInstruction(ir)
+          assertionCall <- getAssertionInstructions(ir)
         } yield {
           val url = assertionCall.getUse(0)
           val expectedUrl = ir.getSymbolTable.getStringValue(url)
@@ -56,8 +56,8 @@ class ConcatenationSpec extends FunSpec with AnalysisComparison {
   private[this] def isSourceIr(ir: IR) =
     ir.getMethod.getDeclaringClass.getClassLoader.getReference == JavaSourceAnalysisScope.SOURCE
 
-  private[this] def getAssertionInstruction(ir: IR): Option[SSAInstruction] =
-    ir.getInstructions find {
+  private[this] def getAssertionInstructions(ir: IR): Iterable[SSAInstruction] =
+    ir.getInstructions filter {
       case instr: SSAAbstractInvokeInstruction =>
         instr.getDeclaredTarget.toString contains "LtestPrograms/Assertions, shouldContainHttp(Ljava/lang/String;)V"
       case _ => false
