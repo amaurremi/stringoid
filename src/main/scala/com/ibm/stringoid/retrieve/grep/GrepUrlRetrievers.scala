@@ -2,7 +2,7 @@ package com.ibm.stringoid.retrieve.grep
 
 import java.nio.file.Path
 
-import com.ibm.stringoid.UrlRetrievers
+import com.ibm.stringoid.retrieve.UrlRetrievers
 
 import scala.collection.breakOut
 

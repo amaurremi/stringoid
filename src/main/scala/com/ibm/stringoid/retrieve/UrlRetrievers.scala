@@ -1,10 +1,11 @@
-package com.ibm.stringoid
+package com.ibm.stringoid.retrieve
 
 import java.nio.file.{Path, Paths}
 import java.util.regex.Pattern
 
 import argonaut.Argonaut._
 import argonaut.EncodeJson
+import com.ibm.stringoid.{AnalysisTypes, Urls}
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 
 import scala.collection.JavaConversions._
