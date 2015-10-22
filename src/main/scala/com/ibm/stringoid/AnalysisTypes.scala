@@ -6,9 +6,10 @@ trait AnalysisTypes {
 
   object AnalysisType extends Enumeration {
     type AnalysisType = Value
+    val Append    = Value("append")
     val Constants = Value("constants")
     val Grep      = Value("grep")
-    val Append    = Value("append")
+    val InterProc = Value("interproc")
     val Unset     = Value
 
     def validValues: ValueSet = values - Unset
@@ -18,12 +19,14 @@ trait AnalysisTypes {
 
     def prettyPrint(at: AnalysisType) =
       at match {
+        case Append    =>
+          "append (extracting string concatentations through StringBuilders and '+')"
         case Constants =>
           "constants (extracting constant URLs from symbol tables)"
         case Grep      =>
           "grep"
-        case Append    =>
-          "append (extracting string concatentations through StringBuilders and '+')"
+        case InterProc =>
+          "inter-procedural analysis"
         case Unset     =>
           throw new UnsupportedOperationException("no analysis set")
       }

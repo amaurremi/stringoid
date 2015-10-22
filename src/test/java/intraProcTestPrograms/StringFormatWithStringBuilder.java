@@ -1,4 +1,4 @@
-package testPrograms;
+package intraProcTestPrograms;
 
 public class StringFormatWithStringBuilder {
 

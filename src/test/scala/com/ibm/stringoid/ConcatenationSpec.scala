@@ -13,11 +13,20 @@ class ConcatenationSpec extends FunSpec with AnalysisComparison {
 
   describe("StringBuilder + String.format analysis") {
 
-    val file = Paths.get("/Users/amaurremi/uw/stringoid/src/test/java/testPrograms")
-    val analysisConfig = AnalysisConfig(irFromCg = false, ignoreLibs = true, analysis = AnalysisType.Append, file = file)
+    it("computes URLs in CHA IR analysis") {
+      val file = Paths.get("/Users/amaurremi/uw/stringoid/src/test/java/intraProcTestPrograms")
+      val analysisConfig = AnalysisConfig(irFromCg = false, ignoreLibs = true, analysis = AnalysisType.Append, file = file)
+      run(analysisConfig)
+    }
 
-    it("merges results correctly") {
-      val retriever = new FixedPointAppendIrRetriever(analysisConfig)
+    it("computes URLs in inter-procedural analysis") {
+      val file = Paths.get("/Users/amaurremi/uw/stringoid/src/test/java/interProcTestPrograms")
+      val analysisConfig = AnalysisConfig(irFromCg = true, ignoreLibs = true, analysis = AnalysisType.InterProc, file = file)
+      run(analysisConfig)
+    }
+
+    def run(config: AnalysisConfig) = {
+      val retriever = new FixedPointAppendIrRetriever(config)
       val expectedUrls: Iterator[(IMethod, String)] =
         for {
           ir            <- retriever.getIrs
