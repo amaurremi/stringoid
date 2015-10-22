@@ -15,11 +15,11 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
 
   def retriever(config: AnalysisConfig): UrlsWithSources = {
     val retriever: UrlRetriever = config.analysis match {
+      case Append    =>
+        new FixedPointAppendIrRetriever(config)
       case Constants =>
         new ConstantUrlFromIrRetriever(config)
-      case Append =>
-        new FixedPointAppendIrRetriever(config)
-      case Grep =>
+      case Grep      =>
         new GrepUrlRetriever(config.file)
     }
     retriever.getUrlsWithSources

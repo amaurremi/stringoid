@@ -12,6 +12,7 @@ import scala.util.Try
 object Main extends AnalysisComparison {
 
   import AnalysisType._
+  import IrSource._
 
   // Program arguments example for comparison
   // compare --a append --a2 constants --lib false --lib2 false --cg false --cg2 false src/test/resources/cgeo.geocaching.developer-build.apk src/test/resources/playdrone_apks/com.facebook.katana-4947895.apk src/test/resources/playdrone_apks/com.google.android.apps.maps-804010103.apk src/test/resources/playdrone_apks/com.google.android.apps.plus-413339268.apk src/test/resources/playdrone_apks/com.google.android.gm-4900120.apk src/test/resources/playdrone_apks/com.google.android.gms-6183036.apk src/test/resources/playdrone_apks/com.google.android.googlequicksearchbox-300306150.apk src/test/resources/playdrone_apks/com.google.android.street-18102.apk src/test/resources/playdrone_apks/com.google.android.tts-210302120.apk src/test/resources/playdrone_apks/com.google.android.videos-33331.apk src/test/resources/playdrone_apks/com.google.android.youtube-51405300.apk
@@ -37,10 +38,10 @@ object Main extends AnalysisComparison {
   def analyseFile(
     analysis: String,
     file: Path,
-    useCallGraph: Boolean,
+    irSource: String,
     ignoreLibraries: Boolean
   ) : Try[String] = {
-    val config = AnalysisConfig(useCallGraph, ignoreLibraries, AnalysisType.withName(analysis), file)
+    val config = AnalysisConfig(IrSource.withName(irSource), ignoreLibraries, AnalysisType.withName(analysis), file)
     Try(AnalysisResult.fromConfig(config).asJson.nospaces)
   }
 
@@ -119,13 +120,13 @@ object Main extends AnalysisComparison {
       (includeLibs, opts) =>
         opts.copy(config2 = opts.config2.copy(ignoreLibs = !includeLibs)) // todo lenses + invert flag ignoreLibs to includeLibs
     } text "ignore libraries in second analysis?"
-    opt[Boolean]("cg") optional() valueName "<call graph?>" action {
-      (irFromCg, opts) =>
-        opts.copy(config1 = opts.config1.copy(irFromCg = irFromCg)) // todo lenses
+    opt[IrSource]("ir-source") optional() valueName "<IR source>" action {
+      (irSource, opts) =>
+        opts.copy(config1 = opts.config1.copy(irSource = irSource)) // todo lenses
     } text "construct call graph to only retrieve URLs in reachable methods in first analysis?"
-    opt[Boolean]("cg2") optional() valueName "<call graph?>" action {
-      (irFromCg, opts) =>
-        opts.copy(config2 = opts.config2.copy(irFromCg = irFromCg)) // todo lenses
+    opt[IrSource]("ir-source-2") optional() valueName "<IR source>" action {
+      (irSource, opts) =>
+        opts.copy(config2 = opts.config2.copy(irSource = irSource)) // todo lenses
     } text "construct call graph to only retrieve URLs in reachable methods in second analysis?"
     arg[Path]("<file>...") unbounded() action {
       (f, opts) =>
@@ -145,7 +146,7 @@ object Main extends AnalysisComparison {
 
     private[this] def validateAnalysisPresence(opts: CmdOptions): Either[String, Unit] =
       validate(
-        opts.mode == Compare && (opts.config1.analysis == Unset || opts.config2.analysis == Unset),
+        opts.mode == Compare && (opts.config1.analysis == ATUnset || opts.config2.analysis == ATUnset),
         "In compare mode, two analyses have to be set"
       )
   }

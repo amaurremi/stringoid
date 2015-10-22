@@ -35,8 +35,7 @@ object SparkHarness extends Logging {
     val numApps      = args(3).toInt
     val firstApp     = args(4).toInt
     val outDirPath   = s"${args(2).trim}-$now-$firstApp-${firstApp+numApps}"
-
-    val useCG = if(args.length > 5 && args(5) == "useCallGraph") true else false
+    val irSource     = args(5)
 
     val conf = new SparkConf().setAppName("Stringoid")
     val sc = new SparkContext(conf)
@@ -66,7 +65,11 @@ object SparkHarness extends Logging {
 
       logWarning(s"Now looking at $apkUri...")
 
-      val result: Try[String] = com.ibm.stringoid.Main.analyseFile(analysisType, localPath, useCallGraph = useCG, ignoreLibraries = true)
+      val result: Try[String] = com.ibm.stringoid.Main.analyseFile(
+        analysisType,
+        localPath,
+        irSource = irSource,
+        ignoreLibraries = true)
 
       localFile.delete()
 

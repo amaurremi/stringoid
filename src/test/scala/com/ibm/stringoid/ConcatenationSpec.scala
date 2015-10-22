@@ -15,13 +15,13 @@ class ConcatenationSpec extends FunSpec with AnalysisComparison {
 
     it("computes URLs in CHA IR analysis") {
       val file = Paths.get("/Users/amaurremi/uw/stringoid/src/test/java/intraProcTestPrograms")
-      val analysisConfig = AnalysisConfig(irFromCg = false, ignoreLibs = true, analysis = AnalysisType.Append, file = file)
+      val analysisConfig = AnalysisConfig(irSource = IrSource.Cha, ignoreLibs = true, analysis = AnalysisType.Append, file = file)
       run(analysisConfig)
     }
 
     it("computes URLs in inter-procedural analysis") {
       val file = Paths.get("/Users/amaurremi/uw/stringoid/src/test/java/interProcTestPrograms")
-      val analysisConfig = AnalysisConfig(irFromCg = true, ignoreLibs = true, analysis = AnalysisType.InterProc, file = file)
+      val analysisConfig = AnalysisConfig(irSource = IrSource.InterProc, ignoreLibs = true, analysis = AnalysisType.Append, file = file)
       run(analysisConfig)
     }
 

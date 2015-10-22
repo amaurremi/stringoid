@@ -42,28 +42,34 @@ trait IrUrlRetrievers extends UrlRetrievers {
       val file = config.file
       val includeLib = !config.ignoreLibs
       val processed = mutable.Set.empty[IR]
-      if (config.irFromCg) {
-        new FlexibleCallGraphBuilder().cg.iterator flatMap {
-          case node if includeLib || isApplicationClass(node.getMethod.getDeclaringClass) =>
-            val ir = node.getIR
-            if (processed contains ir)
+      import IrSource._
+      config.irSource match {
+        case InterProc =>
+          new FlexibleCallGraphBuilder().cg.getEntrypointNodes.iterator() map {
+            _.getIR
+          }
+        case Cg        =>
+          new FlexibleCallGraphBuilder().cg.iterator flatMap {
+            case node if includeLib || isApplicationClass(node.getMethod.getDeclaringClass) =>
+              val ir = node.getIR
+              if (processed contains ir)
+                None
+              else {
+                processed += ir
+                Some(ir)
+              }
+            case _ =>
               None
-            else {
-              processed += ir
-              Some(ir)
-            }
-          case _ =>
-            None
-        }
-      } else {
-        val irFactory: IRFactory[IMethod] = if (isApk) getDexIrFactory(scope) else getJavaIrFactory(scope)
-        val cache = new AnalysisCache(irFactory)
-        for {
-          c <- cha.iterator()
-          if includeLib || isApplicationClass(c)
-          m <- c.getAllMethods
-          ir <- getIr(cache, m, processed)
-        } yield ir
+          }
+        case Cha        =>
+          val irFactory: IRFactory[IMethod] = if (isApk) getDexIrFactory(scope) else getJavaIrFactory(scope)
+          val cache = new AnalysisCache(irFactory)
+          for {
+            c <- cha.iterator()
+            if includeLib || isApplicationClass(c)
+            m <- c.getAllMethods
+            ir <- getIr(cache, m, processed)
+          } yield ir
       }
     }
 
