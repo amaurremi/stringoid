@@ -17,24 +17,20 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
 
     override def getUrlsWithSources: UrlsWithSources = {
       val TimeResult(irs, walaTime) = TimeResult(getIrs)
-      val urlsWithSources: Iterator[(Url, Method)] = for {
-        ir     <- irs
-        defUse  = new DefUse(ir)
-        url    <- getAllUrls(ir, defUse)
-      } yield url -> ir.getMethod.toString
+      val urlsWithSources: Iterator[(Url, Method)] =
+        if (config.irSource == IrSource.InterProc)
+          irs flatMap getInterProcConcatUrls
+        else for {
+          ir     <- irs
+          if hasUrls(ir)
+          url    <- getConcatUrlsForIr(ir, new DefUse(ir))
+        } yield url -> ir.getMethod.toString
       val urlWithSourcesMap = urlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
         case (prevMap, (url, method)) =>
           val prevMethods = prevMap getOrElse (url, Set.empty[Method])
           prevMap updated(url, prevMethods + method)
       }
       UrlsWithSources(urlWithSourcesMap, walaTime)
-    }
-
-    private[this] def getAllUrls(ir: IR, defUse: DefUse): Set[Url] = {
-      if (hasUrls(ir))
-        getConcatUrlsForIr(ir, defUse)
-      else
-        Set.empty[Url]
     }
 
     private[this] def hasUrls(ir: IR): Boolean = {
@@ -46,6 +42,10 @@ trait FixedPointAppendIrRetrievers extends IrUrlRetrievers with StringFormatSpec
 
     private[this] def isUrlPrefixVn(vn: ValueNumber, table: SymbolTable): Boolean =
       (table isStringConstant vn) && isUrlPrefix(table getStringValue vn)
+
+    private[this] def getInterProcConcatUrls(entryIr: IR): Iterable[(Url, Method)] = {
+      ???
+    }
 
     private[this] def getConcatUrlsForIr(ir: IR, defUse: DefUse): Set[Url] =
       asboSolver(ir, defUse) match {

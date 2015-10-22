@@ -145,7 +145,7 @@ trait StringAppendModule {
         override def makeStmtRHS(size: ValueNumber): Array[AtaReference] =
           new Array[AtaReference](size)
       }
-    
+
     private[this] def transferFunctions = new ITransferFunctionProvider[BB, AtaReference] {
 
       override def getMeetOperator: AbstractMeetOperator[AtaReference] = StringMeetOperator()
