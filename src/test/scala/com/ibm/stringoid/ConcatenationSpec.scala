@@ -68,7 +68,7 @@ class ConcatenationSpec extends FunSpec with AnalysisComparison {
   private[this] def getAssertionInstructions(ir: IR): Iterable[SSAInstruction] =
     ir.getInstructions filter {
       case instr: SSAAbstractInvokeInstruction =>
-        instr.getDeclaredTarget.toString contains "LtestPrograms/Assertions, shouldContainHttp(Ljava/lang/String;)V"
+        instr.getDeclaredTarget.toString contains "Assertions, shouldContainHttp(Ljava/lang/String;)V"
       case _ => false
     }
 }
