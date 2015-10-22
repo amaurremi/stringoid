@@ -159,18 +159,6 @@ trait AbstractStringBuilderModule {
 
       override def hasEdgeTransferFunctions: Boolean = false
 
-      /**
-       * We need to redefine isSbConstructor because in DefUse the instruction is stored in a different form
-       * and it is not an invoke instruction
-       */
-      private[this] def isSbConstructorOrFormatInDefUse(instr: SSAInstruction): Boolean =
-        Option(instr).isDefined && (
-          List("Ljava/lang/String, format(",
-            "new <Application,Ljava/lang/StringBuilder>",
-            "new <Source,Ljava/lang/StringBuilder>") exists {
-            instr.toString contains _
-          })
-
       override def getNodeTransferFunction(vn: ValueNumber): UnaryOperator[BitVectorVariable] = {
         defUse getDef vn match {
           case instr if isSbConstructorOrFormatInDefUse(instr) =>

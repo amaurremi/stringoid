@@ -4,9 +4,9 @@ import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAPhiIns
 
 object StringConcatUtil {
 
-  private val SB_CONSTRUCTOR_PATTERN = "java/lang/StringBuilder, <init>("
-  private val SB_APPEND_PATTERN = "java/lang/StringBuilder, append("
-  private val SB_TOSTRING_PATTERN = "java/lang/StringBuilder, toString()Ljava/lang/String;"
+  private val SB_CONSTRUCTOR_PATTERNS = List("java/lang/StringBuilder, <init>(", "java/lang/StringBuffer, <init>(")
+  private val SB_APPEND_PATTERNS = List("java/lang/StringBuilder, append(", "java/lang/StringBuffer, append(")
+  private val SB_TOSTRING_PATTERNS = List("java/lang/StringBuilder, toString()Ljava/lang/String;", "java/lang/StringBuffer, toString()Ljava/lang/String;")
   private val STRING_FORMAT_PATTERN = "java/lang/String, format("
 
   val INVOKE_INSTR_MSG = "String concatenation SSA conversion handles only invoke and phi instructions"
@@ -16,19 +16,19 @@ object StringConcatUtil {
    * that takes a String or CharSequence as a parameter?
    */
   def isSbConstructorWithStringParam(instr: SSAAbstractInvokeInstruction): Boolean =
-    hasPattern(instr, SB_CONSTRUCTOR_PATTERN + "L")
+    hasPattern(instr, SB_CONSTRUCTOR_PATTERNS map { _ + "L" })
 
   /**
    * Does this instruction correspond to a new StringBuilder constructor invocation?
    */
   def isSbConstructor(instr: SSAAbstractInvokeInstruction): Boolean =
-    hasPattern(instr, SB_CONSTRUCTOR_PATTERN)
+    hasPattern(instr, SB_CONSTRUCTOR_PATTERNS)
 
   def isSbTostring(instr: SSAAbstractInvokeInstruction) =
-    hasPattern(instr, SB_TOSTRING_PATTERN)
+    hasPattern(instr, SB_TOSTRING_PATTERNS)
 
   def isStringFormat(instr: SSAAbstractInvokeInstruction) =
-    hasPattern(instr, STRING_FORMAT_PATTERN)
+    hasPattern(instr, List(STRING_FORMAT_PATTERN))
 
   /**
    * Does this instruction correspond to a StringBuilder.append() that takes exactly one argument?
@@ -36,10 +36,12 @@ object StringConcatUtil {
    */
   def isSbAppend(instr: SSAAbstractInvokeInstruction): Boolean =
     instr.getNumberOfParameters == 2 && // one for 'this', one for argument
-      hasPattern(instr, SB_APPEND_PATTERN)
+      hasPattern(instr, SB_APPEND_PATTERNS)
 
-  private[this] def hasPattern(instr: SSAAbstractInvokeInstruction, prefix: String): Boolean =
-    instr.toString() contains prefix
+  private[this] def hasPattern(instr: SSAAbstractInvokeInstruction, substrings: List[String]): Boolean =
+    substrings exists {
+      instr.toString() contains _
+    }
 
   def getDefs(instr: SSAAbstractInvokeInstruction): Array[ValueNumber] =
     if (isSbAppend(instr))
@@ -90,7 +92,9 @@ object StringConcatUtil {
     Option(instr).isDefined && (
       List("Ljava/lang/String, format(",
         "new <Application,Ljava/lang/StringBuilder>",
-        "new <Source,Ljava/lang/StringBuilder>") exists {
+        "new <Application,Ljava/lang/StringBuffer>",
+        "new <Source,Ljava/lang/StringBuilder>",
+        "new <Source,Ljava/lang/StringBuffer>") exists {
         instr.toString contains _
       })
 }

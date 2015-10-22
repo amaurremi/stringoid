@@ -20,7 +20,7 @@ trait AnalysisTypes {
     def prettyPrint(at: AnalysisType) =
       at match {
         case Append    =>
-          "append (extracting string concatentations through StringBuilders and '+')"
+          "append (extracting string concatentations through StringBuilders/StringBuffers and '+')"
         case Constants =>
           "constants (extracting constant URLs from symbol tables)"
         case Grep      =>

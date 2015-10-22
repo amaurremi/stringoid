@@ -20,7 +20,7 @@ import scala.collection.{breakOut, mutable}
 trait StringAppendModule {
 
   private[this] val MISSING_STRING_BUILDER_MESSAGE: String =
-    "Value-number-to-ASBO map should contain the value number for this StringBuilder."
+    "Value-number-to-ASBO map should contain the value number for this string builder."
   private[this] val EDGE_FUNCTIONS_NOT_SUPPORTED_MESSAGE: String =
     "No edge transfer functions for StringAppend fixed-point solver."
 
