@@ -17,7 +17,7 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.{breakOut, mutable}
 
-trait StringAppendModule {
+trait StringAppendModule extends AbstractStringBuilderModule {
 
   private[this] val MISSING_STRING_BUILDER_MESSAGE: String =
     "Value-number-to-ASBO map should contain the value number for this string builder."
@@ -29,18 +29,22 @@ trait StringAppendModule {
   /**
    * Get the string concatenation results.
    */
-  def stringAppends(ir: IR, defUse: DefUse, vnToAsbo: Map[ValueNumber, Set[ASBO]]): ValNumAutomaton = {
-    val solver  = new StringAppendFixedPointSolver(ir, defUse, vnToAsbo)
-    val result  = solver.result
-    val mapping = solver.ataRefMapping
-    val ataRefs: Set[Int] = (solver.graph map {
-      bb =>
-        result.getOut(bb).index
-    })(breakOut)
-    ataRefs.foldLeft(Automaton.empty[StringPart]) {
-      (automaton, ref) =>
-        val automata = mapping(ref).asboToAutomaton.values
-        automaton | mergeAutomata(automata)
+  def stringAppends(node: Node): ValNumAutomaton = {
+    valueNumberToAsbo(node) match {
+      case Some(vnToAsbo) =>
+        val solver  = new StringAppendFixedPointSolver(node, vnToAsbo)
+        val result  = solver.result
+        val mapping = solver.ataRefMapping
+        val ataRefs: Set[Int] = (solver.graph map {
+            result.getOut(_).index
+        })(breakOut)
+        ataRefs.foldLeft(Automaton.empty[StringPart]) {
+          (automaton, ref) =>
+            val automata = mapping(ref).asboToAutomaton.values
+            automaton | mergeAutomata(automata)
+        }
+      case None           =>
+        Automaton.empty[StringPart]
     }
   }
 
@@ -49,7 +53,7 @@ trait StringAppendModule {
 
   def singleAutomaton(sp: StringPart) = Automaton.empty[StringPart] + Seq(sp)
 
-  private class StringAppendFixedPointSolver(ir: IR, defUse: DefUse, vnToAsbo: Map[ValueNumber, Set[ASBO]]) {
+  private class StringAppendFixedPointSolver(node: Node, vnToAsbo: Map[ValueNumber, Set[ASBO]]) {
 
     type BB      = IExplodedBasicBlock
     type AsboMap = mutable.Map[ASBO, ValNumAutomaton]
@@ -64,12 +68,12 @@ trait StringAppendModule {
 
     def initialAtaRefMapping: ArrayBuffer[AsboToAutomaton] = {
       val refMapping = ArrayBuffer.empty[AsboToAutomaton]
-      val table = ir.getSymbolTable
+      val table = node.getIr.getSymbolTable
       1 to table.getMaxValueNumber foreach {
         vn =>
           if (table isConstant vn) {
             val automaton = Automaton.empty[StringPart] + Seq(StringValNum(vn))
-            val asboMap = mutable.Map(AbstractStringBuilderObject(vn) -> automaton)
+            val asboMap = mutable.Map(getAsbo(vn, node) -> automaton)
             refMapping += AsboToAutomaton(asboMap, None)
           }
       }
@@ -122,7 +126,7 @@ trait StringAppendModule {
       solver
     }
 
-    private[this] lazy val getGraph = ExceptionPrunedCFG.make(ExplodedControlFlowGraph.make(ir))
+    private[this] lazy val getGraph = ExceptionPrunedCFG.make(ExplodedControlFlowGraph.make(node.getIr))
 
     private[this] lazy val stronglyConnectedComponents: Set[util.Set[BB]] =
       (new SCCIterator(getGraph) filter { _.size() > 1 }).toSet
@@ -194,8 +198,8 @@ trait StringAppendModule {
         }
       }
 
-      override def getNodeTransferFunction(node: BB): UnaryOperator[AtaReference] =
-        node.getInstruction match {
+      override def getNodeTransferFunction(bb: BB): UnaryOperator[AtaReference] =
+        bb.getInstruction match {
           case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                =>
             vnToAsbo get getFirstSbAppendDef(instr) match {
               case Some(asbos) =>
@@ -214,7 +218,7 @@ trait StringAppendModule {
                 throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
             }
           case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)                 =>
-            new StringFormatAppendOperator(inv, defUse)
+            new StringFormatAppendOperator(inv, node.getDu)
           case _                                                                =>
             IdentityOperator()
         }
@@ -240,14 +244,14 @@ trait StringAppendModule {
                 mergeAutomata(automata)
               (newValNumAutomaton, mutable.Map.empty[ASBO, ValNumAutomaton])
             case None         =>
-              defUse.getDef(vn) match {
+              node.getDu.getDef(vn) match {
                 case phi: SSAPhiInstruction =>
                   val uses = 0 until phi.getNumberOfUses map phi.getUse
                   val (automata, asboMaps) = (uses map { getAppendAutomaton(_, rhsMap) }).unzip
                   val mergedAutomaton = mergeAutomata(automata)
                   val mergedMap = (asboMaps reduceLeft {
                     _ ++ _
-                  }) + (AbstractStringBuilderObject(phi.getDef) -> mergedAutomaton)
+                  }) + (getAsbo(phi.getDef, node) -> mergedAutomaton)
                   (mergedAutomaton, mergedMap)
                 case _                      =>
                   (singleAutomaton(StringValNum(vn)), mutable.Map.empty[ASBO, ValNumAutomaton])
@@ -328,7 +332,7 @@ trait StringAppendModule {
 
               // the ASBO corresponding to String.format can't be already contained in rhsMap,
               // so we just add the result to the map
-              newMap += (AbstractStringBuilderObject(instr.getDef) -> automaton)
+              newMap += (getAsbo(instr.getDef, node) -> automaton)
             }
           }
 
@@ -345,7 +349,7 @@ trait StringAppendModule {
           def reorderStringFormatArgs: Seq[StringPart] = {
             val firstArg = getFirstStringFormatArg(instr)
             val formatArrayValNum = getStringFormatArray(instr)
-            val table = ir.getSymbolTable
+            val table = node.getIr.getSymbolTable
             if (table isStringConstant firstArg) {
               val argValNums = getArrayValNums(formatArrayValNum)
               val (formattedParts, specifierNum) = parse(table getStringValue firstArg)

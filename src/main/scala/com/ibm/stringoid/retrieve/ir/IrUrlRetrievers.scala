@@ -2,6 +2,7 @@ package com.ibm.stringoid.retrieve.ir
 
 import com.ibm.stringoid.retrieve.UrlRetrievers
 import com.ibm.stringoid.retrieve.ir.append._
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.Nodes
 import com.ibm.wala.analysis.typeInference.{TypeAbstraction, TypeInference}
 import com.ibm.wala.cast.ir.ssa.AstIRFactory.AstDefaultIRFactory
 import com.ibm.wala.cast.java.analysis.typeInference.AstJavaTypeInference
@@ -12,7 +13,7 @@ import com.ibm.wala.ipa.callgraph.AnalysisCache
 import com.ibm.wala.ipa.cha.ClassHierarchy
 import com.ibm.wala.ssa.{DefaultIRFactory, IR, IRFactory}
 import com.ibm.wala.types.ClassLoaderReference
-import edu.illinois.wala.ipa.callgraph.{AnalysisScope, FlexibleCallGraphBuilder}
+import edu.illinois.wala.ipa.callgraph.AnalysisScope
 
 import scala.collection.JavaConversions._
 import scala.collection.{breakOut, mutable}
@@ -23,55 +24,22 @@ trait IrUrlRetrievers extends UrlRetrievers {
    * A URL-retrieval analysis that is based on analyzing IRs independently from each other.
    * The trait does not specify how to extract the URLs from an IR.
    */
-  trait IrUrlRetriever extends UrlRetriever {
+  trait IrUrlRetriever extends UrlRetriever with Nodes {
 
-    protected def config: AnalysisConfig
+    protected implicit def config: AnalysisConfig
 
-    private[this] def isApplicationClass(c: IClass): Boolean =
+    def getNodes: Iterator[Node]
+
+    protected lazy val isApk = config.file.toString.toLowerCase endsWith ".apk"
+
+    protected def isApplicationClass(c: IClass): Boolean =
       Set(ClassLoaderReference.Application, JavaSourceAnalysisScope.SOURCE) contains c.getClassLoader.getReference
 
-    private[this] lazy val isApk = config.file.toString.toLowerCase endsWith ".apk"
-
-    private[this] implicit lazy val analysisConfig =
+    implicit lazy val analysisConfig =
       if (isApk) configWithApk(config.file)
       else configWithSrc(config.file)
 
-    private[this] lazy val scope = AnalysisScope()
-
-    final def getIrs: Iterator[IR] = {
-      val file = config.file
-      val includeLib = !config.ignoreLibs
-      val processed = mutable.Set.empty[IR]
-      import IrSource._
-      config.irSource match {
-        case InterProc =>
-          new FlexibleCallGraphBuilder().cg.getEntrypointNodes.iterator() map {
-            _.getIR
-          }
-        case Cg        =>
-          new FlexibleCallGraphBuilder().cg.iterator flatMap {
-            case node if includeLib || isApplicationClass(node.getMethod.getDeclaringClass) =>
-              val ir = node.getIR
-              if (processed contains ir)
-                None
-              else {
-                processed += ir
-                Some(ir)
-              }
-            case _ =>
-              None
-          }
-        case Cha        =>
-          val irFactory: IRFactory[IMethod] = if (isApk) getDexIrFactory(scope) else getJavaIrFactory(scope)
-          val cache = new AnalysisCache(irFactory)
-          for {
-            c <- cha.iterator()
-            if includeLib || isApplicationClass(c)
-            m <- c.getAllMethods
-            ir <- getIr(cache, m, processed)
-          } yield ir
-      }
-    }
+    protected lazy val scope = AnalysisScope()
 
     private[this] val typeInferenceMap = mutable.Map.empty[IR, TypeInference]
     private[this] val javaAstTypeInferenceMap = mutable.Map.empty[IR, AstJavaTypeInference]
@@ -85,7 +53,7 @@ trait IrUrlRetrievers extends UrlRetrievers {
         typeInference getType vn
       }
 
-    private[this] def getIr(cache: AnalysisCache, m: IMethod, processed: mutable.Set[IR]): Option[IR] = {
+    protected def getIr(cache: AnalysisCache, m: IMethod, processed: mutable.Set[IR]): Option[IR] = {
       val ir = cache getIR m
       if (Option(ir).isDefined) {
         if (!(processed contains ir)) {
@@ -95,19 +63,19 @@ trait IrUrlRetrievers extends UrlRetrievers {
       } else None
     }
 
-    private[this] def getDexIrFactory(scope: AnalysisScope) =
+    protected def getDexIrFactory(scope: AnalysisScope) =
       if (scope getModules ClassLoaderReference.Application exists {
         case _: DexFileModule => true
         case _                => false
       }) new DexIRFactory() else new DefaultIRFactory()
 
-    private[this] def getJavaIrFactory(scope: AnalysisScope): IRFactory[IMethod] =
+    protected def getJavaIrFactory(scope: AnalysisScope): IRFactory[IMethod] =
       if (scope getModules JavaSourceAnalysisScope.SOURCE exists {
         case _: SourceDirectoryTreeModule => true
         case _                            => false
       }) new AstDefaultIRFactory() else new DefaultIRFactory()
 
-    private[this] lazy val cha: ClassHierarchy = {
+    protected lazy val cha: ClassHierarchy = {
       val includeLib = !config.ignoreLibs
       val classLoaderImpl = new ClassLoaderFactoryImpl(scope.getExclusions)
       ClassHierarchy.make(scope, classLoaderImpl)

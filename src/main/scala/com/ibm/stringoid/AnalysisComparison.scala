@@ -5,27 +5,34 @@ import java.nio.file.Path
 import argonaut.Argonaut._
 import argonaut._
 import com.ibm.stringoid.retrieve.grep.GrepUrlRetrievers
-import com.ibm.stringoid.retrieve.ir.append.fixedpoint.FixedPointAppendIrRetrievers
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.FixedPointAppendIrRetrieverImplementations
 import com.ibm.stringoid.retrieve.ir.constant.ConstantUrlFromIrRetrievers
 import com.ibm.stringoid.util.TimeResult
 
-trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFromIrRetrievers with GrepUrlRetrievers {
+trait AnalysisComparison
+  extends FixedPointAppendIrRetrieverImplementations
+  with ConstantUrlFromIrRetrievers
+  with GrepUrlRetrievers {
 
-  import AnalysisType._
+  def retriever(config: AnalysisConfig): UrlRetriever = {
+    import AnalysisType._
+    import IrSource._
 
-  def retriever(config: AnalysisConfig): UrlsWithSources = {
-    val retriever: UrlRetriever = config.analysis match {
+    config.analysis match {
       case Append    =>
-        new FixedPointAppendIrRetriever(config)
+        config.irSource match {
+          case Cha       => new ChaIntraProcFixedPointAppendIrRetriever(config)
+          case Cg        => new CgIntraProcFixedPointAppendIrRetriever(config)
+          case InterProc => new InterProcFixedPointAppendIrRetriever(config)
+        }
       case Constants =>
         new ConstantUrlFromIrRetriever(config)
       case Grep      =>
         new GrepUrlRetriever(config.file)
     }
-    retriever.getUrlsWithSources
   }
 
-  case class AnalysisResult private[AnalysisComparison](
+  case class AnalysisResult private[AnalysisComparison] (
     config: AnalysisConfig,
     runningTime: Double,
     urlsWithSources: UrlsWithSources,
@@ -44,12 +51,12 @@ trait AnalysisComparison extends FixedPointAppendIrRetrievers with ConstantUrlFr
     def fromConfig(
       config: AnalysisConfig
     ): AnalysisResult = {
-      val TimeResult(result, time) = TimeResult(retriever(config))
+      val TimeResult(result, time) = TimeResult(retriever(config).getUrlsWithSources)
       AnalysisResult(config, time, result, result.uws.size)
     }
   }
 
-  case class AnalysisComparisonResult private[AnalysisComparison](
+  case class AnalysisComparisonResult private[AnalysisComparison] (
     result1: AnalysisResult,
     result2: AnalysisResult,
     in1not2size: Int,
