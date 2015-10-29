@@ -73,7 +73,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
         vn =>
           if (table isConstant vn) {
             val automaton = Automaton.empty[StringPart] + Seq(StringValNum(vn))
-            val asboMap = mutable.Map(getAsbo(vn, node) -> automaton)
+            val asboMap = mutable.Map(createAsbo(vn, node) -> automaton)
             refMapping += AsboToAutomaton(asboMap, None)
           }
       }
@@ -251,7 +251,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
                   val mergedAutomaton = mergeAutomata(automata)
                   val mergedMap = (asboMaps reduceLeft {
                     _ ++ _
-                  }) + (getAsbo(phi.getDef, node) -> mergedAutomaton)
+                  }) + (createAsbo(phi.getDef, node) -> mergedAutomaton)
                   (mergedAutomaton, mergedMap)
                 case _                      =>
                   (singleAutomaton(StringValNum(vn)), mutable.Map.empty[ASBO, ValNumAutomaton])
@@ -332,7 +332,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
               // the ASBO corresponding to String.format can't be already contained in rhsMap,
               // so we just add the result to the map
-              newMap += (getAsbo(instr.getDef, node) -> automaton)
+              newMap += (createAsbo(instr.getDef, node) -> automaton)
             }
           }
 

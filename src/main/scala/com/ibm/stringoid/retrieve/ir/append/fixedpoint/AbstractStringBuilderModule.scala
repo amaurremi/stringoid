@@ -31,7 +31,7 @@ import scala.reflect.ClassTag
  */
 trait AbstractStringBuilderModule extends Nodes {
 
-  def getAsbo(vn: ValueNumber, node: Node): ASBO
+  def createAsbo(vn: ValueNumber, node: Node): ASBO
 
   type AsboMapping = OrdinalSetMapping[ASBO]
 
@@ -79,9 +79,9 @@ trait AbstractStringBuilderModule extends Nodes {
   private[this] def createAbstractObjectNumbering(node: Node)(implicit tag: ClassTag[ASBO]): AsboMapping = {
     val abstractObjects = node.getIr.iterateNormalInstructions collect {
       case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv) =>
-        getAsbo(getSbConstructorDef(inv), node)
+        createAsbo(getSbConstructorDef(inv), node)
       case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)  =>
-        getAsbo(inv.getDef, node)
+        createAsbo(inv.getDef, node)
     }
 
     val objects = abstractObjects.toSeq
@@ -146,7 +146,7 @@ trait AbstractStringBuilderModule extends Nodes {
           graph addEdge(sbUse, sbDef)
         case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)   =>
           graph addNode inv.getDef
-        case phi: SSAPhiInstruction                             => // todo will phi instruction in java source code be different?
+        case phi: SSAPhiInstruction                                     =>
           val defNode = phi.getDef
           graph addNode defNode
           getPhiUses(phi) foreach {
@@ -154,7 +154,7 @@ trait AbstractStringBuilderModule extends Nodes {
               addNode(use)
               graph addEdge (use, defNode)
           }
-        case _                                                  =>
+        case _                                                          =>
           // do  nothing
       }
       graph
@@ -170,7 +170,7 @@ trait AbstractStringBuilderModule extends Nodes {
       override def getNodeTransferFunction(vn: ValueNumber): UnaryOperator[BitVectorVariable] = {
         node.getDu getDef vn match {
           case instr if isSbConstructorOrFormatInDefUse(instr) =>
-            val mappedIndex = abstractObjectNumbering getMappedIndex getAsbo(vn, node)
+            val mappedIndex = abstractObjectNumbering getMappedIndex createAsbo(vn, node)
             assert(mappedIndex >= 0)
             val gen = new BitVector()
             gen.set(mappedIndex)

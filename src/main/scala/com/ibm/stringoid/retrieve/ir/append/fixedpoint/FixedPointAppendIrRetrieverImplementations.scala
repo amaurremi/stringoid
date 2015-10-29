@@ -1,13 +1,14 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
-import com.ibm.stringoid.retrieve.ir.IntraProcIrModule
+import com.ibm.stringoid.AnalysisConfig
+import com.ibm.stringoid.retrieve.ir.IntraProcIrModule.{CgIntraProcIrNodes, ChaIntraProcIrNodes, IntraProcIrNodes}
 import com.ibm.stringoid.retrieve.ir.append._
 import com.ibm.wala.ipa.callgraph.propagation.{LocalPointerKey, PointerKey}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
 import scala.collection.JavaConversions._
 
-trait FixedPointAppendIrRetrieverImplementations extends FixedPointAppendIrRetrievers with IntraProcIrModule {
+object FixedPointAppendIrRetrieverImplementations {
 
   final class InterProcFixedPointAppendIrRetriever(
     config: AnalysisConfig
@@ -17,7 +18,7 @@ trait FixedPointAppendIrRetrieverImplementations extends FixedPointAppendIrRetri
 
     override type Node = CallGraphNode
 
-    override def getAsbo(vn: ValueNumber, node: CallGraphNode) = ASBO(new LocalPointerKey(node.node, vn))
+    override def createAsbo(vn: ValueNumber, node: CallGraphNode) = ASBO(new LocalPointerKey(node.node, vn))
 
     override def getNodes: Iterator[CallGraphNode] = {
       new FlexibleCallGraphBuilder()(configWithApk(config.file)).cg.getEntrypointNodes.iterator() map CallGraphNode.apply
@@ -29,7 +30,7 @@ trait FixedPointAppendIrRetrieverImplementations extends FixedPointAppendIrRetri
   ) extends FixedPointAppendIrRetriever(config)
     with IntraProcIrNodes {
 
-    override def getAsbo(vn: ValueNumber, node: Node) = ASBO(vn)
+    override def createAsbo(vn: ValueNumber, node: Node) = ASBO(vn)
   }
 
   final class CgIntraProcFixedPointAppendIrRetriever(

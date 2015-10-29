@@ -1,11 +1,14 @@
-package com.ibm.stringoid
+package com.ibm
 
 import argonaut.Argonaut._
-import argonaut._
+import argonaut.EncodeJson
 
+import scala.Predef.{Map, Set}
 import scala.collection._
 
-trait Urls {
+package object stringoid {
+
+  type Method = String
 
   case class Url(url: Vector[UrlPart])
 
@@ -37,17 +40,17 @@ trait Urls {
           }
       )("kind", "value")
   }
-  
+
   sealed trait VariableSource
-  
+
   case object Parameter extends VariableSource
-  
+
   case class MethodReturn(methodName: String) extends VariableSource
-  
+
   case class FieldAccess(fieldName: String) extends VariableSource
 
   case object UnknownSource extends VariableSource
-  
+
   case class UrlString(string: String) extends UrlPart {
     override def toString = string
   }
@@ -78,10 +81,8 @@ trait Urls {
         }
       )("type", "source")
   }
-  
-  case object UrlWithCycle extends UrlPart
 
-  type Method = String
+  case object UrlWithCycle extends UrlPart
 
   object UrlToMethodsPair {
 
@@ -104,9 +105,9 @@ trait Urls {
     implicit def UrlsWithSourcesEncodeJson: EncodeJson[UrlsWithSources] = {
       def jsonMap(uws: Map[Url, Set[Method]]): Vector[UrlToMethodsPair] =
         (uws map {
-          case (url, methods) =>
-            UrlToMethodsPair(url, methods)
-        })(breakOut)
+        case (url, methods) =>
+          UrlToMethodsPair(url, methods)
+      })(breakOut)
       jencode2L(
         (uws: UrlsWithSources) =>
           (jsonMap(uws.uws), uws.walaTime)

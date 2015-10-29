@@ -9,7 +9,7 @@ import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
-trait IntraProcIrModule extends IrUrlRetrievers {
+object IntraProcIrModule {
 
   trait IntraProcIrNodes extends IrUrlRetriever {
 
