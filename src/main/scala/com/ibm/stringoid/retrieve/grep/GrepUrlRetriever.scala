@@ -20,4 +20,4 @@ final class GrepUrlRetriever(apkPath: Path) extends UrlRetriever {
         Url(Vector(UrlString(l))) -> Set.empty[Method]
     })(breakOut), 0)
   }
-  }
+}
