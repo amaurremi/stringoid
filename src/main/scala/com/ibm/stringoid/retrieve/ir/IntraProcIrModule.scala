@@ -20,7 +20,6 @@ trait IntraProcIrModule extends IrUrlRetrievers {
 
   trait CgIntraProcIrNodes extends IntraProcIrNodes {
 
-    // todo the code should be refactored so that this method can be only invoked in Cg analysis mode
     override def getNodes: Iterator[IrNode] = {
       val file = config.file
       val includeLib = !config.ignoreLibs
