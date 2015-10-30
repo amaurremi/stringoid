@@ -1,6 +1,6 @@
 package com.ibm.stringoid.retrieve.ir
 
-import com.ibm.stringoid.retrieve.ir.append._
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.IrNodes
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ipa.callgraph.{AnalysisCache, CGNode}
 import com.ibm.wala.ssa.{IR, IRFactory}
@@ -11,12 +11,7 @@ import scala.collection.mutable
 
 object IntraProcIrModule {
 
-  trait IntraProcIrNodes extends IrUrlRetriever {
-
-    override type Identifier = ValueNumber
-
-    override type Node = IrNode
-  }
+  trait IntraProcIrNodes extends IrUrlRetriever with IrNodes
 
   trait CgIntraProcIrNodes extends IntraProcIrNodes {
 

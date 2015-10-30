@@ -1,10 +1,12 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
+import com.ibm.stringoid.retrieve.ir.append._
 import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope
 import com.ibm.wala.ipa.callgraph.CGNode
+import com.ibm.wala.ipa.callgraph.propagation.PointerKey
 import com.ibm.wala.ssa.{DefUse, IR}
 
-trait Nodes {
+sealed trait Nodes {
 
   type Identifier
 
@@ -34,4 +36,18 @@ trait Nodes {
     def getDu: DefUse = node.getDU
   }
 
+}
+
+trait IrNodes extends Nodes {
+
+  override type Identifier = ValueNumber
+
+  override type Node = IrNode
+}
+
+trait CgNodes extends Nodes {
+
+  override type Identifier = PointerKey
+
+  override type Node = CallGraphNode
 }
