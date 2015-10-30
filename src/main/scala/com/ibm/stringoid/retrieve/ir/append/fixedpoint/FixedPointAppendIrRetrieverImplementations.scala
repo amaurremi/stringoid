@@ -28,10 +28,7 @@ object FixedPointAppendIrRetrieverImplementations {
   abstract class IntraProcFixedPointAppendIrRetriever(
     config: AnalysisConfig
   ) extends FixedPointAppendIrRetriever(config)
-    with IntraProcIrNodes {
-
-    override def createAsbo(vn: ValueNumber, node: Node) = ASBO(vn)
-  }
+    with IntraProcIrNodes
 
   final class CgIntraProcFixedPointAppendIrRetriever(
     config: AnalysisConfig

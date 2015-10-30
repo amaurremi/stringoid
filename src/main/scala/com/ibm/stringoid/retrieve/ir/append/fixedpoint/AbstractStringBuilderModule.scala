@@ -31,8 +31,6 @@ import scala.reflect.ClassTag
  */
 trait AbstractStringBuilderModule extends Nodes {
 
-  def createAsbo(vn: ValueNumber, node: Node): ASBO
-
   type AsboMapping = OrdinalSetMapping[ASBO]
 
   private[this] def asboSolver(node: Node): Option[AsboFixedPointSolver] = {
