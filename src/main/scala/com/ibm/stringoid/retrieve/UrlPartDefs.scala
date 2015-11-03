@@ -1,12 +1,11 @@
-package com.ibm
+package com.ibm.stringoid.retrieve
 
 import argonaut.Argonaut._
 import argonaut.EncodeJson
 
-import scala.Predef.{Map, Set}
-import scala.collection._
+import scala.collection.breakOut
 
-package object stringoid {
+object UrlPartDefs {
 
   type Method = String
 
@@ -105,9 +104,9 @@ package object stringoid {
     implicit def UrlsWithSourcesEncodeJson: EncodeJson[UrlsWithSources] = {
       def jsonMap(uws: Map[Url, Set[Method]]): Vector[UrlToMethodsPair] =
         (uws map {
-        case (url, methods) =>
-          UrlToMethodsPair(url, methods)
-      })(breakOut)
+          case (url, methods) =>
+            UrlToMethodsPair(url, methods)
+        })(breakOut)
       jencode2L(
         (uws: UrlsWithSources) =>
           (jsonMap(uws.uws), uws.walaTime)

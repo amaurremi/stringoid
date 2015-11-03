@@ -1,4 +1,4 @@
-package com.ibm.stringoid.retrieve.ir.append.fixedpoint
+package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend
 
 import java.util.regex.Pattern
 

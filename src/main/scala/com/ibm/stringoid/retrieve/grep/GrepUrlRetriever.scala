@@ -2,8 +2,8 @@ package com.ibm.stringoid.retrieve.grep
 
 import java.nio.file.Path
 
+import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.{UrlCheck, UrlRetriever}
-import com.ibm.stringoid.{Method, Url, UrlString, UrlsWithSources}
 
 import scala.collection.breakOut
 

@@ -1,9 +1,11 @@
-package com.ibm.stringoid.retrieve.ir.append.fixedpoint
+package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend
 
 import java.util
 
+import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
-import com.ibm.stringoid.retrieve.ir.append._
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint._
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.AbstractStringBuilderModule
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{IVariable, UnaryOperator}
 import com.ibm.wala.ipa.cfg.ExceptionPrunedCFG

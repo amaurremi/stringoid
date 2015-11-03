@@ -2,7 +2,7 @@ package com.ibm.stringoid.retrieve
 
 import java.nio.file.Path
 
-import com.ibm.stringoid.UrlsWithSources
+import com.ibm.stringoid.retrieve.UrlPartDefs.UrlsWithSources
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 
 import scala.collection.JavaConversions._

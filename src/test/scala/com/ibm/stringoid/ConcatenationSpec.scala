@@ -4,6 +4,7 @@ import java.nio.file.Paths
 
 import com.ibm.stringoid.AnalysisTypeObject.AnalysisType
 import com.ibm.stringoid.IrSourceObject.IrSource
+import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.FixedPointAppendIrRetriever
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ssa.{IR, SSAAbstractInvokeInstruction, SSAInstruction}

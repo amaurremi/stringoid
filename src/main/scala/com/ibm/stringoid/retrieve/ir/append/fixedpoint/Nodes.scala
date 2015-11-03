@@ -1,6 +1,6 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
-import com.ibm.stringoid.retrieve.ir.append._
+import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.callgraph.propagation.{LocalPointerKey, PointerKey}

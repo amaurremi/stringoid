@@ -4,6 +4,7 @@ import argonaut.Argonaut._
 import argonaut.EncodeJson
 import com.ibm.stringoid.AnalysisTypeObject.AnalysisType._
 import com.ibm.stringoid.IrSourceObject.IrSource._
+import com.ibm.stringoid.retrieve.UrlPartDefs.UrlsWithSources
 import com.ibm.stringoid.retrieve.UrlRetriever
 import com.ibm.stringoid.retrieve.grep.GrepUrlRetriever
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.FixedPointAppendIrRetrieverImplementations.{CgIntraProcFixedPointAppendIrRetriever, ChaIntraProcFixedPointAppendIrRetriever, InterProcFixedPointAppendIrRetriever}

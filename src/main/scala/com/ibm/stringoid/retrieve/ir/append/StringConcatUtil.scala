@@ -1,5 +1,6 @@
 package com.ibm.stringoid.retrieve.ir.append
 
+import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAPhiInstruction}
 
 object StringConcatUtil {

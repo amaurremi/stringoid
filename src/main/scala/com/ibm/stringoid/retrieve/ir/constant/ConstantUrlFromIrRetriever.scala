@@ -1,6 +1,7 @@
 package com.ibm.stringoid.retrieve.ir.constant
 
 import com.ibm.stringoid._
+import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.ir.IntraProcIrModule.ChaIntraProcIrNodes
 import com.ibm.stringoid.util.TimeResult
 

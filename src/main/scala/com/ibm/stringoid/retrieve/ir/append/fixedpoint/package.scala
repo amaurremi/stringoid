@@ -1,5 +1,7 @@
 package com.ibm.stringoid.retrieve.ir.append
 
+import com.ibm.stringoid.retrieve.ir.ValueNumber
+
 package object fixedpoint {
 
   sealed trait StringPart
