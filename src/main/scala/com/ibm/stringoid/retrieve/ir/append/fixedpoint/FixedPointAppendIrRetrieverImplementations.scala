@@ -1,5 +1,6 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
+import argonaut.Argonaut._
 import com.ibm.stringoid._
 import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.ir.IntraProcIrModule.{CgIntraProcIrNodes, ChaIntraProcIrNodes, IntraProcIrNodes}
@@ -37,6 +38,8 @@ object FixedPointAppendIrRetrieverImplementations {
     override protected def getConcatUrls(entryNode: CallGraphNode): scala.Iterable[(Url, Method)] = ???
 
     override def getAppendArgumentForVn(node: CallGraphNode, vn: ValueNumber): UrlPart = ???
+
+    override protected def getAutomaton(entryNode: CallGraphNode): (JsonAutomaton, Method) = ???
   }
 
   abstract class IntraProcFixedPointAppendIrRetriever(
@@ -55,6 +58,14 @@ object FixedPointAppendIrRetrieverImplementations {
         stringValNum  = StringValNum(vn)
         stringTail   <- (appendAutomaton tails stringValNum).iterator take 100
       } yield (Url(parseUrl(node, stringValNum +: stringTail)), ir.getMethod.toString))(breakOut)
+    }
+
+    override def getAutomaton(node: Node): (JsonAutomaton, Method) = {
+      val automaton = stringAppends(node).toDFA.toJson {
+        sp: StringPart =>
+          stringPartToUrlPart(node, sp).asJson.toString()
+      }
+      (automaton.toString, node.getIr.getMethod.toString)
     }
 
     override def hasUrls(node: Node): Boolean = {

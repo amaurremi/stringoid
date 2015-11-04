@@ -18,14 +18,14 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
 
     it("computes URLs in CHA IR analysis") {
       val file = Paths.get("/Users/amaurremi/uw/stringoid/src/test/java/intraProcTestPrograms")
-      val analysisConfig = AnalysisConfig(irSource = IrSource.Cha, ignoreLibs = true, analysis = AnalysisType.Append, file = file)
+      val analysisConfig = AnalysisConfig(irSource = IrSource.Cha, ignoreLibs = true, analysis = AnalysisType.Append, file = file, outputUrls = true)
       run(analysisConfig)
     }
 
     it("computes URLs in inter-procedural analysis") {
       val file = Paths.get("/Users/amaurremi/uw/stringoid/src/test/java/interProcTestPrograms")
-      val analysisConfig = AnalysisConfig(irSource = IrSource.InterProc, ignoreLibs = true, analysis = AnalysisType.Append, file = file)
-      run(analysisConfig)
+      val analysisConfig = AnalysisConfig(irSource = IrSource.InterProc, ignoreLibs = true, analysis = AnalysisType.Append, file = file, outputUrls = true)
+//      run(analysisConfig)
     }
 
     def run(config: AnalysisConfig) = {
@@ -65,6 +65,7 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
               println(s"URL '$expectedUrl' found in $method.")
           }
       }
+      println(retriever(config).getResult)
     }
   }
 

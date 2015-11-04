@@ -1,5 +1,6 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
+import argonaut.Argonaut._
 import com.ibm.stringoid._
 import com.ibm.stringoid.retrieve.UrlCheck.isUrlPrefix
 import com.ibm.stringoid.retrieve.UrlPartDefs._
@@ -15,6 +16,21 @@ abstract class FixedPointAppendIrRetriever(
 )
   extends IrUrlRetriever
   with StringAppendModule {
+
+  override def getResult: String =
+    if (config.outputUrls)
+      getUrlsWithSources.asJson.toString()
+    else getAutomataWithSources.aws.toList.asJson.toString
+
+  def getAutomataWithSources: AutomataWithSources = {
+    val TimeResult(nodes, walaTime) = TimeResult(getNodes)
+    val automataWithSources: Iterator[(JsonAutomaton, Method)] =
+      for {
+        node       <- nodes
+        if hasUrls(node)
+      } yield getAutomaton(node)
+    AutomataWithSources(automataWithSources, walaTime)
+  }
 
   override def getUrlsWithSources: UrlsWithSources = {
     val TimeResult(nodes, walaTime) = TimeResult(getNodes)
@@ -39,8 +55,15 @@ abstract class FixedPointAppendIrRetriever(
 
   protected def getConcatUrls(entryNode: Node): Iterable[(Url, Method)]
 
+  protected def getAutomaton(entryNode: Node): (JsonAutomaton, Method)
+
   protected def parseUrl(node: Node, string: Seq[StringPart]): Vector[UrlPart] =
     (string map {
+      stringPartToUrlPart(node, _)
+    })(breakOut)
+
+  protected def stringPartToUrlPart(node: Node, string: StringPart): UrlPart =
+    string match {
       case StringValNum(vn)            =>
         getAppendArgumentForVn(node, vn)
       case StringCycle                 =>
@@ -49,7 +72,7 @@ abstract class FixedPointAppendIrRetriever(
         MissingArgument
       case StringFormatPart(s)         =>
         UrlString(s)
-    })(breakOut)
+    }
 
   def getAppendArgumentForVn(node: Node, vn: ValueNumber): UrlPart
 

@@ -37,37 +37,37 @@ object AnalysisTypeObject {
 
 object IrSourceObject {
 
-object IrSource extends Enumeration {
-  type IrSource = Value
-  val Cha = Value("cha")
-  val Cg = Value("cg")
-  val InterProc = Value("interproc")
-  val IrSourceUnset = Value
+  object IrSource extends Enumeration {
+    type IrSource = Value
+    val Cha = Value("cha")
+    val Cg = Value("cg")
+    val InterProc = Value("interproc")
+    val IrSourceUnset = Value
 
-  def validValues = values - IrSourceUnset
+    def validValues = values - IrSourceUnset
 
-  implicit val irSourceRead: scopt.Read[IrSource] =
-    Read.reads(IrSource.withName)
+    implicit val irSourceRead: scopt.Read[IrSource] =
+      Read.reads(IrSource.withName)
 
-  def prettyPrintIS(is: IrSource) =
-    is match {
-      case Cha =>
-        "class hierarchy analysis"
-      case Cg =>
-        "call graph"
-      case InterProc =>
-        "inter-procedural analysis"
-      case IrSourceUnset =>
-        throw new UnsupportedOperationException("no analysis set")
-    }
-}
+    def prettyPrintIS(is: IrSource) =
+      is match {
+        case Cha =>
+          "class hierarchy analysis"
+        case Cg =>
+          "call graph"
+        case InterProc =>
+          "inter-procedural analysis"
+        case IrSourceUnset =>
+          throw new UnsupportedOperationException("no analysis set")
+      }
+  }
 
 }
 
 import com.ibm.stringoid.AnalysisTypeObject.AnalysisType._
 import com.ibm.stringoid.IrSourceObject.IrSource._
 
-case class AnalysisConfig(irSource: IrSource, ignoreLibs: Boolean, analysis: AnalysisType, file: Path)
+case class AnalysisConfig(irSource: IrSource, ignoreLibs: Boolean, analysis: AnalysisType, outputUrls: Boolean, file: Path)
 
 object AnalysisConfig {
 
@@ -80,5 +80,11 @@ object AnalysisConfig {
       }
     )("analysis", "libs", "reachability")
 
-  val default = AnalysisConfig(irSource = IrSourceObject.IrSource.Cha, ignoreLibs = true, analysis = ATUnset, Paths.get("src/test/java/testPrograms"))
+  val default = AnalysisConfig(
+    irSource = IrSourceObject.IrSource.Cha,
+    ignoreLibs = true,
+    analysis = ATUnset,
+    outputUrls = false,
+    Paths.get("src/test/java/testPrograms")
+  )
 }

@@ -9,4 +9,6 @@ package object fixedpoint {
   case class StringFormatPart(string: String) extends StringPart
   case object MissingStringFormatArgument extends StringPart
   case object StringCycle extends StringPart
+
+  type JsonAutomaton = String
 }

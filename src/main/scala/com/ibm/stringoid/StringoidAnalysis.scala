@@ -4,7 +4,6 @@ import argonaut.Argonaut._
 import argonaut.EncodeJson
 import com.ibm.stringoid.AnalysisTypeObject.AnalysisType._
 import com.ibm.stringoid.IrSourceObject.IrSource._
-import com.ibm.stringoid.retrieve.UrlPartDefs.UrlsWithSources
 import com.ibm.stringoid.retrieve.UrlRetriever
 import com.ibm.stringoid.retrieve.grep.GrepUrlRetriever
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.FixedPointAppendIrRetrieverImplementations.{CgIntraProcFixedPointAppendIrRetriever, ChaIntraProcFixedPointAppendIrRetriever, InterProcFixedPointAppendIrRetriever}
@@ -16,24 +15,23 @@ trait StringoidAnalysis {
   case class AnalysisResult private[StringoidAnalysis] (
     config: AnalysisConfig,
     runningTime: Double,
-    urlsWithSources: UrlsWithSources,
-    urlsNum: Int
+    jsonResult: String
   )
 
   object AnalysisResult {
     implicit def AnalysisResultEncodeJson: EncodeJson[AnalysisResult] =
-      jencode4L(
+      jencode3L(
         (ar: AnalysisResult) => {
           import ar._
-          (config, runningTime, urlsWithSources, urlsNum)
+          (config, runningTime, jsonResult)
         }
-      )("config", "runtime", "result", "url-num")
+      )("config", "runtime", "result")
 
     def fromConfig(
       config: AnalysisConfig
     ): AnalysisResult = {
-      val TimeResult(result, time) = TimeResult(retriever(config).getUrlsWithSources)
-      AnalysisResult(config, time, result, result.uws.size)
+      val TimeResult(result, time) = TimeResult(retriever(config).getResult)
+      AnalysisResult(config, time, result)
     }
   }
 

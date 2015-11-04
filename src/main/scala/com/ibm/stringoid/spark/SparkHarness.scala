@@ -69,7 +69,8 @@ object SparkHarness extends Logging {
         analysisType,
         localPath,
         irSource = irSource,
-        ignoreLibraries = true)
+        ignoreLibraries = true,
+        outputUrls = false)
 
       localFile.delete()
 

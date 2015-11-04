@@ -15,7 +15,7 @@ import scala.util.Try
 object Main extends StringoidAnalysis {
 
   // Program arguments example
-  // single -a append --lib false --cg false src/test/resources/cgeo.geocaching.developer-build.apk src/test/resources/playdrone_apks/com.facebook.katana-4947895.apk src/test/resources/playdrone_apks/com.google.android.apps.maps-804010103.apk src/test/resources/playdrone_apks/com.google.android.apps.plus-413339268.apk src/test/resources/playdrone_apks/com.google.android.gm-4900120.apk src/test/resources/playdrone_apks/com.google.android.gms-6183036.apk src/test/resources/playdrone_apks/com.google.android.googlequicksearchbox-300306150.apk src/test/resources/playdrone_apks/com.google.android.street-18102.apk src/test/resources/playdrone_apks/com.google.android.tts-210302120.apk src/test/resources/playdrone_apks/com.google.android.videos-33331.apk src/test/resources/playdrone_apks/com.google.android.youtube-51405300.apk
+  // -a append --lib false --cg false src/test/resources/cgeo.geocaching.developer-build.apk src/test/resources/playdrone_apks/com.facebook.katana-4947895.apk src/test/resources/playdrone_apks/com.google.android.apps.maps-804010103.apk src/test/resources/playdrone_apks/com.google.android.apps.plus-413339268.apk src/test/resources/playdrone_apks/com.google.android.gm-4900120.apk src/test/resources/playdrone_apks/com.google.android.gms-6183036.apk src/test/resources/playdrone_apks/com.google.android.googlequicksearchbox-300306150.apk src/test/resources/playdrone_apks/com.google.android.street-18102.apk src/test/resources/playdrone_apks/com.google.android.tts-210302120.apk src/test/resources/playdrone_apks/com.google.android.videos-33331.apk src/test/resources/playdrone_apks/com.google.android.youtube-51405300.apk
 
   def main(args: Array[String]): Unit =
     parser.parse(args, CmdOptions()) foreach { options =>
@@ -23,7 +23,7 @@ object Main extends StringoidAnalysis {
       files foreach {
         file =>
           TimeResult.printTime("processing " + file.toString) {
-              write(AnalysisResult.fromConfig(config), file, outDir)
+              write(AnalysisResult.fromConfig(config.copy(file = file)), file, outDir)
             }
           }
       }
@@ -32,9 +32,10 @@ object Main extends StringoidAnalysis {
     analysis: String,
     file: Path,
     irSource: String,
-    ignoreLibraries: Boolean
+    ignoreLibraries: Boolean,
+    outputUrls: Boolean
   ) : Try[String] = {
-    val config = AnalysisConfig(IrSource.withName(irSource), ignoreLibraries, AnalysisType.withName(analysis), file)
+    val config = AnalysisConfig(IrSource.withName(irSource), ignoreLibraries, AnalysisType.withName(analysis), outputUrls = outputUrls, file)
     Try(AnalysisResult.fromConfig(config).asJson.nospaces)
   }
 
@@ -50,7 +51,7 @@ object Main extends StringoidAnalysis {
 
   case class CmdOptions (
     config: AnalysisConfig = AnalysisConfig.default,
-    outDir: Path            = Paths.get("target", "url_comparison"),
+    outDir: Path            = Paths.get("target", "retrieved-urls"),
     files: Seq[Path]        = Seq.empty[Path]
   )
 
@@ -64,12 +65,17 @@ object Main extends StringoidAnalysis {
         })
 
     private[this] val analysisTypes = AnalysisType.validValues mkString ", "
+    private[this] val irSources = IrSource.validValues mkString ", "
 
     head("stringoid")
     opt[AnalysisType]('a', "analysis") required() valueName "<analysis type>" action {
       (analysis, opts) =>
         opts.copy(config = opts.config.copy(analysis = analysis)) // todo lenses
     } text s"analysis type (one of $analysisTypes)"
+    opt[Boolean]('u', "urls") optional() valueName "<output URLs?>" action {
+      (outputUrls, opts) =>
+        opts.copy(config = opts.config.copy(outputUrls = outputUrls))
+    } text "JSON-output URLs instead of automata?"
     opt[Path]('o', "outdir") optional() valueName "<out dir>" action {
       (o, opts) =>
         opts.copy(outDir = o)
@@ -81,7 +87,7 @@ object Main extends StringoidAnalysis {
     opt[IrSource]("ir-source") optional() valueName "<IR source>" action {
       (irSource, opts) =>
         opts.copy(config = opts.config.copy(irSource = irSource)) // todo lenses
-    } text "construct call graph to only retrieve URLs in reachable methods?"
+    } text s"construct call graph to only retrieve URLs in reachable methods? options: $irSources"
     arg[Path]("<file>...") unbounded() action {
       (f, opts) =>
         opts.copy(files = opts.files :+ f)

@@ -26,9 +26,9 @@ trait Nodes {
 
   case class IrNode(ir: IR) extends NodeTrait {
 
-    def getIr = ir
+    override def getIr = ir
 
-    lazy val getDu = new DefUse(ir)
+    override lazy val getDu = new DefUse(ir)
   }
 
   case class CallGraphNode(node: CGNode) extends NodeTrait {
