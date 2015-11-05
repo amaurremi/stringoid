@@ -1,6 +1,6 @@
 package com.ibm.stringoid.retrieve.ir
 
-import com.ibm.stringoid.retrieve.ir.append.fixedpoint.IrNodes
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.{CgNodes, IrNodes}
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ipa.callgraph.{AnalysisCache, CGNode}
 import com.ibm.wala.ssa.{IR, IRFactory}
@@ -9,13 +9,19 @@ import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
-object IntraProcIrModule {
+object IrNodesModule {
 
-  trait IntraProcIrNodes extends IrUrlRetriever with IrNodes
+  trait InterProcIrNodes extends IrUrlRetriever with CgNodeRetriever with CgNodes {
+    override def getNodes: Iterator[CallGraphNode] =
+    getCgNodes map {
+      n =>
+        CallGraphNode(n)
+    }
+  }
 
-  trait CgIntraProcIrNodes extends IntraProcIrNodes {
+  private[IrNodesModule] trait CgNodeRetriever extends IrUrlRetriever {
 
-    override def getNodes: Iterator[IrNode] = {
+    def getCgNodes: Iterator[CGNode] = {
       val file = config.file
       val includeLib = !config.ignoreLibs
       val processed = mutable.Set.empty[CGNode]
@@ -26,12 +32,23 @@ object IntraProcIrModule {
             None
           else {
             processed += node
-            Some(IrNode(node.getIR))
+            Some(node)
           }
         case _ =>
           None
       }
     }
+  }
+
+  trait IntraProcIrNodes extends IrUrlRetriever with IrNodes
+
+  trait CgIntraProcIrNodes extends IntraProcIrNodes with CgNodeRetriever {
+
+    override def getNodes: Iterator[IrNode] =
+      getCgNodes map {
+        n =>
+          IrNode(n.getIR)
+      }
   }
 
   trait ChaIntraProcIrNodes extends IntraProcIrNodes {

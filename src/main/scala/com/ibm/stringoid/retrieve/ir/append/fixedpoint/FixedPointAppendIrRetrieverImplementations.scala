@@ -3,10 +3,10 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 import argonaut.Argonaut._
 import com.ibm.stringoid._
 import com.ibm.stringoid.retrieve.UrlPartDefs._
-import com.ibm.stringoid.retrieve.ir.IntraProcIrModule.{CgIntraProcIrNodes, ChaIntraProcIrNodes, IntraProcIrNodes}
+import com.ibm.stringoid.retrieve.ir.IrNodesModule.{CgIntraProcIrNodes, ChaIntraProcIrNodes, InterProcIrNodes, IntraProcIrNodes}
 import com.ibm.stringoid.retrieve.ir.ValueNumber
-import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.{InterProcASBOModule, IntraProcASBOModule}
-import com.ibm.wala.ipa.callgraph.propagation.{LocalPointerKey, PointerKey}
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.{InterProcStringAppendModule, IntraProcStringAppendModule}
+import com.ibm.wala.ipa.callgraph.CallGraph
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAFieldAccessInstruction}
 import com.ibm.wala.util.debug.UnimplementedError
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
@@ -19,16 +19,13 @@ object FixedPointAppendIrRetrieverImplementations {
   final class InterProcFixedPointAppendIrRetriever(
     config: AnalysisConfig
   ) extends FixedPointAppendIrRetriever(config)
-    with InterProcASBOModule {
+    with InterProcIrNodes
+    with InterProcStringAppendModule {
 
-    override type Identifier = PointerKey
-
-    override type Node = CallGraphNode
-
-    override def createAsbo(vn: ValueNumber, node: CallGraphNode) = ASBO(new LocalPointerKey(node.node, vn))
+    override lazy val getCallGraph: CallGraph = new FlexibleCallGraphBuilder()(configWithApk(config.file)).cg
 
     override def getNodes: Iterator[CallGraphNode] = {
-      new FlexibleCallGraphBuilder()(configWithApk(config.file)).cg.getEntrypointNodes.iterator() map CallGraphNode.apply
+      getCallGraph.getEntrypointNodes.iterator() map CallGraphNode.apply
     }
 
     override def getSource(node: CallGraphNode, vn: ValueNumber): VariableSource = ???
@@ -37,7 +34,7 @@ object FixedPointAppendIrRetrieverImplementations {
 
     override protected def getConcatUrls(entryNode: CallGraphNode): scala.Iterable[(Url, Method)] = ???
 
-    override def getAppendArgumentForVn(node: CallGraphNode, vn: ValueNumber): UrlPart = ???
+    override def idToStringPart(node: CallGraphNode, id: Identifier): UrlPart = ???
 
     override protected def getAutomaton(entryNode: CallGraphNode): (JsonAutomaton, Method) = ???
   }
@@ -46,7 +43,7 @@ object FixedPointAppendIrRetrieverImplementations {
     config: AnalysisConfig
   ) extends FixedPointAppendIrRetriever(config)
     with IntraProcIrNodes
-    with IntraProcASBOModule {
+    with IntraProcStringAppendModule {
 
     override def getConcatUrls(node: Node): Iterable[(Url, Method)] = {
       val appendAutomaton = stringAppends(node)
@@ -55,7 +52,7 @@ object FixedPointAppendIrRetrieverImplementations {
       (for {
         vn           <- 1 to table.getMaxValueNumber
         if isUrlPrefixVn(vn, table)
-        stringValNum  = StringValNum(vn)
+        stringValNum  = StringIdentifier(vn)
         stringTail   <- (appendAutomaton tails stringValNum).iterator take 100
       } yield (Url(parseUrl(node, stringValNum +: stringTail)), ir.getMethod.toString))(breakOut)
     }
@@ -75,19 +72,19 @@ object FixedPointAppendIrRetrieverImplementations {
       }
     }
 
-    override def getAppendArgumentForVn(node: Node, vn: ValueNumber): UrlPart = {
+    override def idToStringPart(node: Node, id: Identifier): UrlPart = {
       val ir = node.getIr
       val table = ir.getSymbolTable
-      if (table isConstant vn)
-        UrlString((table getConstantValue vn).toString)
+      if (table isConstant id)
+        UrlString((table getConstantValue id).toString)
       else {
         val typeName =
-          try getTypeAbstraction(ir, vn).toString
+          try getTypeAbstraction(ir, id).toString
           catch {
             case _: UnimplementedError =>
               "undefined"
           }
-        VariableType(typeName, getSource(node, vn))
+        VariableType(typeName, getSource(node, id))
       }
     }
 

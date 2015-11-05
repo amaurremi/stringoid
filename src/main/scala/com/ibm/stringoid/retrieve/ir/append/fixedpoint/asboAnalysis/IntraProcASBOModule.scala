@@ -2,55 +2,27 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis
 
 import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.IrNodes
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{BitVectorVariable, UnaryOperator}
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAPhiInstruction}
-import com.ibm.wala.util.collections.ObjectArrayMapping
 import com.ibm.wala.util.graph.Graph
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph
 import com.ibm.wala.util.intset.BitVector
 
 import scala.collection.JavaConversions._
-import scala.reflect.ClassTag
 
-trait IntraProcASBOModule extends AbstractStringBuilderModule {
+trait IntraProcASBOModule extends AbstractStringBuilderModule with IrNodes {
 
-  override def createAbstractObjectNumbering(node: Node)(implicit tag: ClassTag[ASBO]): AsboMapping = {
-    val abstractObjects = node.getIr.iterateNormalInstructions collect {
-      case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv) =>
-        createAsbo(getSbConstructorDef(inv), node)
-      case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)  =>
-        createAsbo(inv.getDef, node)
-    }
+  override def getSolver(node: Node, numbering: AsboMapping) =
+    new IntraProcAsboFixedPointSolver(node, numbering)
 
-    val objects = abstractObjects.toSeq
-    val asboArray = objects.toArray[ASBO]
-    new ObjectArrayMapping[ASBO](asboArray)
-  }
+  class IntraProcAsboFixedPointSolver(
+    node: Node,
+    numbering: AsboMapping
+  ) extends AsboFixedPointSolver(node, numbering) {
 
-  def asboSolver(node: Node): Option[AsboFixedPointSolver] = {
-    val numbering = createAbstractObjectNumbering(node)
-    if (numbering.isEmpty)
-      None
-    else
-      Some(new IntraProcAsboFixedPointSolver(node, numbering))
-  }
-
-  class IntraProcAsboFixedPointSolver(node: Node, numbering: AsboMapping) extends AsboFixedPointSolver(node, numbering) {
-
-    /**
-      * Creates the value-number-data-flow graph. For a program
-      *
-      * 1 = new StringBuilder()
-      * 2 = 1.append(3)
-      * 4 = 2.append(6)
-      * 5 = phi(4, 7)
-      *
-      * there will be a graph
-      * 5 -> 4 -> 2 -> 1
-      *   -> 7
-      */
-    override lazy val valueNumberGraph: Graph[ValueNumber] = {
+    lazy val valueNumberGraph: Graph[Identifier] = {
       // 1 = new SB();
       // 2 = 1.append(3);
       // ...
@@ -65,7 +37,7 @@ trait IntraProcASBOModule extends AbstractStringBuilderModule {
         case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv)  =>
           getDefs(inv) foreach addNode // todo unnecessary?
         case inv: SSAAbstractInvokeInstruction if isSbAppend(inv)       =>
-          val (firstDef, secondDef) = getSbAppendDefs(inv) // in 1 = 2.append(3), 1 is firstDef and 2 is secondDef
+          val (firstDef, secondDef) = getSbAppendDefs(inv)                  // in 1 = 2.append(3), 1 is firstDef and 2 is secondDef
           graph addNode firstDef
           graph addNode secondDef
           graph addEdge(secondDef, firstDef)

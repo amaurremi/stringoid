@@ -66,8 +66,8 @@ abstract class FixedPointAppendIrRetriever(
 
   protected def stringPartToUrlPart(node: Node, string: StringPart): UrlPart =
     string match {
-      case StringValNum(vn)            =>
-        getAppendArgumentForVn(node, vn)
+      case StringIdentifier(id)            =>
+        idToStringPart(node, id)
       case StringCycle                 =>
         UrlWithCycle
       case MissingStringFormatArgument =>
@@ -76,7 +76,7 @@ abstract class FixedPointAppendIrRetriever(
         UrlString(s)
     }
 
-  def getAppendArgumentForVn(node: Node, vn: ValueNumber): UrlPart
+  def idToStringPart(node: Node, id: Identifier): UrlPart
 
   def getSource(node: Node, vn: ValueNumber): VariableSource
 }

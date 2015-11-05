@@ -1,9 +1,12 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis
 
 import com.ibm.stringoid.retrieve.ir.ValueNumber
+import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.Nodes
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{BitVectorVariable, UnaryOperator}
+import com.ibm.wala.ssa.SSAAbstractInvokeInstruction
+import com.ibm.wala.util.collections.ObjectArrayMapping
 import com.ibm.wala.util.graph.Graph
 import com.ibm.wala.util.intset.{IntSet, OrdinalSetMapping}
 
@@ -30,12 +33,20 @@ trait AbstractStringBuilderModule extends Nodes {
 
   type AsboMapping = OrdinalSetMapping[ASBO]
 
-  protected def asboSolver(node: Node): Option[AsboFixedPointSolver]
+  protected def getSolver(node: Node, numbering: AsboMapping): AsboFixedPointSolver
+
+  protected final def asboSolver(node: Node): Option[AsboFixedPointSolver] = {
+    val numbering = createAbstractObjectNumbering(node)
+    if (numbering.isEmpty)
+      None
+    else
+      Some(getSolver(node, numbering))
+  }
 
   /**
    * If the method deals with StringBuilders, returns Some result
    */
-  def getResult(solver: AsboFixedPointSolver): BitVectorSolver[ValueNumber] = {
+  private[this] def getResult(solver: AsboFixedPointSolver): BitVectorSolver[Identifier] = {
     val result = solver.result
     result.solve(null)
     result
@@ -44,7 +55,7 @@ trait AbstractStringBuilderModule extends Nodes {
   /**
    * The resulting map from value numbers to abstract StringBuilder objects
    */
-  def valueNumberToAsbo(node: Node): Option[Map[ValueNumber, Set[ASBO]]] = {
+  def valueNumberToAsbo(node: Node): Option[Map[Identifier, Set[ASBO]]] = {
     asboSolver(node) map {
       solver =>
         val result = getResult(solver)
@@ -65,7 +76,18 @@ trait AbstractStringBuilderModule extends Nodes {
     set map numbering.getMappedObject
   }
 
-  protected def createAbstractObjectNumbering(node: Node)(implicit tag: ClassTag[ASBO]): AsboMapping
+  protected def createAbstractObjectNumbering(node: Node)(implicit tag: ClassTag[ASBO]): AsboMapping = {
+    val abstractObjects = node.getIr.iterateNormalInstructions collect {
+      case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv) =>
+        createAsbo(getSbConstructorDef(inv), node)
+      case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)  =>
+        createAsbo(inv.getDef, node)
+    }
+
+    val objects = abstractObjects.toSeq
+    val asboArray = objects.toArray[ASBO]
+    new ObjectArrayMapping[ASBO](asboArray)
+  }
 
   abstract class AsboFixedPointSolver(
     node: Node,
@@ -75,31 +97,31 @@ trait AbstractStringBuilderModule extends Nodes {
     /**
      * If a method has deals with StringBuilders, returns Some solver, otherwise None
      */
-    def result: BitVectorSolver[ValueNumber] = {
-      val framework = new BitVectorFramework[ValueNumber, ASBO](
+    def result: BitVectorSolver[Identifier] = {
+      val framework = new BitVectorFramework[Identifier, ASBO](
         valueNumberGraph,
         getTransferFunctions,
         abstractObjectNumbering)
-      val solver = new BitVectorSolver[ValueNumber](framework)
+      val solver = new BitVectorSolver[Identifier](framework)
       solver.solve(null)
       solver
     }
 
-    def valueNumberGraph: Graph[ValueNumber]
+    def valueNumberGraph: Graph[Identifier]
 
     def getTransferFunctions: StringBuilderTransferFunctions
   }
 
-  abstract class StringBuilderTransferFunctions extends ITransferFunctionProvider[ValueNumber, BitVectorVariable] {
+  abstract class StringBuilderTransferFunctions extends ITransferFunctionProvider[Identifier, BitVectorVariable] {
 
     override def getMeetOperator: AbstractMeetOperator[BitVectorVariable] =
       BitVectorUnion.instance
 
     override def hasEdgeTransferFunctions: Boolean = false
 
-    override def getNodeTransferFunction(vn: ValueNumber): UnaryOperator[BitVectorVariable]
+    override def getNodeTransferFunction(vn: Identifier): UnaryOperator[BitVectorVariable]
 
-    override def getEdgeTransferFunction(src: ValueNumber, dst: ValueNumber): UnaryOperator[BitVectorVariable] =
+    override def getEdgeTransferFunction(src: Identifier, dst: Identifier): UnaryOperator[BitVectorVariable] =
       throw new UnsupportedOperationException("No edge transfer functions in abstract StringBuilder fixed-point iteration")
 
     override def hasNodeTransferFunctions: Boolean = true

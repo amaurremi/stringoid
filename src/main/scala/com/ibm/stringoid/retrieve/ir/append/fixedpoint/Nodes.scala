@@ -3,7 +3,7 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope
 import com.ibm.wala.ipa.callgraph.CGNode
-import com.ibm.wala.ipa.callgraph.propagation.{LocalPointerKey, PointerKey}
+import com.ibm.wala.ipa.callgraph.propagation.LocalPointerKey
 import com.ibm.wala.ssa.{DefUse, IR}
 
 trait Nodes {
@@ -36,7 +36,15 @@ trait Nodes {
     def getDu: DefUse = node.getDU
   }
 
-  def createAsbo(vn: ValueNumber, node: Node): ASBO
+  final def createAsbo(vn: ValueNumber, node: Node) = ASBO(createIdentifier(vn, node))
+
+  def createIdentifier(vn: ValueNumber, node: Node): Identifier
+
+  sealed trait StringPart
+  case class StringIdentifier(vn: Identifier) extends StringPart
+  case class StringFormatPart(string: String) extends StringPart
+  case object MissingStringFormatArgument extends StringPart
+  case object StringCycle extends StringPart
 }
 
 trait IrNodes extends Nodes {
@@ -45,14 +53,14 @@ trait IrNodes extends Nodes {
 
   override type Node = IrNode
 
-  final override def createAsbo(vn: ValueNumber, node: IrNode): ASBO = ASBO(vn)
+  final override def createIdentifier(vn: ValueNumber, node: IrNode) = vn
 }
 
 trait CgNodes extends Nodes {
 
-  override type Identifier = PointerKey
+  override type Identifier = LocalPointerKey
 
   override type Node = CallGraphNode
 
-  final override def createAsbo(vn: ValueNumber, node: CallGraphNode): ASBO = ASBO(new LocalPointerKey(node.node, vn))
+  final override def createIdentifier(vn: ValueNumber, node: CallGraphNode) = new LocalPointerKey(node.node, vn)
 }

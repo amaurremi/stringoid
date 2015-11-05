@@ -2,11 +2,12 @@ package com.ibm.stringoid.retrieve
 
 import argonaut.Argonaut._
 import argonaut.EncodeJson
-import com.ibm.stringoid.retrieve.ir.append.fixedpoint.JsonAutomaton
 
 import scala.collection.breakOut
 
 object UrlPartDefs {
+
+  type JsonAutomaton = String
 
   type Method = String
 
