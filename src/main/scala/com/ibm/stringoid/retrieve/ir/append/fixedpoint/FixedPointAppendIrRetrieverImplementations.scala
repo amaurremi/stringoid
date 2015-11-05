@@ -12,7 +12,7 @@ import com.ibm.wala.util.debug.UnimplementedError
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
 import scala.collection.JavaConversions._
-import scala.collection._
+import scala.collection.breakOut
 
 object FixedPointAppendIrRetrieverImplementations {
 
