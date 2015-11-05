@@ -3,6 +3,7 @@ package com.ibm.stringoid.retrieve.grep
 import java.nio.file.Path
 
 import argonaut.Argonaut._
+import argonaut.Json
 import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.{UrlCheck, UrlRetriever}
 
@@ -22,5 +23,5 @@ final class GrepUrlRetriever(apkPath: Path) extends UrlRetriever {
     })(breakOut), 0)
   }
 
-  override def getResult: String = getUrlsWithSources.asJson.toString
+  override def getResult: Json = getUrlsWithSources.asJson
 }

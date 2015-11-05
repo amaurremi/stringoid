@@ -2,6 +2,7 @@ package com.ibm.stringoid.retrieve
 
 import java.nio.file.Path
 
+import argonaut.Json
 import com.ibm.stringoid.retrieve.UrlPartDefs.UrlsWithSources
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 
@@ -15,7 +16,7 @@ trait UrlRetriever {
 
   def getUrlsWithSources: UrlsWithSources
 
-  def getResult: String
+  def getResult: Json
 
   protected final def configWithApk(apkPath: Path): Config =
     ConfigFactory.load() withValue (

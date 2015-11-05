@@ -1,6 +1,7 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
 import argonaut.Argonaut._
+import argonaut.Json
 import com.ibm.stringoid._
 import com.ibm.stringoid.retrieve.UrlCheck.isUrlPrefix
 import com.ibm.stringoid.retrieve.UrlPartDefs._
@@ -17,10 +18,11 @@ abstract class FixedPointAppendIrRetriever(
   extends IrUrlRetriever
   with StringAppendModule {
 
-  override def getResult: String =
+  override def getResult: Json =
     if (config.outputUrls)
-      getUrlsWithSources.asJson.toString()
-    else getAutomataWithSources.aws.toList.asJson.toString
+      getUrlsWithSources.asJson
+    else
+      getAutomataWithSources.aws.toList.asJson
 
   def getAutomataWithSources: AutomataWithSources = {
     val TimeResult(nodes, walaTime) = TimeResult(getNodes)

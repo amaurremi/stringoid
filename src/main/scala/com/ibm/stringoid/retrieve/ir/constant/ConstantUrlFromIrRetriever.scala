@@ -1,6 +1,7 @@
 package com.ibm.stringoid.retrieve.ir.constant
 
 import argonaut.Argonaut._
+import argonaut.Json
 import com.ibm.stringoid._
 import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.ir.IntraProcIrModule.ChaIntraProcIrNodes
@@ -29,5 +30,5 @@ final class ConstantUrlFromIrRetriever(override val config: AnalysisConfig) exte
     UrlsWithSources(urlWithSources, walaTime)
   }
 
-  override def getResult: String = getUrlsWithSources.asJson.toString
+  override def getResult: Json = getUrlsWithSources.asJson
 }

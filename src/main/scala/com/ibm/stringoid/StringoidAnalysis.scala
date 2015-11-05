@@ -1,7 +1,7 @@
 package com.ibm.stringoid
 
 import argonaut.Argonaut._
-import argonaut.EncodeJson
+import argonaut.{EncodeJson, Json}
 import com.ibm.stringoid.AnalysisTypeObject.AnalysisType._
 import com.ibm.stringoid.IrSourceObject.IrSource._
 import com.ibm.stringoid.retrieve.UrlRetriever
@@ -15,7 +15,7 @@ trait StringoidAnalysis {
   case class AnalysisResult private[StringoidAnalysis] (
     config: AnalysisConfig,
     runningTime: Double,
-    jsonResult: String
+    jsonResult: Json
   )
 
   object AnalysisResult {
