@@ -28,7 +28,12 @@ libraryDependencies ++= Seq(
   "org.mockito" % "mockito-core" % "1.9.5",
   "org.scalaz" %% "scalaz-core" % "7.0.6",
   "com.github.scopt" %% "scopt" % "3.3.0",
-  "org.apache.spark" %% "spark-core" % "1.5.0" % "provided"
+  "org.apache.spark" %% "spark-core" % "1.5.1" % "provided"
 )
 
 org.scalastyle.sbt.ScalastylePlugin.Settings
+
+assemblyMergeStrategy in assembly := {
+    case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+    case _ => MergeStrategy.first
+}

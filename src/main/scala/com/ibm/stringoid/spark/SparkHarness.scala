@@ -12,13 +12,14 @@ import scala.util.Try
 
 object SparkHarness extends Logging {
   def main(args: Array[String]) : Unit = {
-    if(args.length != 5) {
+    if(args.length != 6) {
       Console.err.println("Please specify:")
       Console.err.println("  1) an analysis type ('constants' | 'append'),")
-      Console.err.println("  2) an input directory containing apks,")
-      Console.err.println("  3) an output directory name prefix,")
-      Console.err.println("  4) the number of apps to analyze (0 = all).")
-      Console.err.println("  5) the index of the first app to analyze.")
+      Console.err.println("  2) irSource ('cha' | ?),")
+      Console.err.println("  3) an input directory containing apks,")
+      Console.err.println("  4) an output directory name prefix,")
+      Console.err.println("  5) the number of apps to analyze (0 = all).")
+      Console.err.println("  6) the index of the first app to analyze.")
     } else {
       mainSpark(args)
     }
@@ -31,11 +32,12 @@ object SparkHarness extends Logging {
     val now = new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss").format(new Date())
 
     val analysisType = args(0)
-    val apkDirPath   = args(1)
-    val numApps      = args(3).toInt
-    val firstApp     = args(4).toInt
-    val outDirPath   = s"${args(2).trim}-$now-$firstApp-${firstApp+numApps}"
-    val irSource     = args(5)
+    val irSource     = args(1)
+    val apkDirPath   = args(2)
+    val numApps      = args(4).toInt
+    val firstApp     = args(5).toInt
+
+    val outDirPath   = s"${args(3).trim}-$now-$firstApp-${firstApp+numApps}"
 
     val conf = new SparkConf().setAppName("Stringoid")
     val sc = new SparkContext(conf)
