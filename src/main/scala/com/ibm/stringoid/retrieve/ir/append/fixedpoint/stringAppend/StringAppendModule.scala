@@ -31,21 +31,23 @@ trait StringAppendModule extends AbstractStringBuilderModule {
    * Get the string concatenation results.
    */
   def stringAppends(node: Node): StringPartAutomaton = {
-    idToAsboForNode(node) match {
-      case Some(vnToAsbo) =>
-        val solver  = getAppendSolver(node, vnToAsbo)
-        val result  = solver.result
-        val mapping = solver.ataRefMapping
-        val ataRefs: Set[Int] = (solver.getGraph map {
-            result.getOut(_).index
-        })(breakOut)
-        ataRefs.foldLeft(Automaton.empty[StringPart]) {
-          (automaton, ref) =>
-            val automata = mapping(ref).asboToAutomaton.values
-            automaton | mergeAutomata(automata)
-        }
-      case None           =>
-        Automaton.empty[StringPart]
+    val solver  = getAppendSolver(node, idToAsboForNode(node))
+    val result  = solver.result
+    val mapping = solver.ataRefMapping
+    val ataRefs: Set[Int] = (solver.getGraph map {
+        result.getOut(_).index
+    })(breakOut)
+    // merging concatenations
+    val concats = ataRefs.foldLeft(Automaton.empty[StringPart]) {
+      (automaton, ref) =>
+        val automata = mapping(ref).asboToAutomaton.values
+        automaton | mergeAutomata(automata)
+    }
+    // adding constants
+    solver.initialAtaRefMapping.foldLeft(concats) {
+      (automaton, asboToAutomaton) =>
+        val automata = asboToAutomaton.asboToAutomaton.values
+        automaton | mergeAutomata(automata)
     }
   }
 
@@ -71,7 +73,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
      */
     protected[StringAppendModule] val ataRefMapping = initialAtaRefMapping
 
-    protected def initialAtaRefMapping: ArrayBuffer[AsboToAutomaton]
+    def initialAtaRefMapping: ArrayBuffer[AsboToAutomaton]
 
     // ITransferFunctionProvider's methods force the lattice elements to be mutable
     /**

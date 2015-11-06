@@ -23,7 +23,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
 
     override def getGraph = ExceptionPrunedCFG.make(ExplodedControlFlowGraph.make(node.getIr))
 
-    def initialAtaRefMapping: ArrayBuffer[AsboToAutomaton] = {
+    lazy val initialAtaRefMapping: ArrayBuffer[AsboToAutomaton] = {
       val refMapping = ArrayBuffer.empty[AsboToAutomaton]
       val table = node.getIr.getSymbolTable
       1 to table.getMaxValueNumber foreach {

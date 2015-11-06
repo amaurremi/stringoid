@@ -76,8 +76,10 @@ object FixedPointAppendIrRetrieverImplementations {
     override def idToStringPart(node: Node, id: Identifier): UrlPart = {
       val ir = node.getIr
       val table = ir.getSymbolTable
-      if (table isConstant id)
-        UrlString((table getConstantValue id).toString)
+      if (table isConstant id) {
+        val string = if (table isNullConstant id) "null" else (table getConstantValue id).toString
+        UrlString(string)
+      }
       else {
         val typeName =
           try getTypeAbstraction(ir, id).toString

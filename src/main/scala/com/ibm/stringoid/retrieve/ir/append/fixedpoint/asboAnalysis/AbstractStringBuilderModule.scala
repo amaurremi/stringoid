@@ -35,13 +35,8 @@ trait AbstractStringBuilderModule extends Nodes {
 
   protected def getSolver(node: Node, numbering: AsboMapping): AsboFixedPointSolver
 
-  protected final def asboSolver(node: Node): Option[AsboFixedPointSolver] = {
-    val numbering = createAbstractObjectNumbering(node)
-    if (numbering.isEmpty)
-      None
-    else
-      Some(getSolver(node, numbering))
-  }
+  protected final def asboSolver(node: Node): AsboFixedPointSolver =
+    getSolver(node, createAbstractObjectNumbering(node))
 
   /**
    * If the method deals with StringBuilders, returns Some result
@@ -55,16 +50,14 @@ trait AbstractStringBuilderModule extends Nodes {
   /**
    * The resulting map from value numbers to abstract StringBuilder objects
    */
-  protected final def idToAsboForNode(node: Node): Option[Map[Identifier, Set[ASBO]]] = {
-    asboSolver(node) map {
-      solver =>
-        val result = getResult(solver)
-        (for {
-          vn     <- solver.valueNumberGraph
-          intSet <- Option((result getOut vn).getValue)
-          i2a     = intSetToAsbo(intSet, solver.abstractObjectNumbering)
-        } yield vn -> i2a)(breakOut)
-    }
+  protected final def idToAsboForNode(node: Node): Map[Identifier, Set[ASBO]] = {
+    val solver = asboSolver(node)
+    val result = getResult(solver)
+    (for {
+      vn     <- solver.valueNumberGraph
+      intSet <- Option((result getOut vn).getValue)
+      i2a     = intSetToAsbo(intSet, solver.abstractObjectNumbering)
+    } yield vn -> i2a)(breakOut)
   }
 
   private[this] def intSetToAsbo(intSet: IntSet, numbering: AsboMapping): Set[ASBO] = {

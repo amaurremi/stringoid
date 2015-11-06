@@ -25,8 +25,7 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
       getCallGraph.foldLeft(Map.empty[Identifier, Set[ASBO]]) {
       case (prevMap, n) =>
         val newMap: Map[Identifier, Set[ASBO]] = (for {
-          idToAsbo    <- idToAsboForNode(CallGraphNode(n)).toSeq
-          (id, asbos) <- idToAsbo
+          (id, asbos) <- idToAsboForNode(CallGraphNode(n))
           prevAsbos = prevMap getOrElse(id, Set.empty[ASBO])
         } yield id -> (prevAsbos ++ asbos))(breakOut)
         newMap
