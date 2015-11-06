@@ -1,6 +1,7 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
 import argonaut.Argonaut._
+import argonaut.Json
 import com.ibm.stringoid._
 import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.ir.IrNodesModule.{CgIntraProcIrNodes, ChaIntraProcIrNodes, InterProcIrNodes, IntraProcIrNodes}
@@ -36,7 +37,7 @@ object FixedPointAppendIrRetrieverImplementations {
 
     override def idToStringPart(node: CallGraphNode, id: Identifier): UrlPart = ???
 
-    override protected def getAutomaton(entryNode: CallGraphNode): (JsonAutomaton, Method) = ???
+    override protected def getAutomaton(entryNode: CallGraphNode): (Json, Method) = ???
   }
 
   abstract class IntraProcFixedPointAppendIrRetriever(
@@ -57,12 +58,12 @@ object FixedPointAppendIrRetrieverImplementations {
       } yield (Url(parseUrl(node, stringValNum +: stringTail)), ir.getMethod.toString))(breakOut)
     }
 
-    override def getAutomaton(node: Node): (JsonAutomaton, Method) = {
+    override def getAutomaton(node: Node): (Json, Method) = {
       val automaton = stringAppends(node).toDFA.toJson {
         sp: StringPart =>
           stringPartToUrlPart(node, sp).asJson.toString()
       }
-      (automaton.toString, node.getIr.getMethod.toString)
+      (automaton.toString.parseOption.get, node.getIr.getMethod.toString)
     }
 
     override def hasUrls(node: Node): Boolean = {

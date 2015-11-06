@@ -1,13 +1,11 @@
 package com.ibm.stringoid.retrieve
 
 import argonaut.Argonaut._
-import argonaut.EncodeJson
+import argonaut.{EncodeJson, Json}
 
 import scala.collection.breakOut
 
 object UrlPartDefs {
-
-  type JsonAutomaton = String
 
   type Method = String
 
@@ -94,7 +92,7 @@ object UrlPartDefs {
       )("url", "methods")
   }
 
-  case class AutomataWithSources(aws: Iterator[(JsonAutomaton, Method)], walaTime: Double)
+  case class AutomataWithSources(aws: Iterator[(Json, Method)], walaTime: Double)
 
   case class UrlsWithSources(uws: Map[Url, Set[Method]], walaTime: Double) {
 

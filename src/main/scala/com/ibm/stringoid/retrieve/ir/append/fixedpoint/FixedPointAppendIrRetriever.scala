@@ -26,9 +26,9 @@ abstract class FixedPointAppendIrRetriever(
 
   def getAutomataWithSources: AutomataWithSources = {
     val TimeResult(nodes, walaTime) = TimeResult(getNodes)
-    val automataWithSources: Iterator[(JsonAutomaton, Method)] =
+    val automataWithSources: Iterator[(Json, Method)] =
       for {
-        node       <- nodes
+        node <- nodes
         if hasUrls(node)
       } yield getAutomaton(node)
     AutomataWithSources(automataWithSources, walaTime)
@@ -57,7 +57,7 @@ abstract class FixedPointAppendIrRetriever(
 
   protected def getConcatUrls(entryNode: Node): Iterable[(Url, Method)]
 
-  protected def getAutomaton(entryNode: Node): (JsonAutomaton, Method)
+  protected def getAutomaton(entryNode: Node): (Json, Method)
 
   protected def parseUrl(node: Node, string: Seq[StringPart]): Vector[UrlPart] =
     (string map {

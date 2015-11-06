@@ -65,7 +65,7 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
               println(s"URL '$expectedUrl' found in $method.")
           }
       }
-      println(retriever(config).getResult)
+      println(retriever(config.copy(outputUrls = false)).getResult)
     }
   }
 
