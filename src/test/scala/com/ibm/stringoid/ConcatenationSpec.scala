@@ -17,13 +17,13 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
   describe("StringBuilder + String.format analysis") {
 
     it("computes URLs in CHA IR analysis") {
-      val file = Paths.get("/Users/amaurremi/uw/stringoid/src/test/java/intraProcTestPrograms")
+      val file = Paths.get("src/test/java/intraProcTestPrograms")
       val analysisConfig = AnalysisConfig(irSource = IrSource.Cha, ignoreLibs = true, analysis = AnalysisType.Append, file = file, outputUrls = true)
       run(analysisConfig)
     }
 
     it("computes URLs in inter-procedural analysis") {
-      val file = Paths.get("/Users/amaurremi/uw/stringoid/src/test/java/interProcTestPrograms")
+      val file = Paths.get("src/test/java/interProcTestPrograms")
       val analysisConfig = AnalysisConfig(irSource = IrSource.InterProc, ignoreLibs = true, analysis = AnalysisType.Append, file = file, outputUrls = true)
 //      run(analysisConfig)
     }
