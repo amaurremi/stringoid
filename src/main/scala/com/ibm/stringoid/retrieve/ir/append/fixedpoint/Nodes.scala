@@ -1,7 +1,6 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
 import com.ibm.stringoid.retrieve.ir.ValueNumber
-import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.callgraph.propagation.LocalPointerKey
 import com.ibm.wala.ssa.{DefUse, IR}
@@ -20,8 +19,8 @@ trait Nodes {
 
     def getDu: DefUse
 
-    final def isSource: Boolean =
-      getIr.getMethod.getDeclaringClass.getClassLoader.getReference == JavaSourceAnalysisScope.SOURCE
+    final def isSource: Boolean = false
+//      getIr.getMethod.getDeclaringClass.getClassLoader.getReference == JavaSourceAnalysisScope.SOURCE
   }
 
   case class IrNode(ir: IR) extends NodeTrait {

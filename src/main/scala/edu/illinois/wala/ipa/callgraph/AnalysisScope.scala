@@ -4,8 +4,7 @@ import java.io.{ByteArrayInputStream, File}
 import java.util.Collections
 import java.util.jar.JarFile
 
-import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope
-import com.ibm.wala.classLoader._
+import com.ibm.wala.classLoader.{BinaryDirectoryTreeModule, JarFileModule, Language, Module}
 import com.ibm.wala.dalvik.classLoader.DexFileModule
 import com.ibm.wala.types.ClassLoaderReference
 import com.ibm.wala.util.config.FileOfClasses
@@ -17,6 +16,7 @@ import edu.illinois.wala.ipa.callgraph.AnalysisScope._
 import scala.Array.canBuildFrom
 import scala.collection.JavaConversions._
 import scala.collection._
+//import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope
 
 object AnalysisScope {
 
@@ -39,9 +39,11 @@ object AnalysisScope {
   val Extension = com.ibm.wala.ipa.callgraph.AnalysisScope.EXTENSION
   val Application = com.ibm.wala.ipa.callgraph.AnalysisScope.APPLICATION
   val Synthetic = com.ibm.wala.ipa.callgraph.AnalysisScope.SYNTHETIC
-  val Source = JavaSourceAnalysisScope.SOURCE.getName
+  //  val Source = JavaSourceAnalysisScope.SOURCE.getName()
 
-  val allScopes = List(Application, Source, Synthetic, Extension, Primordial)
+  val allScopes = List(Application,
+    //      Source,
+    Synthetic, Extension, Primordial)
 
   def apply(extraDependencies: Iterable[Dependency] = Seq())(implicit config: Config) = {
     val binDep = if (config.hasPath("wala.dependencies.binary"))
@@ -125,7 +127,7 @@ class AnalysisScope(
       case Dependency(file, Jar, scope: Scope) => addJarDependency(file, scope)
       case Dependency(file, Binary, scope: Scope) => throw new Exception("Unimplemented yet")
       case Dependency(file, Apk, scope: Scope) => addApkDependency(file, scope)
-      case Dependency(file, SourceDirectory, scope: Scope) => addSourceDependency(file, scope)
+      //      case Dependency(file, SourceDirectory, scope: Scope) => addSourceDependency(file, scope)
     }
   }
 
@@ -145,23 +147,23 @@ class AnalysisScope(
 
   // stuff for source frontend below
 
-    def addSourceDependency(directory: String, analysisScope: Atom = Application) {
-      loadersByName.put(JavaSourceAnalysisScope.SOURCE.getName, JavaSourceAnalysisScope.SOURCE)
-      setLoaderImpl(JavaSourceAnalysisScope.SOURCE, "com.ibm.wala.cast.java.translator.jdt.ejc.EJCSourceLoaderImpl")
-      initSynthetic(JavaSourceAnalysisScope.SOURCE)
-      //    debug("Binary: " + directory);
-      val sd = getFile(directory)
-      assert(sd.exists(), "dependency \"" + directory + "\" not found")
-      assert(sd.isDirectory, "dependency \"" + directory + "\" not a directory")
-      addToScope(getLoader(analysisScope), new SourceDirectoryTreeModule(sd))
-    }
+  //  def addSourceDependency(directory: String, analysisScope: Atom = Application) {
+  //    loadersByName.put(JavaSourceAnalysisScope.SOURCE.getName(), JavaSourceAnalysisScope.SOURCE);
+  //    setLoaderImpl(JavaSourceAnalysisScope.SOURCE, "com.ibm.wala.cast.java.translator.polyglot.PolyglotSourceLoaderImpl");
+  //    initSynthetic(JavaSourceAnalysisScope.SOURCE)
+  //    //    debug("Binary: " + directory);
+  //    val sd = getFile(directory);
+  //    assert(sd.exists(), "dependency \"" + directory + "\" not found")
+  //    assert(sd.isDirectory(), "dependency \"" + directory + "\" not a directory")
+  //    addToScope(getLoader(analysisScope), new SourceDirectoryTreeModule(sd));
+  //  }
 
   override def addToScope(loader: ClassLoaderReference, m: Module) {
-        if (m.isInstanceOf[SourceDirectoryTreeModule] && loader.equals(ClassLoaderReference.Application)) {
-          super.addToScope(JavaSourceAnalysisScope.SOURCE, m)
-        } else {
+    //    if (m.isInstanceOf[SourceDirectoryTreeModule] && loader.equals(ClassLoaderReference.Application)) {
+    //      super.addToScope(JavaSourceAnalysisScope.SOURCE, m);
+    //    } else {
     super.addToScope(loader, m)
-        }
+    //    }
   }
 
   // stuff for source front end above

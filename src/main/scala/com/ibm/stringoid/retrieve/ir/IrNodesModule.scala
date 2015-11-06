@@ -57,7 +57,11 @@ object IrNodesModule {
       val includeLib = !config.ignoreLibs
       val processed = mutable.Set.empty[IR]
 
-      val irFactory: IRFactory[IMethod] = if (isApk) getDexIrFactory(scope) else getJavaIrFactory(scope)
+      val irFactory: IRFactory[IMethod] =
+        if (isApk)
+          getDexIrFactory(scope)
+        else /*getJavaIrFactory(scope)*/
+          throw new UnsupportedOperationException("source files disabled")
       val cache = new AnalysisCache(irFactory)
       for {
         c  <- cha.iterator()
