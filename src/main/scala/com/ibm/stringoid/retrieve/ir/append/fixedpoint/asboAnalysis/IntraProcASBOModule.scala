@@ -14,7 +14,7 @@ import scala.collection.JavaConversions._
 
 trait IntraProcASBOModule extends AbstractStringBuilderModule with IrNodes {
 
-  override def getSolver(node: Node, numbering: AsboMapping) =
+  override final def getSolver(node: Node, numbering: AsboMapping) =
     new IntraProcAsboFixedPointSolver(node, numbering)
 
   class IntraProcAsboFixedPointSolver(

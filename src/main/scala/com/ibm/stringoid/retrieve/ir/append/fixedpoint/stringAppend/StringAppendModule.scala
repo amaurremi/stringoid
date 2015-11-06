@@ -31,7 +31,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
    * Get the string concatenation results.
    */
   def stringAppends(node: Node): StringPartAutomaton = {
-    valueNumberToAsbo(node) match {
+    idToAsboForNode(node) match {
       case Some(vnToAsbo) =>
         val solver  = getAppendSolver(node, vnToAsbo)
         val result  = solver.result

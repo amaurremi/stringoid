@@ -11,6 +11,7 @@ import com.ibm.wala.util.graph.Graph
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph
 
 import scala.collection.JavaConversions._
+import scala.collection.breakOut
 
 trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
 
@@ -18,6 +19,20 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
 
   override def getSolver(node: Node, numbering: AsboMapping) =
     new InterProcAsboFixedPointSolver(getCallGraph, node, numbering)
+
+  protected def identifierToAsbo: Option[Map[Identifier, Set[ASBO]]] = {
+    val result: Map[Identifier, Set[ASBO]] =
+      getCallGraph.foldLeft(Map.empty[Identifier, Set[ASBO]]) {
+      case (prevMap, n) =>
+        val newMap: Map[Identifier, Set[ASBO]] = (for {
+          idToAsbo    <- idToAsboForNode(CallGraphNode(n)).toSeq
+          (id, asbos) <- idToAsbo
+          prevAsbos = prevMap getOrElse(id, Set.empty[ASBO])
+        } yield id -> (prevAsbos ++ asbos))(breakOut)
+        newMap
+    }
+    Some(result)
+  }
 
   class InterProcAsboFixedPointSolver(
     cg: CallGraph,

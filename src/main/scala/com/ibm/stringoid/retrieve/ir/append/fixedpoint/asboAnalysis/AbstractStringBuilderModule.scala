@@ -55,7 +55,7 @@ trait AbstractStringBuilderModule extends Nodes {
   /**
    * The resulting map from value numbers to abstract StringBuilder objects
    */
-  def valueNumberToAsbo(node: Node): Option[Map[Identifier, Set[ASBO]]] = {
+  protected final def idToAsboForNode(node: Node): Option[Map[Identifier, Set[ASBO]]] = {
     asboSolver(node) map {
       solver =>
         val result = getResult(solver)
@@ -84,9 +84,7 @@ trait AbstractStringBuilderModule extends Nodes {
         createAsbo(inv.getDef, node)
     }
 
-    val objects = abstractObjects.toSeq
-    val asboArray = objects.toArray[ASBO]
-    new ObjectArrayMapping[ASBO](asboArray)
+    new ObjectArrayMapping[ASBO](abstractObjects.toArray[ASBO])
   }
 
   abstract class AsboFixedPointSolver(
