@@ -15,7 +15,7 @@ import scala.util.Try
 object Main extends StringoidAnalysis {
 
   // Program arguments example
-  // -a append --lib false --ir-source cha <apk file>
+  // -a append --lib false --ir-source cha -u true <apk file>
 
   def main(args: Array[String]): Unit =
     parser.parse(args, CmdOptions()) foreach { options =>
