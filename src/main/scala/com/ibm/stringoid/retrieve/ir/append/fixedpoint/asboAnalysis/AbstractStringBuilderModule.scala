@@ -5,9 +5,10 @@ import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.Nodes
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{BitVectorVariable, UnaryOperator}
-import com.ibm.wala.ssa.SSAAbstractInvokeInstruction
+import com.ibm.wala.ssa.{SSAPhiInstruction, SSAAbstractInvokeInstruction}
 import com.ibm.wala.util.collections.ObjectArrayMapping
 import com.ibm.wala.util.graph.Graph
+import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph
 import com.ibm.wala.util.intset.{IntSet, OrdinalSetMapping}
 
 import scala.collection.JavaConversions._
@@ -85,6 +86,52 @@ trait AbstractStringBuilderModule extends Nodes {
     val abstractObjectNumbering: AsboMapping
   ) {
 
+    lazy val valueNumberGraph: Graph[Identifier] = {
+      // 1 = new SB();
+      // 2 = 1.append(3);
+      // ...
+      // 4 = 1.append(5);
+      // For this case, we need to add three nodes that contain VN 1, and the nodes need to be connected with each other.
+      // Since append is mutable (it changes 1's object) we cannot connect the nodes to the first node where 1 is defined.
+      // So we need to remember the previous instruction that appended something to 1, which is the purpose of this map.
+      // todo test this case in unit tests
+      val graph = new SlowSparseNumberedGraph[Identifier](1)
+      def addNode(vn: ValueNumber) {
+        val n = createIdentifier(vn, node)
+        if (!(graph containsNode n)) graph addNode n
+      }
+      def addEdge(source: ValueNumber, target: ValueNumber) {
+        val sourceN = createIdentifier(source, node)
+        val targetN = createIdentifier(target, node)
+        addNode(source)
+        addNode(target)
+        graph addEdge (sourceN, targetN)
+      }
+      node.getIr.iterateAllInstructions foreach {
+        case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv)  =>
+          getDefs(inv) foreach addNode // todo unnecessary?
+        case inv: SSAAbstractInvokeInstruction if isSbAppend(inv)       =>
+          val (firstDef, secondDef) = getSbAppendDefs(inv)                  // in 1 = 2.append(3), 1 is firstDef and 2 is secondDef
+          addEdge(secondDef, firstDef)
+        case inv: SSAAbstractInvokeInstruction if isSbTostring(inv)     =>  // in 1 = 2.toString, 1 is sbDef and 2 is sbUse
+          val sbDef = getSbToStringDef(inv)
+          val sbUse = getSbToStringUse(inv)
+          addEdge(sbUse, sbDef)
+        case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)   =>
+          addNode(inv.getDef)
+        case phi: SSAPhiInstruction                                     =>
+          val defNode = phi.getDef
+          addNode(defNode)
+          getPhiUses(phi) foreach {
+            use =>
+              addEdge(use, defNode)
+          }
+        case _                                                          =>
+        // do  nothing
+      }
+      graph
+    }
+
     /**
      * If a method has deals with StringBuilders, returns Some solver, otherwise None
      */
@@ -97,8 +144,6 @@ trait AbstractStringBuilderModule extends Nodes {
       solver.solve(null)
       solver
     }
-
-    def valueNumberGraph: Graph[Identifier]
 
     def getTransferFunctions: StringBuilderTransferFunctions
   }

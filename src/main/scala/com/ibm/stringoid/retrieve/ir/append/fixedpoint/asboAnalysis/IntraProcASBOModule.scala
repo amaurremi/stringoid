@@ -22,47 +22,6 @@ trait IntraProcASBOModule extends AbstractStringBuilderModule with IrNodes {
     numbering: AsboMapping
   ) extends AsboFixedPointSolver(node, numbering) {
 
-    lazy val valueNumberGraph: Graph[Identifier] = {
-      // 1 = new SB();
-      // 2 = 1.append(3);
-      // ...
-      // 4 = 1.append(5);
-      // For this case, we need to add three nodes that contain VN 1, and the nodes need to be connected with each other.
-      // Since append is mutable (it changes 1's object) we cannot connect the nodes to the first node where 1 is defined.
-      // So we need to remember the previous instruction that appended something to 1, which is the purpose of this map.
-      // todo test this case in unit tests
-      val graph = new SlowSparseNumberedGraph[ValueNumber](1)
-      def addNode(n: ValueNumber) = if (!(graph containsNode n)) graph addNode n
-      node.getIr.iterateAllInstructions foreach {
-        case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv)  =>
-          getDefs(inv) foreach addNode // todo unnecessary?
-        case inv: SSAAbstractInvokeInstruction if isSbAppend(inv)       =>
-          val (firstDef, secondDef) = getSbAppendDefs(inv)                  // in 1 = 2.append(3), 1 is firstDef and 2 is secondDef
-          graph addNode firstDef
-          graph addNode secondDef
-          graph addEdge(secondDef, firstDef)
-        case inv: SSAAbstractInvokeInstruction if isSbTostring(inv)     =>  // in 1 = 2.toString, 1 is sbDef and 2 is sbUse
-          val sbDef = getSbToStringDef(inv)
-          val sbUse = getSbToStringUse(inv)
-          graph addNode sbDef
-          graph addNode sbUse
-          graph addEdge(sbUse, sbDef)
-        case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)   =>
-          graph addNode inv.getDef
-        case phi: SSAPhiInstruction                                     =>
-          val defNode = phi.getDef
-          graph addNode defNode
-          getPhiUses(phi) foreach {
-            use =>
-              addNode(use)
-              graph addEdge (use, defNode)
-          }
-        case _                                                          =>
-        // do  nothing
-      }
-      graph
-    }
-
     override def getTransferFunctions = new IntraProcStringBuilderTransferFunctions
 
     class IntraProcStringBuilderTransferFunctions extends StringBuilderTransferFunctions {
