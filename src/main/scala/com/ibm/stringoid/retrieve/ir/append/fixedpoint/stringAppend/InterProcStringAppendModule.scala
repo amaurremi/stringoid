@@ -69,7 +69,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
           case ret: SSAReturnInstruction                                                =>
             val result = getId(ret.getResult)
             val assignTo = getCallGraph.getSuccNodes(node.node)
-            new StringBuilderAppendOperator()
+            ???
           case _ =>
             IdentityOperator()
         }
