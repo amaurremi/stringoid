@@ -2,11 +2,9 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend
 
 import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.AbstractStringBuilderModule
-import com.ibm.wala.cfg.ControlFlowGraph
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{IVariable, UnaryOperator}
-import com.ibm.wala.ssa._
-import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
+import com.ibm.wala.util.graph.Graph
 import com.ibm.wala.util.graph.impl.NodeWithNumber
 import seqset.regular.Automaton
 
@@ -29,20 +27,43 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
   abstract class StringAppendFixedPointSolver(vnToAsbo: Map[Identifier, Set[ASBO]]) {
 
-    type BB      = IExplodedBasicBlock
+    type BB
     type AsboMap = mutable.Map[ASBO, StringPartAutomaton]
 
-    def getGraph: ControlFlowGraph[SSAInstruction, IExplodedBasicBlock]
+    def graph: Graph[BB]
 
-    lazy val graph = getGraph
+    def result: DataflowSolver[BB, AtaReference] = {
+      val framework = new IKilldallFramework[BB, AtaReference] {
+
+        override def getFlowGraph = graph
+
+        override def getTransferFunctionProvider = transferFunctions
+      }
+
+      val solver = getSolver(framework)
+      solver.solve(null)
+      solver
+    }
 
     /**
      * For efficiency we store our AsboToAutomaton in this array. The analysis operates on its indices
      * that serve as references to the stored AsboToAutomaton objects.
      */
-    val ataRefMapping = initialAtaRefMapping
+    def ataRefMapping: ArrayBuffer[AsboToAutomaton]
 
-    def initialAtaRefMapping: ArrayBuffer[AsboToAutomaton]
+    def initialAtaRefMapping(node: Node): ArrayBuffer[AsboToAutomaton] = {
+      val refMapping = ArrayBuffer.empty[AsboToAutomaton]
+      val table = node.getIr.getSymbolTable
+      1 to table.getMaxValueNumber foreach {
+        vn =>
+          if (table isConstant vn) {
+            val automaton = Automaton.empty[StringPart] + Seq(StringIdentifier(createIdentifier(vn, node)))
+            val asboMap = mutable.Map(createAsbo(vn, node) -> automaton)
+            refMapping += AsboToAutomaton(asboMap, None)
+          }
+      }
+      refMapping
+    }
 
     // ITransferFunctionProvider's methods force the lattice elements to be mutable
     /**
@@ -77,20 +98,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
     import com.ibm.wala.fixpoint.FixedPointConstants._
 
-    def result: DataflowSolver[BB, AtaReference] = {
-      val framework = new IKilldallFramework[BB, AtaReference] {
-
-        override def getFlowGraph = graph
-
-        override def getTransferFunctionProvider = transferFunctions
-      }
-
-      val solver = getSolver(framework)
-      solver.solve(null)
-      solver
-    }
-
-    private[this] def getSolver(framework: IKilldallFramework[BB, AtaReference]) =
+    def getSolver(framework: IKilldallFramework[BB, AtaReference]) =
       new DataflowSolver[BB, AtaReference](framework) {
 
         override def makeNodeVariable(bb: BB, in: Boolean): AtaReference = {

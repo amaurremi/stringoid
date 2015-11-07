@@ -9,7 +9,7 @@ import com.ibm.wala.dataflow.graph.AbstractMeetOperator
 import com.ibm.wala.fixpoint.FixedPointConstants._
 import com.ibm.wala.fixpoint.UnaryOperator
 import com.ibm.wala.ipa.cfg.ExceptionPrunedCFG
-import com.ibm.wala.ssa.analysis.ExplodedControlFlowGraph
+import com.ibm.wala.ssa.analysis.{ExplodedControlFlowGraph, IExplodedBasicBlock}
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAArrayStoreInstruction, SSAPhiInstruction}
 import com.ibm.wala.util.graph.traverse.SCCIterator
 import seqset.regular.Automaton
@@ -37,7 +37,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
         automaton | mergeAutomata(automata)
     }
     // adding constants
-    solver.initialAtaRefMapping.foldLeft(concats) {
+    solver.initialMapping.foldLeft(concats) {
       (automaton, asboToAutomaton) =>
         val automata = asboToAutomaton.asboToAutomaton.values
         automaton | mergeAutomata(automata)
@@ -49,24 +49,16 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
 
   class IntraProcStringAppendSolver(
     node: Node,
-    vnToAsbo: Map[Identifier, Set[ASBO]]
-  ) extends StringAppendFixedPointSolver(vnToAsbo) {
+    idToAsbo: Map[Identifier, Set[ASBO]]
+  ) extends StringAppendFixedPointSolver(idToAsbo) {
 
-    override def getGraph = ExceptionPrunedCFG.make(ExplodedControlFlowGraph.make(node.getIr))
+    override type BB = IExplodedBasicBlock
 
-    lazy val initialAtaRefMapping: ArrayBuffer[AsboToAutomaton] = {
-      val refMapping = ArrayBuffer.empty[AsboToAutomaton]
-      val table = node.getIr.getSymbolTable
-      1 to table.getMaxValueNumber foreach {
-        vn =>
-          if (table isConstant vn) {
-            val automaton = Automaton.empty[StringPart] + Seq(StringIdentifier(vn))
-            val asboMap = mutable.Map(createAsbo(vn, node) -> automaton)
-            refMapping += AsboToAutomaton(asboMap, None)
-          }
-      }
-      refMapping
-    }
+    lazy val initialMapping = initialAtaRefMapping(node)
+
+    override lazy val graph = getGraph
+
+    def getGraph = ExceptionPrunedCFG.make(ExplodedControlFlowGraph.make(node.getIr))
 
     override protected def transferFunctions: StringAppendTransferFunctions = new IntraProcStringAppendTransferFunctions
 
@@ -75,16 +67,16 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
       override def getNodeTransferFunction(bb: BB): UnaryOperator[AtaReference] =
         bb.getInstruction match {
           case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                =>
-            vnToAsbo get getFirstSbAppendDef(instr) match {
+            idToAsbo get getFirstSbAppendDef(instr) match {
               case Some(asbos) =>
                 new StringBuilderAppendOperator(asbos, getAppendArgument(instr))
               case None =>
-                // todo note that this means that we are appending to a StringBuilder for which we haven't added an ASBO to the vnToAsbo map.
+                // todo note that this means that we are appending to a StringBuilder for which we haven't added an ASBO to the idToAsbo map.
                 // todo I think this means that the StringBuilder has been passed as a parameter or is a field. We should handle this case too at some point.
                 IdentityOperator()
             }
           case inv: SSAAbstractInvokeInstruction if isSbConstructorWithStringParam(inv) =>
-            vnToAsbo get getSbConstructorDef(inv) match {
+            idToAsbo get getSbConstructorDef(inv) match {
               case Some(asbos) =>
                 val appendArgument = getSbConstructorArgument(inv)
                 new StringBuilderAppendOperator(asbos, appendArgument)
@@ -105,7 +97,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
         if (processedAcc contains id)
           (singleAutomaton(StringCycle), mutable.Map.empty[ASBO, StringPartAutomaton])
         else
-          vnToAsbo get id match {
+          idToAsbo get id match {
             case Some(asbos) =>
               val automata = for {
                 asbo      <- asbos
@@ -278,5 +270,11 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
 
       override def getMeetOperator: AbstractMeetOperator[AtaReference] = StringMeetOperator()
     }
+
+    /**
+      * For efficiency we store our AsboToAutomaton in this array. The analysis operates on its indices
+      * that serve as references to the stored AsboToAutomaton objects.
+      */
+    override def ataRefMapping: ArrayBuffer[AsboToAutomaton] = initialMapping
   }
 }

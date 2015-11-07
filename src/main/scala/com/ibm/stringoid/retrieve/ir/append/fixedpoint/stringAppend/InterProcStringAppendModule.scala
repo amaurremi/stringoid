@@ -3,8 +3,9 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.InterProcASBOModule
 import com.ibm.wala.dataflow.graph.AbstractMeetOperator
 import com.ibm.wala.fixpoint.UnaryOperator
-import com.ibm.wala.ipa.cfg.ExceptionPrunedCFG
+import com.ibm.wala.ipa.cfg.{BasicBlockInContext, ExplodedInterproceduralCFG}
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction
+import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -14,12 +15,12 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
     new InterProcStringAppendSolver(vnToAsbo)
 
   class InterProcStringAppendSolver(
-    vnToAsbo: Map[Identifier, Set[ASBO]]
-   ) extends StringAppendFixedPointSolver(vnToAsbo) {
+    idToAsbo: Map[Identifier, Set[ASBO]]
+  ) extends StringAppendFixedPointSolver(idToAsbo) {
 
-    override def getGraph = ExceptionPrunedCFG.make(???)
+    type BB = BasicBlockInContext[IExplodedBasicBlock]
 
-    def initialAtaRefMapping: ArrayBuffer[AsboToAutomaton] = ???
+    override lazy val graph = ExplodedInterproceduralCFG.make(getCallGraph)
 
     override protected def transferFunctions: StringAppendTransferFunctions = new InterProcStringAppendTransferFunctions
 
@@ -51,5 +52,11 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
         override def evaluate(lhs: AtaReference, rhs: Array[AtaReference]): Byte = ???
       }
     }
+
+    /**
+      * For efficiency we store our AsboToAutomaton in this array. The analysis operates on its indices
+      * that serve as references to the stored AsboToAutomaton objects.
+      */
+    override def ataRefMapping: ArrayBuffer[AsboToAutomaton] = ???
   }
 }
