@@ -17,13 +17,13 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
   class InterProcStringAppendSolver(
     node: Node, // should be replaced with CG
     vnToAsbo: Map[Identifier, Set[ASBO]]
-   ) extends StringAppendFixedPointSolver(node, vnToAsbo) {
+   ) extends StringAppendFixedPointSolver(vnToAsbo) {
 
     override def getGraph = ExceptionPrunedCFG.make(???)
 
     def initialAtaRefMapping: ArrayBuffer[AsboToAutomaton] = ???
 
-    override protected def transferFunctions: StringAppendTransferFunctions = ???
+    override protected def transferFunctions: StringAppendTransferFunctions = new InterProcStringAppendTransferFunctions
 
     class InterProcStringAppendTransferFunctions extends StringAppendTransferFunctions {
 
@@ -47,7 +47,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
                 throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
             }
           case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)                 =>
-            new StringFormatAppendOperator(inv, node.getDu)
+            new StringFormatAppendOperator(inv, node)
           case inv: SSAAbstractInvokeInstruction                                        =>
             ???
           case _                                                                        =>

@@ -1,14 +1,9 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis
 
-import com.ibm.stringoid.retrieve.ir.ValueNumber
-import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.CgNodes
-import com.ibm.wala.dataflow.graph._
-import com.ibm.wala.fixpoint.{BitVectorVariable, UnaryOperator}
 import com.ibm.wala.ipa.callgraph.CallGraph
-import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAPhiInstruction}
-import com.ibm.wala.util.graph.Graph
-import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph
+import com.ibm.wala.ipa.callgraph.propagation.LocalPointerKey
+import com.ibm.wala.ssa.SSAInstruction
 
 import scala.collection.JavaConversions._
 import scala.collection.breakOut
@@ -39,21 +34,7 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
     numbering: AsboMapping
   ) extends AsboFixedPointSolver(node, numbering) {
 
-    override def getTransferFunctions = new InterProcStringBuilderTransferFunctions
-
-    class InterProcStringBuilderTransferFunctions extends StringBuilderTransferFunctions {
-
-      override def getMeetOperator: AbstractMeetOperator[BitVectorVariable] =
-        BitVectorUnion.instance
-
-      override def hasEdgeTransferFunctions: Boolean = false
-
-      override def getNodeTransferFunction(vn: Identifier): UnaryOperator[BitVectorVariable] = ???
-
-      override def getEdgeTransferFunction(src: Identifier, dst: Identifier): UnaryOperator[BitVectorVariable] =
-        throw new UnsupportedOperationException("No edge transfer functions in abstract StringBuilder fixed-point iteration")
-
-      override def hasNodeTransferFunctions: Boolean = true
-    }
+    override def getDef(id: LocalPointerKey): SSAInstruction =
+      node.getDu getDef id.getValueNumber
   }
 }

@@ -5,11 +5,11 @@ import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.Nodes
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{BitVectorVariable, UnaryOperator}
-import com.ibm.wala.ssa.{SSAPhiInstruction, SSAAbstractInvokeInstruction}
+import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAPhiInstruction}
 import com.ibm.wala.util.collections.ObjectArrayMapping
 import com.ibm.wala.util.graph.Graph
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph
-import com.ibm.wala.util.intset.{IntSet, OrdinalSetMapping}
+import com.ibm.wala.util.intset.{BitVector, IntSet, OrdinalSetMapping}
 
 import scala.collection.JavaConversions._
 import scala.collection.breakOut
@@ -40,8 +40,8 @@ trait AbstractStringBuilderModule extends Nodes {
     getSolver(node, createAbstractObjectNumbering(node))
 
   /**
-   * If the method deals with StringBuilders, returns Some result
-   */
+    * If the method deals with StringBuilders, returns Some result
+    */
   private[this] def getResult(solver: AsboFixedPointSolver): BitVectorSolver[Identifier] = {
     val result = solver.result
     result.solve(null)
@@ -49,22 +49,23 @@ trait AbstractStringBuilderModule extends Nodes {
   }
 
   /**
-   * The resulting map from value numbers to abstract StringBuilder objects
-   */
+    * The resulting map from value numbers to abstract StringBuilder objects
+    */
   protected final def idToAsboForNode(node: Node): Map[Identifier, Set[ASBO]] = {
     val solver = asboSolver(node)
     val result = getResult(solver)
     (for {
-      vn     <- solver.valueNumberGraph
+      vn <- solver.valueNumberGraph
       intSet <- Option((result getOut vn).getValue)
-      i2a     = intSetToAsbo(intSet, solver.abstractObjectNumbering)
-    } yield vn -> i2a)(breakOut)
+      i2a = intSetToAsbo(intSet, solver.abstractObjectNumbering)
+    } yield vn -> i2a) (breakOut)
   }
 
   private[this] def intSetToAsbo(intSet: IntSet, numbering: AsboMapping): Set[ASBO] = {
     val walaIterator = intSet.intIterator
     val set = new Iterator[ValueNumber] {
       override def hasNext: Boolean = walaIterator.hasNext
+
       override def next(): Int = walaIterator.next()
     }.toSet[ValueNumber]
     set map numbering.getMappedObject
@@ -74,7 +75,7 @@ trait AbstractStringBuilderModule extends Nodes {
     val abstractObjects = node.getIr.iterateNormalInstructions collect {
       case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv) =>
         createAsbo(getSbConstructorDef(inv), node)
-      case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)  =>
+      case inv: SSAAbstractInvokeInstruction if isStringFormat(inv) =>
         createAsbo(inv.getDef, node)
     }
 
@@ -82,9 +83,9 @@ trait AbstractStringBuilderModule extends Nodes {
   }
 
   abstract class AsboFixedPointSolver(
-    node: Node,
-    val abstractObjectNumbering: AsboMapping
-  ) {
+                                       node: Node,
+                                       val abstractObjectNumbering: AsboMapping
+                                     ) {
 
     lazy val valueNumberGraph: Graph[Identifier] = {
       // 1 = new SB();
@@ -105,61 +106,73 @@ trait AbstractStringBuilderModule extends Nodes {
         val targetN = createIdentifier(target, node)
         addNode(source)
         addNode(target)
-        graph addEdge (sourceN, targetN)
+        graph addEdge(sourceN, targetN)
       }
       node.getIr.iterateAllInstructions foreach {
-        case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv)  =>
+        case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv) =>
           getDefs(inv) foreach addNode // todo unnecessary?
-        case inv: SSAAbstractInvokeInstruction if isSbAppend(inv)       =>
-          val (firstDef, secondDef) = getSbAppendDefs(inv)                  // in 1 = 2.append(3), 1 is firstDef and 2 is secondDef
+        case inv: SSAAbstractInvokeInstruction if isSbAppend(inv) =>
+          val (firstDef, secondDef) = getSbAppendDefs(inv) // in 1 = 2.append(3), 1 is firstDef and 2 is secondDef
           addEdge(secondDef, firstDef)
-        case inv: SSAAbstractInvokeInstruction if isSbTostring(inv)     =>  // in 1 = 2.toString, 1 is sbDef and 2 is sbUse
+        case inv: SSAAbstractInvokeInstruction if isSbTostring(inv) => // in 1 = 2.toString, 1 is sbDef and 2 is sbUse
           val sbDef = getSbToStringDef(inv)
           val sbUse = getSbToStringUse(inv)
           addEdge(sbUse, sbDef)
-        case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)   =>
+        case inv: SSAAbstractInvokeInstruction if isStringFormat(inv) =>
           addNode(inv.getDef)
-        case phi: SSAPhiInstruction                                     =>
+        case phi: SSAPhiInstruction =>
           val defNode = phi.getDef
           addNode(defNode)
           getPhiUses(phi) foreach {
             use =>
               addEdge(use, defNode)
           }
-        case _                                                          =>
+        case _ =>
         // do  nothing
       }
       graph
     }
 
     /**
-     * If a method has deals with StringBuilders, returns Some solver, otherwise None
-     */
+      * If a method has deals with StringBuilders, returns Some solver, otherwise None
+      */
     def result: BitVectorSolver[Identifier] = {
       val framework = new BitVectorFramework[Identifier, ASBO](
         valueNumberGraph,
-        getTransferFunctions,
+        new StringBuilderTransferFunctions,
         abstractObjectNumbering)
       val solver = new BitVectorSolver[Identifier](framework)
       solver.solve(null)
       solver
     }
 
-    def getTransferFunctions: StringBuilderTransferFunctions
+    def getDef(id: Identifier): SSAInstruction
+
+    class StringBuilderTransferFunctions extends ITransferFunctionProvider[Identifier, BitVectorVariable] {
+
+      def getNodeTransferFunction(id: Identifier): UnaryOperator[BitVectorVariable] = {
+        getDef(id) match {
+          case instr if isSbConstructorOrFormatInDefUse(instr) =>
+            val mappedIndex = abstractObjectNumbering getMappedIndex ASBO(id)
+            assert(mappedIndex >= 0)
+            val gen = new BitVector()
+            gen set mappedIndex
+            new BitVectorKillGen(new BitVector(), gen)
+          case _                                               =>
+            BitVectorIdentity.instance
+        }
+      }
+
+      override def getMeetOperator: AbstractMeetOperator[BitVectorVariable] =
+        BitVectorUnion.instance
+
+      override def hasEdgeTransferFunctions: Boolean = false
+
+      override def getEdgeTransferFunction(src: Identifier, dst: Identifier): UnaryOperator[BitVectorVariable] =
+        throw new UnsupportedOperationException("No edge transfer functions in abstract StringBuilder fixed-point iteration")
+
+      override def hasNodeTransferFunctions: Boolean = true
+    }
   }
 
-  abstract class StringBuilderTransferFunctions extends ITransferFunctionProvider[Identifier, BitVectorVariable] {
-
-    override def getMeetOperator: AbstractMeetOperator[BitVectorVariable] =
-      BitVectorUnion.instance
-
-    override def hasEdgeTransferFunctions: Boolean = false
-
-    override def getNodeTransferFunction(vn: Identifier): UnaryOperator[BitVectorVariable]
-
-    override def getEdgeTransferFunction(src: Identifier, dst: Identifier): UnaryOperator[BitVectorVariable] =
-      throw new UnsupportedOperationException("No edge transfer functions in abstract StringBuilder fixed-point iteration")
-
-    override def hasNodeTransferFunctions: Boolean = true
-  }
 }

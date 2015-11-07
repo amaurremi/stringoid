@@ -19,7 +19,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
   class IntraProcStringAppendSolver(
     node: Node,
     vnToAsbo: Map[Identifier, Set[ASBO]]
-  ) extends StringAppendFixedPointSolver(node, vnToAsbo) {
+  ) extends StringAppendFixedPointSolver(vnToAsbo) {
 
     override def getGraph = ExceptionPrunedCFG.make(ExplodedControlFlowGraph.make(node.getIr))
 
@@ -61,7 +61,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
                 throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
             }
           case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)                 =>
-            new StringFormatAppendOperator(inv, node.getDu)
+            new StringFormatAppendOperator(inv, node)
           case _                                                                =>
             IdentityOperator()
         }

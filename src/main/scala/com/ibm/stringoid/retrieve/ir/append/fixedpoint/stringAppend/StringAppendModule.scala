@@ -58,7 +58,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
   protected def getAppendSolver(node: Node, vnToAsbo: Map[Identifier, Set[ASBO]]): StringAppendFixedPointSolver
 
-  abstract class StringAppendFixedPointSolver(node: Node, vnToAsbo: Map[Identifier, Set[ASBO]]) {
+  abstract class StringAppendFixedPointSolver(vnToAsbo: Map[Identifier, Set[ASBO]]) {
 
     type BB      = IExplodedBasicBlock
     type AsboMap = mutable.Map[ASBO, StringPartAutomaton]
@@ -250,7 +250,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
       protected case class StringFormatAppendOperator(
         instr: SSAAbstractInvokeInstruction,
-        defUse: DefUse
+        node: Node
       )
         extends AbstractAppendOperator
         with StringFormatSpecifiers {
@@ -283,7 +283,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
         }
 
         private[this] def getArrayValNums(arrayDef: ValueNumber): Iterator[ValueNumber] =
-          defUse getUses arrayDef collect {
+          node.getDu getUses arrayDef collect {
             case store: SSAArrayStoreInstruction =>
               store getUse 2
           }
