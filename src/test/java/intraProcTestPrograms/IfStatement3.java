@@ -9,6 +9,8 @@ public class IfStatement3 {
         }
         sb.append("key=val");
 
+        System.out.println(sb.toString());
+
         Assertions.shouldContainHttp("if3.com/branch1?key=val");
         Assertions.shouldContainHttp("key=val");
     }
