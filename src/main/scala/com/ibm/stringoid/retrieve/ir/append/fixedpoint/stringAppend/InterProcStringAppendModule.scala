@@ -1,11 +1,13 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend
 
+import com.ibm.stringoid.retrieve.ir.ValueNumber
+import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.InterProcASBOModule
 import com.ibm.wala.dataflow.graph.AbstractMeetOperator
 import com.ibm.wala.fixpoint.UnaryOperator
 import com.ibm.wala.ipa.cfg.{BasicBlockInContext, ExplodedInterproceduralCFG}
-import com.ibm.wala.ssa.SSAAbstractInvokeInstruction
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
+import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAReturnInstruction}
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
@@ -36,7 +38,45 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
 
     class InterProcStringAppendTransferFunctions extends StringAppendTransferFunctions {
 
-      override def getNodeTransferFunction(bb: BB): UnaryOperator[AtaReference] = ???
+      override def getNodeTransferFunction(bb: BB): UnaryOperator[AtaReference] = {
+        val node = CallGraphNode(bb.getNode)
+        def getId(vn: ValueNumber) = createIdentifier(vn, node)
+        bb.getLastInstruction match {
+          case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                =>
+            idToAsbo get getId(getFirstSbAppendDef(instr)) match {
+              case Some(asbos) =>
+                new StringBuilderAppendOperator(asbos, getId(getAppendArgument(instr)))
+              case None =>
+                // todo note that this means that we are appending to a StringBuilder for which we haven't added an ASBO to the idToAsbo map.
+                // todo I think this means that the StringBuilder has been passed as a parameter or is a field. We should handle this case too at some point.
+                IdentityOperator()
+            }
+          case inv: SSAAbstractInvokeInstruction if isSbConstructorWithStringParam(inv) =>
+            idToAsbo get getId(getSbConstructorDef(inv)) match {
+              case Some(asbos) =>
+                val appendArgument = getId(getSbConstructorArgument(inv))
+                new StringBuilderAppendOperator(asbos, appendArgument)
+              case None =>
+                throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
+            }
+          case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)                 =>
+            new StringFormatAppendOperator(inv, node)
+          case inv: SSAAbstractInvokeInstruction if hasStringReturnType(inv)            =>
+            val assignTo = ASBO(getId(inv.getDef))
+            // todo problem: multiple return values
+            // todo problem: how do I ensure that by the time we get here, the callee already produced an automaton that it returns?
+            new StringBuilderAppendOperator(Set(assignTo), getId(inv.getReturnValue(0)))
+          case ret: SSAReturnInstruction                                                =>
+            val result = getId(ret.getResult)
+            val assignTo = getCallGraph.getSuccNodes(node.node)
+            new StringBuilderAppendOperator()
+          case _ =>
+            IdentityOperator()
+        }
+      }
+
+      private[this] def hasStringReturnType(inv: SSAAbstractInvokeInstruction): Boolean =
+        inv.getDeclaredResultType.toString contains "java/lang/String"
 
       /**
         * Resolve the union of all automata to which this value number could map.
