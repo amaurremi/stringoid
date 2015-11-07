@@ -1,12 +1,17 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend
 
+import java.util
+
 import com.ibm.stringoid.retrieve.ir._
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.IntraProcASBOModule
+import com.ibm.wala.dataflow.graph.AbstractMeetOperator
+import com.ibm.wala.fixpoint.FixedPointConstants._
 import com.ibm.wala.fixpoint.UnaryOperator
 import com.ibm.wala.ipa.cfg.ExceptionPrunedCFG
 import com.ibm.wala.ssa.analysis.ExplodedControlFlowGraph
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAArrayStoreInstruction, SSAPhiInstruction}
+import com.ibm.wala.util.graph.traverse.SCCIterator
 import seqset.regular.Automaton
 
 import scala.collection.JavaConversions._
@@ -222,6 +227,56 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
           newMap
         }
       }
+
+      // todo test intra- and inter-procedural cycles
+      private[this] lazy val stronglyConnectedComponents: Set[util.Set[BB]] =
+        (new SCCIterator(graph) filter { _.size() > 1 }).toSet
+
+      case class StringMeetOperator() extends AbstractMeetOperator[AtaReference] {
+
+        override def evaluate(lhs: AtaReference, rhs: Array[AtaReference]): Byte = {
+          val lhsAta = ataRefMapping(lhs.index)
+
+          val sccForLhs = lhsAta.bb flatMap {
+            block =>
+              stronglyConnectedComponents find {
+                _ contains block
+              }
+          }
+          def addRhsToLhs(l: AsboMap, r: AsboToAutomaton): Unit =
+            sccForLhs match  {
+              case Some(scc) if scc contains r.bb.get =>
+                r.asboToAutomaton foreach {
+                  case (asbo, _) =>
+                    l += asbo -> singleAutomaton(StringCycle)
+                }
+              case _                              =>
+                r.asboToAutomaton foreach {
+                  case (asbo, auto1) =>
+                    l get asbo match {
+                      case Some(auto2) =>
+                        l += asbo -> (auto1 | auto2)
+                      case None =>
+                        l += asbo -> auto1
+                    }
+                }
+            }
+
+          val newMap = mutable.Map.empty[ASBO, StringPartAutomaton]
+          rhs foreach {
+            rmapRef =>
+              addRhsToLhs(newMap, ataRefMapping(rmapRef.index))
+          }
+          if (newMap == lhsAta.asboToAutomaton)
+            NOT_CHANGED
+          else {
+            lhsAta.asboToAutomaton ++= newMap
+            CHANGED
+          }
+        }
+      }
+
+      override def getMeetOperator: AbstractMeetOperator[AtaReference] = StringMeetOperator()
     }
   }
 }
