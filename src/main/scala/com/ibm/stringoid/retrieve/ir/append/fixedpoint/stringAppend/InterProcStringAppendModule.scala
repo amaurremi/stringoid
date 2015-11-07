@@ -11,11 +11,10 @@ import scala.collection.mutable.ArrayBuffer
 
 trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOModule {
 
-  override def getAppendSolver(node: Node, vnToAsbo: Map[Identifier, Set[ASBO]]) =
-    new InterProcStringAppendSolver(node, vnToAsbo)
+  def getAppendSolver(vnToAsbo: Map[Identifier, Set[ASBO]]) =
+    new InterProcStringAppendSolver(vnToAsbo)
 
   class InterProcStringAppendSolver(
-    node: Node, // should be replaced with CG
     vnToAsbo: Map[Identifier, Set[ASBO]]
    ) extends StringAppendFixedPointSolver(vnToAsbo) {
 
@@ -27,9 +26,10 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
 
     class InterProcStringAppendTransferFunctions extends StringAppendTransferFunctions {
 
-      override def getNodeTransferFunction(bb: BB): UnaryOperator[AtaReference] =
+      override def getNodeTransferFunction(bb: BB): UnaryOperator[AtaReference] = {
+        val node = CallGraphNode(getCallGraph.getNode(bb.getGraphNodeId))
         bb.getInstruction match {
-          case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                =>
+          case instr: SSAAbstractInvokeInstruction if isSbAppend(instr) =>
             vnToAsbo get createIdentifier(getFirstSbAppendDef(instr), ???) match {
               case Some(asbos) =>
                 new StringBuilderAppendOperator(asbos, createIdentifier(getAppendArgument(instr), node))
@@ -46,15 +46,24 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
               case None =>
                 throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
             }
-          case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)                 =>
+          case inv: SSAAbstractInvokeInstruction if isStringFormat(inv) =>
             new StringFormatAppendOperator(inv, node)
-          case inv: SSAAbstractInvokeInstruction                                        =>
+          case inv: SSAAbstractInvokeInstruction =>
             ???
-          case _                                                                        =>
+          case _ =>
             IdentityOperator()
         }
+      }
 
-      override def getAppendAutomaton(id: Identifier, rhsMap: AsboMap): (StringPartAutomaton, AsboMap) =
+      /**
+        * Resolve the union of all automata to which this value number could map.
+        * 1. For each ASBO, checks if value number is in `rhsMap`, and
+        *    - if yes, returns automaton;
+        *    - if no, checks if val num is a phi instruction,
+        *      and if yes, resolves its arguments recursively and adds them to a new AsboMap
+        *      with which we will need to update the lhsMap.
+        */
+      def getAppendAutomaton(node: Node, id: Identifier, rhsMap: AsboMap): (StringPartAutomaton, AsboMap) =
         vnToAsbo get id match {
           case Some(asbos) =>
             val automata = for {
@@ -73,7 +82,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
                   use =>
                     createIdentifier(phi.getUse(use), node)
                 }
-                val (automata, asboMaps) = (uses map { getAppendAutomaton(_, rhsMap) }).unzip
+                val (automata, asboMaps) = (uses map { getAppendAutomaton(node, _, rhsMap) }).unzip
                 val mergedAutomaton = mergeAutomata(automata)
                 val mergedMap = (asboMaps reduceLeft {
                   _ ++ _
@@ -83,6 +92,14 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
                 (singleAutomaton(StringIdentifier(id)), mutable.Map.empty[ASBO, StringPartAutomaton])
             }
         }
+
+      case class StringFormatAppendOperator(inv: SSAAbstractInvokeInstruction, node: Node) extends AbstractAppendOperator {
+        override def createNewMap(rhsMap: AsboMap): AsboMap = ???
+      }
+
+      case class StringBuilderAppendOperator(asbos: Set[ASBO], id: Identifier) extends AbstractAppendOperator {
+        override def createNewMap(rhsMap: AsboMap): AsboMap = ???
+      }
     }
   }
 }

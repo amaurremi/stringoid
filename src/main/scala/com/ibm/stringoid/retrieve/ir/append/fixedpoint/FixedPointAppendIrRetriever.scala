@@ -34,28 +34,10 @@ abstract class FixedPointAppendIrRetriever(
     AutomataWithSources(automataWithSources, walaTime)
   }
 
-  override def getUrlsWithSources: UrlsWithSources = {
-    val TimeResult(nodes, walaTime) = TimeResult(getNodes)
-    val urlsWithSources: Iterator[(Url, Method)] =
-      for {
-        node      <- nodes
-        if hasUrls(node)
-        urlMethod <- getConcatUrls(node)
-      } yield urlMethod
-    val urlWithSourcesMap = urlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
-      case (prevMap, (url, method)) =>
-        val prevMethods = prevMap getOrElse (url, Set.empty[Method])
-        prevMap updated(url, prevMethods + method)
-    }
-    UrlsWithSources(urlWithSourcesMap, walaTime)
-  }
-
   def hasUrls(node: Node): Boolean
 
   protected def isUrlPrefixVn(vn: ValueNumber, table: SymbolTable): Boolean =
     (table isStringConstant vn) && isUrlPrefix(table getStringValue vn)
-
-  protected def getConcatUrls(entryNode: Node): Iterable[(Url, Method)]
 
   protected def getAutomaton(entryNode: Node): (Json, Method)
 

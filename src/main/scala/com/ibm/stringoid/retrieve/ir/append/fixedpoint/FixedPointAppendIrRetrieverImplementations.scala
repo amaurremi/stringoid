@@ -7,6 +7,7 @@ import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.ir.IrNodesModule.{CgIntraProcIrNodes, ChaIntraProcIrNodes, InterProcIrNodes, IntraProcIrNodes}
 import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.{InterProcStringAppendModule, IntraProcStringAppendModule}
+import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ipa.callgraph.CallGraph
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAFieldAccessInstruction}
 import com.ibm.wala.util.debug.UnimplementedError
@@ -23,6 +24,11 @@ object FixedPointAppendIrRetrieverImplementations {
     with InterProcIrNodes
     with InterProcStringAppendModule {
 
+    /**
+      * Get the string concatenation results.
+      */
+    def stringAppends: StringPartAutomaton = ???
+
     override lazy val getCallGraph: CallGraph = new FlexibleCallGraphBuilder()(configWithApk(config.file)).cg
 
     override def getNodes: Iterator[CallGraphNode] = {
@@ -33,11 +39,13 @@ object FixedPointAppendIrRetrieverImplementations {
 
     override def hasUrls(node: CallGraphNode): Boolean = ???
 
-    override protected def getConcatUrls(entryNode: CallGraphNode): scala.Iterable[(Url, Method)] = ???
+    protected def getConcatUrls(entryNode: CallGraphNode): scala.Iterable[(Url, Method)] = ???
 
     override def idToStringPart(node: CallGraphNode, id: Identifier): UrlPart = ???
 
     override protected def getAutomaton(entryNode: CallGraphNode): (Json, Method) = ???
+
+    override def getUrlsWithSources: UrlsWithSources = ???
   }
 
   abstract class IntraProcFixedPointAppendIrRetriever(
@@ -46,7 +54,24 @@ object FixedPointAppendIrRetrieverImplementations {
     with IntraProcIrNodes
     with IntraProcStringAppendModule {
 
-    override def getConcatUrls(node: Node): Iterable[(Url, Method)] = {
+    override def getUrlsWithSources: UrlsWithSources = {
+      val TimeResult(nodes, walaTime) = TimeResult(getNodes)
+      val urlsWithSources: Iterator[(Url, Method)] =
+        for {
+          node      <- nodes
+          if hasUrls(node)
+          urlMethod <- getConcatUrls(node)
+        } yield urlMethod
+      val urlWithSourcesMap = urlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
+        case (prevMap, (url, method)) =>
+          val prevMethods = prevMap getOrElse (url, Set.empty[Method])
+          prevMap updated(url, prevMethods + method)
+      }
+      UrlsWithSources(urlWithSourcesMap, walaTime)
+    }
+
+
+    def getConcatUrls(node: Node): Iterable[(Url, Method)] = {
       val appendAutomaton = stringAppends(node)
       val ir              = node.getIr
       val table           = ir.getSymbolTable

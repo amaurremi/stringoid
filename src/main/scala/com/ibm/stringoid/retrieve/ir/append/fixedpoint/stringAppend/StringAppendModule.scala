@@ -3,7 +3,6 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend
 import java.util
 
 import com.ibm.stringoid.retrieve.ir.ValueNumber
-import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.AbstractStringBuilderModule
 import com.ibm.wala.cfg.ControlFlowGraph
 import com.ibm.wala.dataflow.graph._
@@ -15,8 +14,8 @@ import com.ibm.wala.util.graph.traverse.SCCIterator
 import seqset.regular.Automaton
 
 import scala.collection.JavaConversions._
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import scala.collection.{breakOut, mutable}
 
 trait StringAppendModule extends AbstractStringBuilderModule {
 
@@ -27,36 +26,10 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
   type StringPartAutomaton = Automaton[StringPart]
 
-  /**
-   * Get the string concatenation results.
-   */
-  def stringAppends(node: Node): StringPartAutomaton = {
-    val solver  = getAppendSolver(node, idToAsboForNode(node))
-    val result  = solver.result
-    val mapping = solver.ataRefMapping
-    val ataRefs: Set[Int] = (solver.getGraph map {
-        result.getOut(_).index
-    })(breakOut)
-    // merging concatenations
-    val concats = ataRefs.foldLeft(Automaton.empty[StringPart]) {
-      (automaton, ref) =>
-        val automata = mapping(ref).asboToAutomaton.values
-        automaton | mergeAutomata(automata)
-    }
-    // adding constants
-    solver.initialAtaRefMapping.foldLeft(concats) {
-      (automaton, asboToAutomaton) =>
-        val automata = asboToAutomaton.asboToAutomaton.values
-        automaton | mergeAutomata(automata)
-    }
-  }
-
   def mergeAutomata(automata: Iterable[Automaton[StringPart]]) =
     automata.foldLeft(Automaton.empty[StringPart]) { _ | _ }
 
   protected def singleAutomaton(sp: StringPart) = Automaton.empty[StringPart] + Seq(sp)
-
-  protected def getAppendSolver(node: Node, vnToAsbo: Map[Identifier, Set[ASBO]]): StringAppendFixedPointSolver
 
   abstract class StringAppendFixedPointSolver(vnToAsbo: Map[Identifier, Set[ASBO]]) {
 
@@ -71,7 +44,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
      * For efficiency we store our AsboToAutomaton in this array. The analysis operates on its indices
      * that serve as references to the stored AsboToAutomaton objects.
      */
-    protected[StringAppendModule] val ataRefMapping = initialAtaRefMapping
+    val ataRefMapping = initialAtaRefMapping
 
     def initialAtaRefMapping: ArrayBuffer[AsboToAutomaton]
 
@@ -194,17 +167,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
         }
       }
 
-      /**
-       * Resolve the union of all automata to which this value number could map.
-       * 1. For each ASBO, checks if value number is in `rhsMap`, and
-       *    - if yes, returns automaton;
-       *    - if no, checks if val num is a phi instruction,
-       *      and if yes, resolves its arguments recursively and adds them to a new AsboMap
-       *      with which we will need to update the lhsMap.
-       */
-      protected def getAppendAutomaton(vn: Identifier, rhsMap: AsboMap): (StringPartAutomaton, AsboMap)
-
-      protected sealed trait AbstractAppendOperator extends UnaryOperator[AtaReference] {
+      protected trait AbstractAppendOperator extends UnaryOperator[AtaReference] {
 
         def createNewMap(rhsMap: AsboMap): AsboMap
 
@@ -219,97 +182,6 @@ trait StringAppendModule extends AbstractStringBuilderModule {
             lhsMap ++= newMap
             CHANGED
           }
-        }
-      }
-
-      /**
-       * Append the automaton for [[appendId]] to all [[asbos]].
-       */
-      protected case class StringBuilderAppendOperator(
-        asbos: Set[ASBO],
-        appendId: Identifier
-      ) extends AbstractAppendOperator {
-
-        override def createNewMap(rhsMap: AsboMap) = {
-          val newMap = mutable.Map.empty[ASBO, StringPartAutomaton] ++= rhsMap
-          val (appendAutomaton, toAppend) = getAppendAutomaton(appendId, rhsMap)
-          newMap ++= toAppend
-          asbos foreach {
-            asbo =>
-              val newString = rhsMap get asbo match {
-                case Some(sb) =>
-                  sb +++ appendAutomaton
-                case None =>
-                  appendAutomaton
-              }
-              newMap += asbo -> newString
-          }
-          newMap
-        }
-      }
-
-      protected case class StringFormatAppendOperator(
-        instr: SSAAbstractInvokeInstruction,
-        node: Node
-      )
-        extends AbstractAppendOperator
-        with StringFormatSpecifiers {
-
-        override def createNewMap(rhsMap: AsboMap): AsboMap = {
-          val newMap = mutable.Map.empty[ASBO, StringPartAutomaton]
-          newMap ++= rhsMap
-          val sfArgs = reorderStringFormatArgs
-          if (sfArgs.isEmpty)
-            rhsMap
-          else {
-            val sfTail = sfArgs.tail
-            val automaton = sfTail.foldLeft(singleAutomaton(sfArgs.head)) {
-              case (resultAutomaton, stringFormatArg) =>
-                stringFormatArg match {
-                  case StringIdentifier(id) =>
-                    val (auto, toAppend) = getAppendAutomaton(id, newMap)
-                    newMap ++= toAppend
-                    resultAutomaton +++ auto
-                  case other =>
-                    val appendAutomaton = singleAutomaton(other)
-                    resultAutomaton +++ appendAutomaton
-                }
-            }
-
-            // the ASBO corresponding to String.format can't be already contained in rhsMap,
-            // so we just add the result to the map
-            newMap += (createAsbo(instr.getDef, node) -> automaton)
-          }
-        }
-
-        private[this] def getArrayValNums(arrayDef: ValueNumber): Iterator[ValueNumber] =
-          node.getDu getUses arrayDef collect {
-            case store: SSAArrayStoreInstruction =>
-              store getUse 2
-          }
-
-        /**
-         * Produce sequence of [[StringPart]]s for String.format arguments in the right concatenation order.
-         * This method does not substitute the value numbers with the corresponding automata or [[ASBO]]s.
-         */
-        def reorderStringFormatArgs: Seq[StringPart] = {
-          val firstArg = getFirstStringFormatArg(instr)
-          val formatArrayValNum = getStringFormatArray(instr)
-          val table = node.getIr.getSymbolTable
-          if (table isStringConstant firstArg) {
-            val argValNums = getArrayValNums(formatArrayValNum)
-            val (formattedParts, specifierNum) = parse(table getStringValue firstArg)
-            formattedParts.foldLeft(Vector.empty[StringPart]) {
-              case (parts, FormattedStringPart(string)) =>
-                parts :+ StringFormatPart(string)
-              case (parts, Specifier(count)) =>
-                val newVariable =
-                  if (argValNums.hasNext)
-                    StringIdentifier(createIdentifier(argValNums.next(), node))
-                  else MissingStringFormatArgument
-                parts :+ newVariable
-            }
-          } else Seq.empty[StringPart]
         }
       }
 
