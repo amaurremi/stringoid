@@ -7,12 +7,12 @@ import com.ibm.wala.ipa.cfg.{BasicBlockInContext, ExplodedInterproceduralCFG}
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
 
+import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
 
 trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOModule {
 
-  def getAppendSolver(vnToAsbo: Map[Identifier, Set[ASBO]]) =
-    new InterProcStringAppendSolver(vnToAsbo)
+  def getAppendSolver = new InterProcStringAppendSolver(identifierToAsbo)
 
   class InterProcStringAppendSolver(
     idToAsbo: Map[Identifier, Set[ASBO]]
@@ -20,7 +20,17 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
 
     type BB = BasicBlockInContext[IExplodedBasicBlock]
 
-    override lazy val graph = ExplodedInterproceduralCFG.make(getCallGraph)
+    override lazy val cfg = ExplodedInterproceduralCFG.make(getCallGraph)
+
+    /**
+      * For efficiency we store our AsboToAutomaton in this array. The analysis operates on its indices
+      * that serve as references to the stored AsboToAutomaton objects.
+      */
+    override def ataRefMapping: ArrayBuffer[AsboToAutomaton] =
+      getCallGraph.foldLeft(ArrayBuffer.empty[AsboToAutomaton]) {
+        (buffer, node) =>
+          buffer ++ initialAtaRefMapping(CallGraphNode(node))
+      }
 
     override protected def transferFunctions: StringAppendTransferFunctions = new InterProcStringAppendTransferFunctions
 
@@ -52,11 +62,5 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
         override def evaluate(lhs: AtaReference, rhs: Array[AtaReference]): Byte = ???
       }
     }
-
-    /**
-      * For efficiency we store our AsboToAutomaton in this array. The analysis operates on its indices
-      * that serve as references to the stored AsboToAutomaton objects.
-      */
-    override def ataRefMapping: ArrayBuffer[AsboToAutomaton] = ???
   }
 }

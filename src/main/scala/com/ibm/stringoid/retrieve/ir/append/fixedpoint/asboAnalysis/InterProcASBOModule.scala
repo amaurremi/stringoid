@@ -15,18 +15,15 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
   override def getSolver(node: Node, numbering: AsboMapping) =
     new InterProcAsboFixedPointSolver(getCallGraph, node, numbering)
 
-  protected def identifierToAsbo: Option[Map[Identifier, Set[ASBO]]] = {
-    val result: Map[Identifier, Set[ASBO]] =
-      getCallGraph.foldLeft(Map.empty[Identifier, Set[ASBO]]) {
-      case (prevMap, n) =>
-        val newMap: Map[Identifier, Set[ASBO]] = (for {
-          (id, asbos) <- idToAsboForNode(CallGraphNode(n))
-          prevAsbos = prevMap getOrElse(id, Set.empty[ASBO])
-        } yield id -> (prevAsbos ++ asbos))(breakOut)
-        newMap
+  protected def identifierToAsbo: Map[Identifier, Set[ASBO]] =
+    getCallGraph.foldLeft(Map.empty[Identifier, Set[ASBO]]) {
+    case (prevMap, n) =>
+      val newMap: Map[Identifier, Set[ASBO]] = (for {
+        (id, asbos) <- idToAsboForNode(CallGraphNode(n))
+        prevAsbos = prevMap getOrElse(id, Set.empty[ASBO])
+      } yield id -> (prevAsbos ++ asbos))(breakOut)
+      newMap
     }
-    Some(result)
-  }
 
   class InterProcAsboFixedPointSolver(
     cg: CallGraph,

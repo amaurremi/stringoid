@@ -27,7 +27,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
     val solver  = getAppendSolver(node, idToAsboForNode(node))
     val result  = solver.result
     val mapping = solver.ataRefMapping
-    val ataRefs: Set[Int] = (solver.getGraph map {
+    val ataRefs: Set[Int] = (solver.getCfg map {
       result.getOut(_).index
     })(breakOut)
     // merging concatenations
@@ -56,9 +56,9 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
 
     lazy val initialMapping = initialAtaRefMapping(node)
 
-    override lazy val graph = getGraph
+    override lazy val cfg = getCfg
 
-    def getGraph = ExceptionPrunedCFG.make(ExplodedControlFlowGraph.make(node.getIr))
+    def getCfg = ExceptionPrunedCFG.make(ExplodedControlFlowGraph.make(node.getIr))
 
     override protected def transferFunctions: StringAppendTransferFunctions = new IntraProcStringAppendTransferFunctions
 
@@ -222,7 +222,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
 
       // todo test intra- and inter-procedural cycles
       private[this] lazy val stronglyConnectedComponents: Set[util.Set[BB]] =
-        (new SCCIterator(graph) filter { _.size() > 1 }).toSet
+        (new SCCIterator(cfg) filter { _.size() > 1 }).toSet
 
       case class StringMeetOperator() extends AbstractMeetOperator[AtaReference] {
 

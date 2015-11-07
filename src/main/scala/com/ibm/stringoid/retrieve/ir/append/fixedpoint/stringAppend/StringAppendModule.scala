@@ -30,12 +30,12 @@ trait StringAppendModule extends AbstractStringBuilderModule {
     type BB
     type AsboMap = mutable.Map[ASBO, StringPartAutomaton]
 
-    def graph: Graph[BB]
+    def cfg: Graph[BB]
 
     def result: DataflowSolver[BB, AtaReference] = {
       val framework = new IKilldallFramework[BB, AtaReference] {
 
-        override def getFlowGraph = graph
+        override def getFlowGraph = cfg
 
         override def getTransferFunctionProvider = transferFunctions
       }
