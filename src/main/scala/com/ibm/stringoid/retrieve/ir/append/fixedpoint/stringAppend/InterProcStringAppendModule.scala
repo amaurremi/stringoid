@@ -25,7 +25,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
 
     override protected def transferFunctions: StringAppendTransferFunctions = ???
 
-    class IntraProcStringAppendTransferFunctions extends StringAppendTransferFunctions {
+    class InterProcStringAppendTransferFunctions extends StringAppendTransferFunctions {
 
       override def getNodeTransferFunction(bb: BB): UnaryOperator[AtaReference] =
         bb.getInstruction match {

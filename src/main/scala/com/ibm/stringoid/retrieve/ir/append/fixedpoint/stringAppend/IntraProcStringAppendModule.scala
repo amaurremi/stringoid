@@ -66,32 +66,45 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
             IdentityOperator()
         }
 
+      private[this] def getAppendAutomaton(
+        vn: Identifier,
+        rhsMap: AsboMap,
+        processedAcc: Set[Identifier]
+      ): (StringPartAutomaton, AsboMap) =
+        if (processedAcc contains vn)
+          (singleAutomaton(StringCycle), mutable.Map.empty[ASBO, StringPartAutomaton])
+        else
+          vnToAsbo get vn match {
+            case Some(asbos) =>
+              val automata = for {
+                asbo      <- asbos
+                automaton <- rhsMap get asbo
+              } yield automaton
+              val newValNumAutomaton = if (automata.isEmpty)
+                singleAutomaton(StringIdentifier(vn))
+              else
+                mergeAutomata(automata)
+              (newValNumAutomaton, mutable.Map.empty[ASBO, StringPartAutomaton])
+            case None         =>
+              node.getDu.getDef(vn) match {
+                case phi: SSAPhiInstruction =>
+                  val uses = 0 until phi.getNumberOfUses map phi.getUse
+                  val (automata, asboMaps) = (uses map {
+                    u =>
+                      getAppendAutomaton(u, rhsMap, processedAcc + vn)
+                  }).unzip
+                  val mergedAutomaton = mergeAutomata(automata)
+                  val mergedMap = (asboMaps reduceLeft {
+                    _ ++ _
+                  }) + (createAsbo(phi.getDef, node) -> mergedAutomaton)
+                  (mergedAutomaton, mergedMap)
+                case _                      =>
+                  (singleAutomaton(StringIdentifier(vn)), mutable.Map.empty[ASBO, StringPartAutomaton])
+              }
+          }
+
       override def getAppendAutomaton(vn: Identifier, rhsMap: AsboMap): (StringPartAutomaton, AsboMap) =
-        vnToAsbo get vn match {
-          case Some(asbos) =>
-            val automata = for {
-              asbo      <- asbos
-              automaton <- rhsMap get asbo
-            } yield automaton
-            val newValNumAutomaton = if (automata.isEmpty)
-              singleAutomaton(StringIdentifier(vn))
-            else
-              mergeAutomata(automata)
-            (newValNumAutomaton, mutable.Map.empty[ASBO, StringPartAutomaton])
-          case None         =>
-            node.getDu.getDef(vn) match {
-              case phi: SSAPhiInstruction =>
-                val uses = 0 until phi.getNumberOfUses map phi.getUse
-                val (automata, asboMaps) = (uses map { getAppendAutomaton(_, rhsMap) }).unzip
-                val mergedAutomaton = mergeAutomata(automata)
-                val mergedMap = (asboMaps reduceLeft {
-                  _ ++ _
-                }) + (createAsbo(phi.getDef, node) -> mergedAutomaton)
-                (mergedAutomaton, mergedMap)
-              case _                      =>
-                (singleAutomaton(StringIdentifier(vn)), mutable.Map.empty[ASBO, StringPartAutomaton])
-            }
-        }
+        getAppendAutomaton(vn, rhsMap, Set.empty[Identifier])
     }
   }
 }
