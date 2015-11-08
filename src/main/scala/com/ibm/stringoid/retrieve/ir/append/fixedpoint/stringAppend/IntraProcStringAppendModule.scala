@@ -8,7 +8,6 @@ import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.IntraProcASB
 import com.ibm.wala.dataflow.graph.AbstractMeetOperator
 import com.ibm.wala.fixpoint.FixedPointConstants._
 import com.ibm.wala.fixpoint.UnaryOperator
-import com.ibm.wala.ipa.cfg.ExceptionPrunedCFG
 import com.ibm.wala.ssa.analysis.{ExplodedControlFlowGraph, IExplodedBasicBlock}
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAArrayStoreInstruction, SSAPhiInstruction}
 import com.ibm.wala.util.graph.traverse.SCCIterator
@@ -58,7 +57,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
 
     override lazy val cfg = getCfg
 
-    def getCfg = ExceptionPrunedCFG.make(ExplodedControlFlowGraph.make(node.getIr))
+`    def getCfg = ExplodedControlFlowGraph.make(node.getIr)
 
     override protected def transferFunctions: StringAppendTransferFunctions = new IntraProcStringAppendTransferFunctions
 
