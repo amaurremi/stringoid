@@ -16,6 +16,12 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
 
   describe("StringBuilder + String.format analysis") {
 
+    it("reproduces failing tests") {
+      val file = Paths.get("src/test/java/failing")
+      val analysisConfig = AnalysisConfig(irSource = IrSource.Cha, ignoreLibs = true, analysis = AnalysisType.Append, file = file, outputUrls = false)
+      run(analysisConfig)
+    }
+
     it("computes URLs in CHA IR analysis") {
       val file = Paths.get("src/test/java/intraProcTestPrograms")
       val analysisConfig = AnalysisConfig(irSource = IrSource.Cha, ignoreLibs = true, analysis = AnalysisType.Append, file = file, outputUrls = true)
