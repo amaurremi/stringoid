@@ -57,7 +57,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
 
     override lazy val cfg = getCfg
 
-`    def getCfg = ExplodedControlFlowGraph.make(node.getIr)
+    def getCfg = ExplodedControlFlowGraph.make(node.getIr)
 
     override protected def transferFunctions: StringAppendTransferFunctions = new IntraProcStringAppendTransferFunctions
 
