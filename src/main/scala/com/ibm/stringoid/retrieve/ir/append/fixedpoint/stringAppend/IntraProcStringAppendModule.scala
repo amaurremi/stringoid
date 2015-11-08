@@ -26,7 +26,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
     val solver  = getAppendSolver(node, idToAsboForNode(node))
     val result  = solver.result
     val mapping = solver.ataRefMapping
-    val ataRefs: Set[Int] = (solver.getCfg map {
+    val ataRefs: Set[Int] = (solver.cfg map {
       result.getOut(_).index
     })(breakOut)
     // merging concatenations
@@ -55,9 +55,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
 
     lazy val initialMapping = initialAtaRefMapping(node)
 
-    override lazy val cfg = getCfg
-
-    def getCfg = ExplodedControlFlowGraph.make(node.getIr)
+    override lazy val cfg = ExplodedControlFlowGraph.make(node.getIr)
 
     override protected def transferFunctions: StringAppendTransferFunctions = new IntraProcStringAppendTransferFunctions
 
