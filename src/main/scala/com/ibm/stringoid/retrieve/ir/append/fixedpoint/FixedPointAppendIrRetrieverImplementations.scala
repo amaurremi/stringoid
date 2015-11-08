@@ -92,9 +92,14 @@ object FixedPointAppendIrRetrieverImplementations {
     }
 
     override def hasUrls(node: Node): Boolean = {
-      val table = node.getIr.getSymbolTable
-      1 to table.getMaxValueNumber exists {
-        isUrlPrefixVn(_, table)
+      // todo TEMPORARY
+      if (node.getIr.getMethod.toString contains "com/chartboost/sdk/impl/i$d, run()V")
+        false
+      else {
+        val table = node.getIr.getSymbolTable
+        1 to table.getMaxValueNumber exists {
+          isUrlPrefixVn(_, table)
+        }
       }
     }
 
