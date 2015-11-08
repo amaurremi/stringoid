@@ -108,7 +108,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
             case None         =>
               node.getDu.getDef(id) match {
                 case phi: SSAPhiInstruction =>
-                  val uses = 0 until phi.getNumberOfUses map phi.getUse
+                  val uses = 0 until phi.getNumberOfUses map phi.getUse filter { _ > 0 }
                   val (automata, asboMaps) = (uses map {
                     u =>
                       getAppendAutomaton(u, rhsMap, processedAcc + id)
