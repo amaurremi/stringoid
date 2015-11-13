@@ -16,6 +16,12 @@ object Main extends StringoidAnalysis {
 
   // Program arguments example
   // -a append --lib false --ir-source cha -u true <apk file>
+  // failing
+  // /Users/amaurremi/uw/stringoid/src/test/resources/failing/at.software.vn.facechanger-62.apk
+  // /Users/amaurremi/uw/stringoid/src/test/resources/failing/com.minifactory.topsnipershooting-2.apk
+  // /Users/amaurremi/uw/stringoid/src/test/resources/failing/com.myjoapps.textdecorator-10.apk
+  // /Users/amaurremi/uw/stringoid/src/test/resources/failing/com.teslacoilsw.notifier-700.apk
+  // /Users/amaurremi/uw/stringoid/src/test/resources/failing/jp.cbrains-15.apk
 
   def main(args: Array[String]): Unit =
     parser.parse(args, CmdOptions()) foreach { options =>
