@@ -21,11 +21,13 @@ def e(at, final, ct, vt, prefix):
 
     for (s0, v, s1) in ct:
         if s0 == at:
-            yield e(s1, final, ct, vt, prefix + v)
+            for r in e(s1, final, ct, vt, prefix + v):
+                yield r
 
     for (s0, s1) in vt:
         if s0 == at:
-            yield e(s1, final, ct, vt, prefix + "___")
+            for r in e(s1, final, ct, vt, prefix + "___"):
+                yield r
 
 with open(sys.argv[1]) as result_file:
     content = result_file.read()
@@ -42,5 +44,4 @@ with open(sys.argv[1]) as result_file:
 
     for (automaton, _) in results:
         for s in enumerate_automaton(automaton):
-            for u in s:
-                print u
+            print s
