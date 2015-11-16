@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 
-echo ""
-echo "--------------------------------------------------"
-echo "For now, ask Erik to give you the HTTP dump files."
-echo "--------------------------------------------------"
-echo ""
+unzip -n 20_apps.zip
 
 for f in *_content.txt; do
     base=$(basename $f "_content.txt")

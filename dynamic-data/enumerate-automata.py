@@ -44,4 +44,7 @@ with open(sys.argv[1]) as result_file:
 
     for (automaton, _) in results:
         for s in enumerate_automaton(automaton):
-            print s
+            try:
+                print s
+            except:
+                print s.encode('utf-8')
