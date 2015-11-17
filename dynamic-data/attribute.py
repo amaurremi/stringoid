@@ -1,7 +1,33 @@
-import sys
+import difflib
 import json
 import os
 import re
+import sys
+
+# Encapsulates the many (partial-)matching attemps one can do.
+class URLStringMatcher:
+    def __init__(self, blob):
+        self.blob = blob
+        self.lower_blob = blob.tolower()
+        self.matcher = difflib.SequenceMatcher()
+        self.matcher.set_seq2(blob)
+
+    def score(url):
+        no_port = re.sub(":[0-9]+/", "/", url)
+
+        if url in self.blob or no_port in self.blob:
+            return 1.0
+
+        if url.tolower() in self.lower_blob or no_port.tolower() in self.lower_blob:
+            return 1.0
+
+        matcher.set_seq1(url)
+        s1 = sum(n for _,_,n in matcher.get_matching_blocks()) / float(len(url))
+
+        matcher.set_seq1(no_port)
+        s2 = sum(n for _,_,n in matcher.get_matching_blocks()) / float(len(url))
+
+        return max(s1, s2)
 
 def app_to_paths(quasi_name):
     base = os.path.basename(quasi_name)
@@ -13,12 +39,14 @@ def app_to_paths(quasi_name):
     response_file  = "./http-traffic/%s_responses.txt" % base
     static_file    = "./static-app-content/%s.content" % base
     automaton_file = "./automata/%s.automaton" % base
+    enum_file      = "./enumerated/%s.urls" % base
 
     return {
-        "request_file"   : request_file,
-        "response_file"  : response_file,
-        "static_file"    : static_file,
-        "automaton_file" : automaton_file
+        "request_file"         : request_file,
+        "response_file"        : response_file,
+        "static_file"          : static_file,
+        "automaton_file"       : automaton_file,
+        "enumerated_urls_file" : enum_file
     }
 
 def load_requests(request_file):
@@ -30,6 +58,13 @@ def load_requests(request_file):
                 rs.append(m.group(1))
 
     return rs
+
+def load_lines(path):
+    lines = []
+    with open(path) as fp:
+        for line in fp:
+            lines.append(line[:-1])
+    return lines
 
 def load_file(path):
     with open(path) as fp:
@@ -44,39 +79,34 @@ def load_app_data(paths):
     obj["static_content"] = load_file(paths["static_file"])
     obj["response_content"] = load_file(paths["response_file"])
 
+    obj["enumerated_urls"] = load_lines(paths["enumerated_urls_file"])
+
     return obj
 
 def attribute(obj):
-    in_static = 0
-    in_responses = 0
-    in_none = []
-
-    static   = obj["static_content"]
-    response = obj["response_content"]
-
+    static     = URLStringMatcher(obj["static_content"])
+    response   = URLStringMatcher(obj["response_content"])
+    enumerated = URLStringMatcher(set(obj["enumerated_urls"]))
 
     for request in obj["unique_requests"]:
         found = False
-        portless = re.sub(":[0-9]+/", "/", request)
 
-        if request in static or portless in static:
-            in_static += 1
+        if static.score(request) > 0.99:
+            print "%15s   %s" % ("STATIC", request)
             found = True
 
-        if request in response or portless in response:
-            in_responses += 1
+        if response.score(request) > 0.99:
+            print "%15s   %s" % ("RESPONSE", request)
+            found = True
+
+        if enumerated.score(request) > 0.99:
+            print "%15s   %s" % ("EXACT", request)
             found = True
 
         if not found:
-            in_none.append(request)
+            print "%15s   %s" % ("NOTFOUND", request)
 
-    return {
-        "request_count"        : len(obj["requests"]),
-        "unique_request_count" : len(obj["unique_requests"]),
-        "in_static"            : in_static,
-        "in_responses"         : in_responses,
-        "not_found"            : in_none
-    }
+    return None
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -86,7 +116,4 @@ if __name__ == "__main__":
     paths = app_to_paths(sys.argv[1])
     data  = load_app_data(paths)
 
-    attributed = attribute(data)
-
-    for nf in attributed["not-found"]:
-        print nf
+    attribute(data)
