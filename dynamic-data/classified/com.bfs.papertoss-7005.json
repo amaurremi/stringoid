@@ -1,0 +1,10 @@
+{
+  "unattributed": [
+    "http://data.flurry.com:80/aap.do"
+  ], 
+  "unique": 324, 
+  "in_response_exact": 142, 
+  "in_static": 0, 
+  "total": 1059, 
+  "in_response_confirmed": 181
+}

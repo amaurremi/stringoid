@@ -1,0 +1,16 @@
+{
+  "unattributed": [
+    "http://ad.adlibr.com:80/report3.jsp", 
+    "http://chat.mocoplex.com:20001/out.jsp", 
+    "https://api.crittercism.com:443/android_v2/handle_app_loads", 
+    "http://ad.adlibr.com:80/smartad/req_rb2.jsp", 
+    "http://chat.mocoplex.com:20001/match.jsp", 
+    "https://api.parse.com:443/2/create", 
+    "http://chat.mocoplex.com:20001/login.jsp"
+  ], 
+  "unique": 18, 
+  "in_response_exact": 0, 
+  "in_static": 0, 
+  "total": 147, 
+  "in_response_confirmed": 11
+}

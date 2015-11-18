@@ -1,0 +1,13 @@
+{
+  "unattributed": [
+    "https://androidads21.adcolony.com:443/configure?app_id=app3871bf6d04f0409cb6&zones=vz8d0b9bfe7e7d4486a8&os_name=android&os_version=4.2.2&device_api=17&app_version=2.2.3&android_id_sha1=f7318594af99b49a14bf7df52ebd37aa2395bb76&device_id=2377d5ac-cea5-4e45-81b8-c4ed2754667e&open_udid=&device_type=phone&ln=en&device_brand=unknown&device_model=Android%20SDK%20built%20for%20x86&screen_width=768&screen_height=1184&sdk_type=android_native&sdk_version=2.1.2&origin_store=google&available_stores=&imei_sha1=&memory_class=256&memory_used_mb=14&advertiser_id=&limit_tracking=false&carrier=Android&network_type=cell&custom_id=", 
+    "https://androidads21.adcolony.com:443/configure?app_id=app3871bf6d04f0409cb6&zones=vz8d0b9bfe7e7d4486a8&os_name=android&os_version=4.2.2&device_api=17&app_version=2.2.3&android_id_sha1=f7318594af99b49a14bf7df52ebd37aa2395bb76&device_id=2377d5ac-cea5-4e45-81b8-c4ed2754667e&open_udid=&device_type=phone&ln=en&device_brand=unknown&device_model=Android%20SDK%20built%20for%20x86&screen_width=768&screen_height=1184&sdk_type=android_native&sdk_version=2.1.2&origin_store=google&available_stores=&imei_sha1=&memory_class=256&memory_used_mb=13&advertiser_id=&limit_tracking=false&carrier=Android&network_type=cell&custom_id=", 
+    "https://data.flurry.com:443/aap.do", 
+    "http://ct.bootstlab.com:80/ad/13/retrica/en_US?appVersion=2.2.3&p=android&pi=1&src=1&os_ver=17&appVersionCode=21"
+  ], 
+  "unique": 15, 
+  "in_response_exact": 11, 
+  "in_static": 0, 
+  "total": 91, 
+  "in_response_confirmed": 0
+}
