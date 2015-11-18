@@ -5,7 +5,9 @@ import re
 import sys
 import urlparse
 
-# Encapsulates the many (partial-)matching attemps one can do.
+def green(s):
+    return "\033[1;32m%s\033[1;m" % s
+
 class URLStringMatcher:
     def __init__(self, blob):
         self.blob = blob
@@ -13,56 +15,51 @@ class URLStringMatcher:
         self.matcher = difflib.SequenceMatcher()
         self.matcher.set_seq2(blob)
 
-    def score(self, url):
+    def exact_match(self, url):
         no_port = re.sub(":[0-9]+/", "/", url)
 
         if url in self.blob or no_port in self.blob:
-            return 1.0
+            return True
 
         if url.lower() in self.lower_blob or no_port.lower() in self.lower_blob:
-            return 1.0
+            return True
 
-        try:
-            p = urlparse.urlparse(no_port.lower())
+        return False
 
-            bits = []
+    def interactive_match(self, url):
+        no_port = re.sub(":[0-9]+/", "/", url)
 
-            if p.netloc:
-                bits.append(p.netloc)
+        p = urlparse.urlparse(no_port)
 
-            path = p.path
-            if path.startswith('/'):
-                path = path[1:]
+        parts = list(p)
 
-            if path.endswith('/'):
-                path = path[:-1]
+        parts[1] = p.netloc
+        parts[2] = p.path
+        parts[3] = p.query
 
-            bits.append(path)
+        if p.netloc.lower() in self.lower_blob:
+            parts[1] = green(p.netloc)
 
-            #for k,v in urlparse.parse_qsl(p.query):
-            #    if k:
-            #        bits.append(k)
-            #    if v:
-            #        bits.append(v)
+        path_elems = p.path.split('/')
+        colored_path_elems = map(lambda e : green(e) if e and e in self.blob else e, path_elems)
+        parts[2] = '/'.join(colored_path_elems)
 
-            bit_found = 0
+        qpairs = urlparse.parse_qsl(p.query)
+        cqpairs = map(lambda (k,v): (green(k) if k in self.blob else k, green(v) if v in self.blob else v), qpairs)
 
-            for b in bits:
-                if b in self.lower_blob:
-                    bit_found += 1
+        cquery = "" if not cqpairs else "?" + "&".join(map(lambda (k,v): "%s=%s" % (k,v), cqpairs))
+        parts[3] = cquery
 
-            return float(bit_found) / float(len(bits))
-        except:
-            return 0.0
+        colored = urlparse.urlunparse(parts)
 
-        # self.matcher.set_seq1(url)
-        # s1 = sum(n for _,_,n in self.matcher.get_matching_blocks()) / float(len(url))
+        print ""
+        print colored
+        print ""
 
-        # self.matcher.set_seq1(no_port)
-        # s2 = sum(n for _,_,n in self.matcher.get_matching_blocks()) / float(len(url))
-
-        # return max(s1, s2)
-        return 0.0
+        response = "."
+        while response != "y" and response != "n":
+            response = raw_input("Match ? (y/n) ")
+        return response == "y"
 
 def app_to_paths(quasi_name):
     base = os.path.basename(quasi_name)
@@ -82,7 +79,8 @@ def app_to_paths(quasi_name):
         "response_file"        : response_file,
         "static_file"          : static_file,
         "automaton_file"       : automaton_file,
-        "enumerated_urls_file" : enum_file
+        "enumerated_urls_file" : enum_file,
+        "json_output"          : "./classified/%s.json" % base
     }
 
 def load_requests(request_file):
@@ -122,46 +120,36 @@ def load_app_data(paths):
 def attribute(obj):
     static     = URLStringMatcher(obj["static_content"])
     response   = URLStringMatcher(obj["response_content"])
-    enumerated = URLStringMatcher("\n".join(set(obj["enumerated_urls"])))
 
-    count_static = 0
-    count_response = 0
-    count_exact = 0
-    not_found = 0
+    static_hits = 0
+    response_hits = 0
+    response_manual_hits = 0
+
+    unattributed = []
 
     for request in obj["unique_requests"]:
-        s1 = s2 = s3 = -1.0
+        if static.exact_match(request):
+            static_hits += 1
+            continue 
 
-        s3 = enumerated.score(request)
-        if s3 > 0.99:
-            print "%15s   %s" % ("%.2f - EXACT" % s3, request)
-            count_exact += 1
+        if response.exact_match(request):
+            response_hits += 1
             continue
 
-        s1 = static.score(request)
-        if s1 > 0.99:
-            print "%15s   %s" % ("%.2f - STATIC" % s1, request)
-            count_static += 1
+        if response.interactive_match(request):
+            response_manual_hits += 1
             continue
 
-        s2 = response.score(request)
-        if s2 > 0.99:
-            print "%15s   %s" % ("%.2f - RESPONSE" % s2, request)
-            count_response += 1
-            continue
+        unattributed.append(request)        
 
-        print "%15s   %s" % ("%.2f - NOTFOUND" % max(s1,s2,s3), request)
-        not_found += 1
-
-    print "Exact matches     : %d" % count_exact
-    print "In static content : %d" % count_static
-    print "In responses exa  : %d" % count_response
-    print "Not found         : %d" % not_found
-    print "-----------------------"
-    print "Total             : %d" % len(obj["unique_requests"])
-    print "Non-uniques       : %d" % len(obj["requests"])
-    
-    return None
+    return {
+        "unique" : len(obj["unique_requests"]),
+        "total" : len(obj["requests"]),
+        "in_static" : static_hits,
+        "in_response_exact" : response_hits,
+        "in_response_confirmed" : response_manual_hits,
+        "unattributed" : unattributed
+    }
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -174,6 +162,9 @@ if __name__ == "__main__":
     print "  %30s" % paths["app_name"]
     print "--------------------------------------------------------------"
 
-    data  = load_app_data(paths)
+    data = load_app_data(paths)
 
-    attribute(data)
+    attribution = attribute(data)
+
+    with open(paths["json_output"], "w") as fp:
+        fp.write(json.dumps(attribution, indent=2))
