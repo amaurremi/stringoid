@@ -42,7 +42,9 @@ def bits_recall(urls, enumerated_file):
         if len(s1) == 0:
             return None
 
-        return (len(s1), len(s1 & s2), float(len(s1 & s2)) / float(len(s1)))
+        #return (len(s1), len(s1 & s2), float(len(s1 & s2)) / float(len(s1)))
+        #return (len(s1), len(s1 & s2), float(len(s1 & s2)) / float(len(s1)))
+        return len(s1 & s2)
 
     return {
         "in_requests" : {
@@ -149,9 +151,10 @@ if __name__ == "__main__":
     if base.endswith(".apk"):
         base = base[:-4]
 
-    apk_file = "./apps/%s.apk" % base
+    apk_file        = "./apps/%s.apk" % base
     classified_file = "./classified/%s.json" % base
     enumerated_file = "./enumerated/%s.urls" % base
+    output_file     = "./recall-results/%s.json" % base
 
     app_name = get_app_name(apk_file)
 
@@ -179,4 +182,6 @@ if __name__ == "__main__":
 
     results["url_elements"] = bits_recall(classified_data["unattributed"], enumerated_file)
 
-    print json.dumps(results, indent=2)
+    with open(output_file, "w") as fp:
+        fp.write(json.dumps(results, indent=2))
+        print "Results written to %s." % output_file
