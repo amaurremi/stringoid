@@ -13,16 +13,17 @@ def urls_to_bits(urls):
 
     for url in urls:
         portless = re.sub(":[0-9]+/", "/", url)
-        p = urlparse.urlparse(portless)
-        if not p.scheme:
-            continue
+        if portless.startswith("http"):
+            p = urlparse.urlparse(portless)
+            if not p.scheme:
+                continue
 
-        domains.add(p.netloc)
-        if p.path:
-            paths.add((p.netloc, p.path))
-        for k,v in urlparse.parse_qsl(p.query):
-            query.add((p.netloc, k))
-            query_vals.add((p.netloc, k, v))
+            domains.add(p.netloc)
+            if p.path:
+                paths.add((p.netloc, p.path))
+            for k,v in urlparse.parse_qsl(p.query):
+                query.add((p.netloc, k))
+                query_vals.add((p.netloc, k, v))
 
     return (domains, paths, query, query_vals)
 
@@ -39,12 +40,9 @@ def bits_recall(urls, enumerated_file):
     (sd, sp, sq, sv) = urls_to_bits(list(enumerated))
 
     def rec(s1, s2):
-        if len(s1) == 0:
-            return None
-
         #return (len(s1), len(s1 & s2), float(len(s1 & s2)) / float(len(s1)))
         #return (len(s1), len(s1 & s2), float(len(s1 & s2)) / float(len(s1)))
-        return len(s1 & s2)
+        return (len(s1 & s2), len(s2 - s1))
 
     return {
         "in_requests" : {

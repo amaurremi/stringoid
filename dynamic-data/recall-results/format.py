@@ -3,9 +3,12 @@ import glob
 
 def rec(i,j):
     if i == 0:
-        return '-'
+        return "-"
     else:
         return "%d/%d" % (j, i)
+
+def rec2(i,j):
+    return "%d/%d+%d" % (j[0], i, j[1])
 
 def no_zero(i):
     if i == 0:
@@ -15,7 +18,7 @@ def no_zero(i):
 
 if __name__ == "__main__":
 
-    print '%-35s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s' % (
+    print '%-35s, %s, %s, %s, %s, %s, %s, %s, %s, %11s, %11s, %11s, %11s' % (
         '"Name"',
         '"Requests"',
         '"Uniques"',
@@ -37,7 +40,7 @@ if __name__ == "__main__":
 
             elems = d["url_elements"]
 
-            print '%-35s, %10d, %9d, %8s, %11d, %11s, %7d, %7d, %8d, %9s, %7s, %8s, %8s' % (
+            print '%-35s, %10d, %9d, %8s, %11d, %11s, %7d, %7d, %8d, %11s, %11s, %11s, %11s' % (
                 '"' + d["app_name"] + '"',
                 d["requests"],
                 d["unique_requests"],
@@ -50,10 +53,10 @@ if __name__ == "__main__":
                 d["stringoid_matches"]["exact"],
                 d["stringoid_matches"]["pattern_full"],
                 d["stringoid_matches"]["pattern_prefix"],
-                rec(elems["in_requests"]["domains"], elems["recalled"]["domains"]),
-                rec(elems["in_requests"]["paths"], elems["recalled"]["paths"]),
-                rec(elems["in_requests"]["query"], elems["recalled"]["query"]),
-                rec(elems["in_requests"]["values"], elems["recalled"]["values"])
+                rec2(elems["in_requests"]["domains"], elems["recalled"]["domains"]),
+                rec2(elems["in_requests"]["paths"], elems["recalled"]["paths"]),
+                rec2(elems["in_requests"]["query"], elems["recalled"]["query"]),
+                rec2(elems["in_requests"]["values"], elems["recalled"]["values"])
             )
 
 
