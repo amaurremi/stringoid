@@ -34,13 +34,6 @@ def render_urls(result_object):
         yield "".join(map(lambda s : render_url_segment(s), segments))
 
 def render_url_segment(url_segment):
-    k = url_segment["kind"]
-
-    if k == "constant":
-        return url_segment["value"]
-    elif k == "variable":
-        return "____"
-    elif k == "missing":
-        return "????"
-    else:
-        raise Exception("Unknown kind: %s." % k)
+    k = url_segment["kind"]  
+    assert(k == "constant")
+    return url_segment["value"]
