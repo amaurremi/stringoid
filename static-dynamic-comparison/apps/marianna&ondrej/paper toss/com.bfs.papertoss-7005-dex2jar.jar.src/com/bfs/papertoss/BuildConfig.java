@@ -1,0 +1,12 @@
+package com.bfs.papertoss;
+
+public final class BuildConfig
+{
+  public static final boolean DEBUG = false;
+}
+
+
+/* Location:              /Users/amaurremi/uw/stringoid/static-dynamic-comparison/apps/paper toss/com.bfs.papertoss-7005-dex2jar.jar!/com/bfs/papertoss/BuildConfig.class
+ * Java compiler version: 6 (50.0)
+ * JD-Core Version:       0.7.1
+ */

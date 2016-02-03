@@ -1,0 +1,16 @@
+package com.google.android.gms.maps.internal;
+
+import android.os.IInterface;
+import com.google.android.gms.maps.model.internal.f;
+
+public abstract interface g
+  extends IInterface
+{
+  public abstract void e(f paramf);
+}
+
+
+/* Location:              /Users/amaurremi/uw/stringoid/static-dynamic-comparison/apps/retrica/com.venticake.retrica-21-dex2jar.jar!/com/google/android/gms/maps/internal/g.class
+ * Java compiler version: 6 (50.0)
+ * JD-Core Version:       0.7.1
+ */

@@ -1,0 +1,27 @@
+package com.inmobi.monetization.internal.configs;
+
+import com.inmobi.commons.metric.EventType;
+
+public enum NetworkEventType
+        implements EventType {
+    private int a;
+
+    static {
+        CONNECT_ERROR = new NetworkEventType("CONNECT_ERROR", 2, 2);
+        RESPONSE_ERROR = new NetworkEventType("RESPONSE_ERROR", 3, 3);
+    }
+
+    private NetworkEventType(int paramInt) {
+        this.a = paramInt;
+    }
+
+    public int getValue() {
+        return this.a;
+    }
+}
+
+
+/* Location:              /Users/amaurremi/uw/stringoid stuff/static vs dynamic/ifunny/mobi.ifunny-2447-dex2jar.jar!/com/inmobi/monetization/internal/configs/NetworkEventType.class
+ * Java compiler version: 6 (50.0)
+ * JD-Core Version:       0.7.1
+ */

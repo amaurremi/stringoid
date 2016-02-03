@@ -1,0 +1,11 @@
+{
+  "unattributed": [
+    "http://www.beyondpod.mobi:80/api/feedsearch?type=*&start=0&take=20&query=soccer", 
+    "http://www.beyondpod.mobi:80/Android/VersionCheck.aspx?v=3.3.68&lt=tr&k=bpsd"
+  ], 
+  "unique": 33, 
+  "in_response_exact": 16, 
+  "in_static": 13, 
+  "total": 183, 
+  "in_response_confirmed": 2
+}

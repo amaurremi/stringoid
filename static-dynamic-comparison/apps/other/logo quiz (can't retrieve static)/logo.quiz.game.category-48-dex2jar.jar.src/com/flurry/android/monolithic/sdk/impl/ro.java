@@ -1,0 +1,13 @@
+package com.flurry.android.monolithic.sdk.impl;
+
+public abstract interface ro
+{
+  public abstract void a(qk paramqk, qq paramqq)
+    throws qw;
+}
+
+
+/* Location:              /Users/amaurremi/uw/stringoid/static-dynamic-comparison/apps/logo quiz/logo.quiz.game.category-48-dex2jar.jar!/com/flurry/android/monolithic/sdk/impl/ro.class
+ * Java compiler version: 6 (50.0)
+ * JD-Core Version:       0.7.1
+ */

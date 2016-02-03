@@ -1,0 +1,31 @@
+package twitter4j;
+
+import java.io.Serializable;
+import java.util.Date;
+
+public abstract interface DirectMessage
+        extends TwitterResponse, EntitySupport, Serializable {
+    public abstract Date getCreatedAt();
+
+    public abstract long getId();
+
+    public abstract User getRecipient();
+
+    public abstract long getRecipientId();
+
+    public abstract String getRecipientScreenName();
+
+    public abstract User getSender();
+
+    public abstract long getSenderId();
+
+    public abstract String getSenderScreenName();
+
+    public abstract String getText();
+}
+
+
+/* Location:              /Users/amaurremi/uw/stringoid stuff/static vs dynamic/tapatalk/com.quoord.tapatalkpro.activity-453-dex2jar.jar!/twitter4j/DirectMessage.class
+ * Java compiler version: 6 (50.0)
+ * JD-Core Version:       0.7.1
+ */

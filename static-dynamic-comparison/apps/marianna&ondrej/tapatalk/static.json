@@ -1,0 +1,4347 @@
+{
+  "config": {
+    "analysis": "append (extracting string concatentations through StringBuilders/StringBuffers and '+')",
+    "libs": "ignoring",
+    "reachability": "class hierarchy analysis"
+  },
+  "runtime": 40.91852932699999,
+  "result": {
+    "url2methods": [
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://www.youtube.com/watch?v="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/bean/AttachmentInfo$5, onClick(Landroid/view/View;)V >",
+          "< Application, Lcom/google/android/youtube/player/YouTubeIntents, canResolvePlayVideoIntent(Landroid/content/Context;)Z >",
+          "< Application, Lcom/google/android/youtube/player/YouTubeIntents, createPlayVideoIntentWithOptions(Landroid/content/Context;Ljava/lang/String;ZZ)Landroid/content/Intent; >",
+          "< Application, Lcom/quoord/tapatalkpro/ads/AdDetailFragment$MyHandler, handleMessage(Landroid/os/Message;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/adapter/forum/MessageContentAdapter$2, onClick(Landroid/view/View;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://directory.tapatalk.com/n-in-1/network.php?rid="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "field access: < Application, Lcom/quoord/tapatalkpro/TapatalkApp, rebranding_id, <Application,Ljava/lang/String> >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/activity/directory/ics/NetWorkFragment$NetWorkAdapter, call()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://log.tapatalk.com/recommend_push.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_sign_in.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_update_profile.php?username="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil, encodePara(Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&"
+            },
+            {
+              "kind": "constant",
+              "value": "token="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil, encodePara(Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&"
+            },
+            {
+              "kind": "constant",
+              "value": "au_id="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil, callUpdateUsername(Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://chrometophone.appspot.com/_ah/login?continue="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/net/URLEncoder, encode(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&auth="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/AppEngineClient, makeRequestNoRetry(Ljava/lang/String;Ljava/util/List;Z)Lorg/apache/http/HttpResponse; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://log.tapatalk.com/new_convo.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://log.tapatalk.com/app_session.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://plus.google.com/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/internal/fi, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "parameter"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/Util, getRefer(Ljava/lang/String;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/vimeolib/complete.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://chrometophone.appspot.com/_ah/login?continue="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/net/URLEncoder, encode(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&auth="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/AppEngineClient, getAuthToken(Landroid/content/Context;Landroid/accounts/Account;)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/AppEngineClient, makeRequestNoRetry(Ljava/lang/String;Ljava/util/List;Z)Lorg/apache/http/HttpResponse; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/check_app_version.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/action/CheckUpdate, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/lang/String, toLowerCase()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": ":"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "int",
+                "source": "method return: < Application, Ljava/net/URI, getPort()I >"
+              }
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/net/URI, getPath()Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/xmlrpc/XMLRPCClient, send(Ljava/lang/String;[Ljava/lang/Object;Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/lang/String, substring(II)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/BBcodeUtil$BBElement, setValue(Ljava/lang/String;Lcom/quoord/tapatalkpro/bean/ForumStatus;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_reset_password.php?email="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/net/URLEncoder, encode(Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/TapatalkIdForgetPasswordFragment$1, onClick(Landroid/view/View;)V >",
+          "< Application, Lcom/quoord/newonboarding/TapatalkIdForgetPasswordFragment$1, onClick(Landroid/view/View;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://log.tapatalk.com/register_token.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://api.facebook.com/method/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/facebook/Request, getUrlForSingleRequest()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_update_profile.php?username="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil, encodePara(Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&"
+            },
+            {
+              "kind": "constant",
+              "value": "token="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil, encodePara(Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&"
+            },
+            {
+              "kind": "constant",
+              "value": "au_id="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil, encodePara(Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil, callUpdateUsername(Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://log.tapatalk.com/new_topic.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://market.android.com/details?id="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/lang/String, substring(I)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/flurry/sdk/r, a(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/lang/String, replaceAll(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/DownloadUtil, getRomoteBitmapLocalUrl(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String; >",
+          "< Application, Lcom/quoord/tapatalkpro/util/DownloadUtil, getRomoteBitmapLocalUrl(Landroid/content/Context;Ljava/lang/String;Z)Ljava/lang/String; >",
+          "< Application, Lcom/quoord/tapatalkpro/util/DownloadUtil, getRomoteBitmapLocalUrl(Lcom/quoord/tapatalkpro/bean/ForumStatus;Ljava/lang/String;Landroid/content/Context;)Ljava/lang/String; >",
+          "< Application, Lcom/quoord/tapatalkpro/util/ImageInThreadLoader, getRomoteBitmapLocalUrl(Lcom/quoord/tapatalkpro/bean/ForumStatus;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;ILandroid/content/Context;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://www.googleapis.com/auth/plus.login"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/plus/Plus, <clinit>()V >",
+          "< Application, Lcom/google/android/gms/plus/PlusShare$Builder, <init>(Landroid/app/Activity;Lcom/google/android/gms/plus/PlusClient;)V >",
+          "< Application, Lcom/google/android/gms/plus/internal/i, <init>(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_update_profile.php?username="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil, encodePara(Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&"
+            },
+            {
+              "kind": "constant",
+              "value": "token="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil, encodePara(Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil, callUpdateUsername(Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_get_images.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_update_profile.php?"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "field access: < Application, Lcom/quoord/tapatalkpro/TapatalkApp, APP_KEY, <Application,Ljava/lang/String> >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&au_id="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "int",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/bean/TapatalkId, getAuid()I >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&token="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/activity/directory/ics/FavForumsFragment$3, onClick(Landroid/content/DialogInterface;I)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_avatar.php?au_id="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "int",
+                "source": "field access: < Application, Lcom/quoord/tapatalkpro/ics/slidingMenu/login/ForumJoinFragment, au_id, <Primordial,I> >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ics/slidingMenu/login/ForumJoinFragment, initViewByPrefetchAccount()V >",
+          "< Application, Lcom/quoord/tapatalkpro/ics/slidingMenu/login/ForumJoinFragment, showEditUsernameDialog(Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://api.facebook.com/restserver.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/facebook/android/Facebook, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://www.yuku.com/mobiquo/search?search="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/action/YukuSearchAction, <init>(Landroid/app/Activity;Ljava/lang/String;Lcom/quoord/tapatalkpro/adapter/directory/ics/RebrandAdapter;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://graph.facebook.com/oauth/authorize?"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/androidquery/auth/FacebookHandle, encodeUrl(Landroid/os/Bundle;)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/androidquery/auth/FacebookHandle, webAuth()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://api.twitter.com/oauth/access_token"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Ltwitter4j/conf/ConfigurationBase, <init>()V >",
+          "< Application, Ltwitter4j/conf/ConfigurationBase, fixRestBaseURL()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/get_forums_by_device_id.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/bean/ForumStatus, getPrefectUrl()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "reply/"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "field access: < Application, Lcom/quoord/tapatalkpro/bean/PostData, postId, <Application,Ljava/lang/String> >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/bean/PostData, actionOpenPostInBrowser(Lcom/quoord/tapatalkpro/bean/ForumStatus;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_update_profile.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://upload.tapatalk.com/img.php?response_type=json"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/GeoPictureUploader, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://www.youtube.com/playlist?list="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/youtube/player/YouTubeIntents, a(Ljava/lang/String;)Landroid/net/Uri; >",
+          "< Application, Lcom/google/android/youtube/player/YouTubeIntents, canResolveOpenPlaylistIntent(Landroid/content/Context;)Z >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://pt.tapatalk.com/pt_get_ad.php?fid=google_search"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ads/SearchAd, getSearchAdAction()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://search.tapatalk.com/api/popular/recommend"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/id/manage.php?token="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/bean/TapatalkId, getToken()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&code="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/activity/directory/ics/FavForumsFragment$2$1, onClick(Landroid/content/DialogInterface;I)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/get_branded.php?app_type=android&bid="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "field access: < Application, Lcom/quoord/tapatalkpro/TapatalkApp, rebranding_id, <Application,Ljava/lang/String> >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&device_id="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/util/Util, getMD5(Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/action/RebrandingChecker, <init>(Lcom/quoord/tapatalkpro/activity/directory/ics/IcsRebrandingEntryActivity;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://tapatalk.com"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil$2, run()V >",
+          "< Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil$1, run()V >",
+          "< Application, Lcom/quoord/tapatalkHD/TwiterOauthActivity$1, onPageStarted(Landroid/webkit/WebView;Ljava/lang/String;Landroid/graphics/Bitmap;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/get_iab_root_category.json"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://search.tapatalk.com/action/upload_avatar"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://survivorsucks.yuku.com/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/adapter/directory/ics/RebrandAdapter, addDefualtForum()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://play.google.com/store/apps/details?id="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "parameter"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/flurry/sdk/r, a(Landroid/content/Context;Ljava/lang/String;Lcom/flurry/android/impl/ads/avro/protocol/v10/AdUnit;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_log_topic_subscription.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://ads.flurry.com/v10/getAds.do"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/flurry/android/impl/ads/FlurryAdModule, w()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://support.tapatalk.com"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/TapatalkApp, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://graph.facebook.com"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/facebook/Request, toHttpConnection(Lcom/facebook/RequestBatch;)Ljava/net/HttpURLConnection; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://media.admob.com/mraid/v1/mraid_app_expanded_banner.js"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/internal/ec, shouldInterceptRequest(Landroid/webkit/WebView;Ljava/lang/String;)Landroid/webkit/WebResourceResponse; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/id/manage.php?token="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/bean/TapatalkId, getToken()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&code="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/util/Util, getMD5(Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&from="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Landroid/content/SharedPreferences, getString(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/activity/directory/ics/FavForumsFragment$2$1, onClick(Landroid/content/DialogInterface;I)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/net/URL, getHost()Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/Util, getRefer(Ljava/lang/String;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://www.googleapis.com/auth/drive"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/drive/Drive, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://vimeo.com/"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/lang/String, substring(II)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/adapter/forum/MessageContentAdapter$2, onClick(Landroid/view/View;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/migrate_twitter_with_email.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_update_profile.php?"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "field access: < Application, Lcom/quoord/tapatalkpro/TapatalkApp, APP_KEY, <Application,Ljava/lang/String> >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&au_id="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "int",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/bean/TapatalkId, getAuid()I >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&token="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/bean/TapatalkId, getToken()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&username="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/activity/directory/ics/FavForumsFragment$3, onClick(Landroid/content/DialogInterface;I)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_update_profile.php?username="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil, encodePara(Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&"
+            },
+            {
+              "kind": "constant",
+              "value": "token="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil, encodePara(Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil, callUpdateUsername(Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/vimeolib/ticket.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, callLogin(Landroid/content/Context;Ljava/lang/String;Z)V >",
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, call(Ljava/lang/String;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, callUri(Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://log.tapatalk.com/file_upload.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_sign_in_google.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://vimeo.com/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/adapter/forum/MessageContentAdapter$2, onClick(Landroid/view/View;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/get_forums.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://search.tapatalk.com/api/popular/multi_forum"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://log.tapatalk.com/recommend_topic.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/check_plugin_version.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/get_branded.php?app_type=android&bid="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/action/RebrandingChecker, <init>(Lcom/quoord/tapatalkpro/activity/directory/ics/IcsRebrandingEntryActivity;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/action/GetAllInOne, <init>(Landroid/app/Activity;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "parameter"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/Util, getRefer(Ljava/lang/String;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://api.twitter.com/oauth/authorize"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/androidquery/auth/TwitterHandle, <init>(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_reset_password.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://hostname/?"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "parameter"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/tagmanager/ay, m(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_change_password.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://www.googleapis.com/auth/plus.profile.emails.read"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/GooglePlusFragment, buildPlusClient(Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://api.twitter.com/oauth/authorize"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Ltwitter4j/conf/ConfigurationBase, <init>()V >",
+          "< Application, Ltwitter4j/conf/ConfigurationBase, fixRestBaseURL()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_delete_image.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://go.redirectingat.com/?id="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/adapter/forum/MessageContentAdapter, doSkimlik(Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/lang/String, toLowerCase()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/net/URI, getPath()Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/GeoPictureUploader, uploadPictureToForum(Ljava/util/ArrayList;Ljava/lang/String;Landroid/content/Context;)Ljava/lang/Object; >",
+          "< Application, Lcom/quoord/xmlrpc/JSONRPCClient, send(Ljava/util/HashMap;Landroid/content/Context;)V >",
+          "< Application, Lcom/quoord/xmlrpc/XMLRPCClient, send(Ljava/lang/String;[Ljava/lang/Object;Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://api.twitter.com/oauth/authenticate"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Ltwitter4j/conf/ConfigurationBase, <init>()V >",
+          "< Application, Ltwitter4j/conf/ConfigurationBase, fixRestBaseURL()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://amazon-adsystem.amazon.com/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/amazon/device/ads/HtmlRenderer, renderAdView()V >",
+          "< Application, Lcom/amazon/device/ads/InterstitialAd, loadHtml(Ljava/lang/String;)V >",
+          "< Application, Lcom/amazon/device/ads/InterstitialAdActivityAdapter, onCreate()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://twitter4j.org/en/twitter4j-"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ltwitter4j/Version, getVersion()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": ".xml"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Ltwitter4j/conf/ConfigurationBase, <init>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://directory.tapatalk.com/n-in-1/network.php?rid="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/activity/directory/ics/NetWorkFragment$NetWorkAdapter, call()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_update_feed.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://play.google.com/store/apps/details?id="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/flurry/sdk/r, a(Landroid/content/Context;Ljava/lang/String;Lcom/flurry/android/impl/ads/avro/protocol/v10/AdUnit;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://search.tapatalk.com/api/cat_popular"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://userstream.twitter.com/1.1/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Ltwitter4j/conf/ConfigurationBase, <init>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://www.postrelease.com/content/tapatalk/whatsthis.html"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ads/AdWebviewActivity, onCreate(Landroid/os/Bundle;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://www.googletagmanager.com"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/tagmanager/r, <init>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://www.googleapis.com/auth/drive.file"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/drive/Drive, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_update_profile.php?username="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil, encodePara(Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&"
+            },
+            {
+              "kind": "constant",
+              "value": "token="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil, callUpdateUsername(Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://www.youtube.com/playlist?list="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "parameter"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/youtube/player/YouTubeIntents, a(Ljava/lang/String;)Landroid/net/Uri; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://tow411.yuku.com/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/adapter/directory/ics/RebrandAdapter, addDefualtForum()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://search.tapatalk.com/search_topic"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://www.w3.org/2000/xmlns/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lorg/kxml2/io/KXmlParser, getNamespace(Ljava/lang/String;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://search.tapatalk.com/api/thumbup"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://search.tapatalk.com/log/log_feed"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/lang/String, toLowerCase()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/net/URI, getPath()Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/GeoPictureUploader, uploadPictureToForum(Ljava/util/ArrayList;Ljava/lang/String;Landroid/content/Context;)Ljava/lang/Object; >",
+          "< Application, Lcom/quoord/xmlrpc/JSONRPCClient, send(Ljava/util/HashMap;Landroid/content/Context;)V >",
+          "< Application, Lcom/quoord/xmlrpc/XMLRPCClient, send(Ljava/lang/String;[Ljava/lang/Object;Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/adapter/forum/ForumRootAdapter, forumItemClicked(Lcom/quoord/tapatalkpro/bean/Forum;ZLcom/quoord/tapatalkpro/ics/slidingMenu/SlidingMenuActivity;Ljava/lang/String;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/ads/AdDetailFragment, doWeb(Ljava/lang/String;Ljava/lang/String;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/bean/PostData, actionOpenPostInBrowser(Lcom/quoord/tapatalkpro/bean/ForumStatus;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/adapter/directory/ics/RebrandAdapter, getView(ILandroid/view/View;Landroid/view/ViewGroup;)Landroid/view/View; >",
+          "< Application, Lcom/quoord/tapatalkpro/cache/AppCacheManager, getNewCachePath(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; >",
+          "< Application, Lcom/quoord/tapatalkpro/ics/slidingMenu/login/TapatalkFacebookSigninFragment, initLoad()V >",
+          "< Application, Lcom/quoord/tapatalkpro/activity/directory/ics/YukuSearchFragment$YukuSearchAdapter, getView(ILandroid/view/View;Landroid/view/ViewGroup;)Landroid/view/View; >",
+          "< Application, Lcom/quoord/tapatalkpro/util/ImageInThreadLoader, getRomoteBitmapLocalUrl(Lcom/quoord/tapatalkpro/bean/ForumStatus;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;ILandroid/content/Context;)Ljava/lang/String; >",
+          "< Application, Lcom/quoord/tapatalkpro/bean/ForumStatus, getCachePath()Ljava/lang/String; >",
+          "< Application, Lcom/quoord/tapatalkpro/util/AsyncBitmapLoader, getRomoteBitmapWithType(Landroid/content/Context;Lcom/quoord/tools/ForumHttpStatus;Ljava/lang/String;I)Lcom/quoord/tapatalkpro/util/CustomBitmapWithType; >",
+          "< Application, Lcom/quoord/xmlrpc/JSONRPCClient, send(Ljava/util/HashMap;Landroid/content/Context;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/adapter/forum/MessageContentAdapter, doWeb(Ljava/lang/String;Ljava/lang/String;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/util/DownloadUtil, getRomoteBitmapLocalUrl(Lcom/quoord/tapatalkpro/bean/ForumStatus;Ljava/lang/String;Landroid/content/Context;)Ljava/lang/String; >",
+          "< Application, Ltwitter4j/conf/ConfigurationBase, fixURL(ZLjava/lang/String;)Ljava/lang/String; >",
+          "< Application, Lcom/quoord/tapatalkpro/util/GeoPictureUploader, uploadPictureToForum(Ljava/util/ArrayList;Ljava/lang/String;Landroid/content/Context;)Ljava/lang/Object; >",
+          "< Application, Lcom/quoord/tapatalkpro/action/SubscribeForumAndTopicAction, forumItemClicked(Lcom/quoord/tapatalkpro/bean/Forum;ZLcom/quoord/tapatalkpro/ics/slidingMenu/SlidingMenuActivity;Ljava/lang/String;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/util/DownloadUtil, getRomoteBitmapLocalUrl(Landroid/content/Context;Ljava/lang/String;Z)Ljava/lang/String; >",
+          "< Application, Lcom/quoord/tapatalkpro/util/Util, getHost(Ljava/lang/String;)Ljava/lang/String; >",
+          "< Application, Lcom/quoord/tapatalkpro/util/ForumUrlUtil, openFromUrl(Landroid/content/Intent;Landroid/app/Activity;Ljava/lang/String;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/ics/slidingMenu/login/ForumJoinFragment, onActivityCreated(Landroid/os/Bundle;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/ics/slidingMenu/login/ForumRegisterFragment, getUrl()Ljava/lang/String; >",
+          "< Application, Lcom/quoord/tapatalkpro/util/BBcodeUtil$BBElement, setValue(Ljava/lang/String;Lcom/quoord/tapatalkpro/bean/ForumStatus;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/util/DownloadUtil, getRomoteBitmapLocalUrl(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String; >",
+          "< Application, Ltwitter4j/auth/OAuthAuthorization, constructRequestURL(Ljava/lang/String;)Ljava/lang/String; >",
+          "< Application, Lcom/quoord/tapatalkpro/util/Util, getRefer(Ljava/lang/String;)Ljava/lang/String; >",
+          "< Application, Lcom/quoord/xmlrpc/XMLRPCClient, send(Ljava/lang/String;[Ljava/lang/Object;Landroid/content/Context;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/ics/forum/ForumFragmentUtil, forumClickFragment(Lcom/quoord/tapatalkpro/bean/Forum;Lcom/quoord/tapatalkpro/ics/slidingMenu/SlidingMenuActivity;Ljava/lang/String;Ljava/lang/String;)V >",
+          "< Application, Ltwitter4j/auth/OAuthAuthorization, getOAuthAccessToken(Ljava/lang/String;Ljava/lang/String;)Ltwitter4j/auth/AccessToken; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://log.tapatalk.com/reply_post.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/bean/ForumStatus, getPrefectUrl()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "reply/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/bean/PostData, actionOpenPostInBrowser(Lcom/quoord/tapatalkpro/bean/ForumStatus;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/get_ob_forums_by_iab_category.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://schemas.android.com/apk/lib/com.amazon.device.ads"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/amazon/device/ads/AdLayout, initialize(Landroid/content/Context;Landroid/util/AttributeSet;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/id/manage.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://api.twitter.com/1.1/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Ltwitter4j/conf/ConfigurationBase, <init>()V >",
+          "< Application, Ltwitter4j/conf/ConfigurationBase, fixRestBaseURL()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://tapatalk.com/license.php?from=app"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ics/slidingMenu/SettingsFragment, onPreferenceClick(Landroid/preference/Preference;)Z >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://log.tapatalk.com/notify_register.php?is_reg="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://jjb.yuku.com/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/adapter/directory/ics/RebrandAdapter, addDefualtForum()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://graph.facebook.com/oauth/authorize?"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/androidquery/auth/FacebookHandle, webAuth()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://www.w3.org/XML/1998/namespace"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lorg/kxml2/io/KXmlParser, getNamespace(Ljava/lang/String;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://www.google-analytics.com/collect"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/analytics/ah, a(Lcom/google/android/gms/analytics/x;)Ljava/net/URL; >",
+          "< Application, Lcom/google/android/gms/analytics/ac, a(Ljava/util/Map;JLjava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_avatar.php?au_id="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "int",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/bean/TapatalkId, getAuid()I >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ics/slidingMenu/login/TapatalkFacebookSigninFragment, showEditUsernameDialog()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://schemas.android.com/apk/res/"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Landroid/content/Context, getPackageName()Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/amazon/device/ads/AdLayout, initialize(Landroid/content/Context;Landroid/util/AttributeSet;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/get_branded.php?app_type=android&bid="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "field access: < Application, Lcom/quoord/tapatalkpro/TapatalkApp, rebranding_id, <Application,Ljava/lang/String> >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/action/RebrandingChecker, <init>(Lcom/quoord/tapatalkpro/activity/directory/ics/IcsRebrandingEntryActivity;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/action/GetAllInOne, <init>(Landroid/app/Activity;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/net/URL, getHost()Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/Util, getRefer(Ljava/lang/String;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://search.tapatalk.com/log/log_topic"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://log.tapatalk.com/log_top_topic_push.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://api.twitter.com/oauth/access_token"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/androidquery/auth/TwitterHandle, <init>(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/lang/String, toLowerCase()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": ":"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/xmlrpc/JSONRPCClient, send(Ljava/util/HashMap;Landroid/content/Context;)V >",
+          "< Application, Lcom/quoord/xmlrpc/XMLRPCClient, send(Ljava/lang/String;[Ljava/lang/Object;Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_sign_in_twitter.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://graph.facebook.com/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/facebook/Request, getUrlForSingleRequest()Ljava/lang/String; >",
+          "< Application, Lcom/facebook/android/Facebook, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://pt.tapatalk.com/pt_get_ad.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ads/AdsService$2, run()V >",
+          "< Application, Lcom/quoord/tapatalkpro/ads/AdsService$1, run()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/id/manage.php?token="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/activity/directory/ics/FavForumsFragment$2$1, onClick(Landroid/content/DialogInterface;I)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_sign_in_facebook.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/get_recommend_forums_by_iab_category.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://razor.tapatalk.com"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/activity/directory/ics/AccountEntryActivity, onCreate(Landroid/os/Bundle;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/ics/slidingMenu/SlidingMenuActivity, onCreate(Landroid/os/Bundle;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/id/manage.php?token="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/bean/TapatalkId, getToken()Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/activity/directory/ics/FavForumsFragment$2$1, onClick(Landroid/content/DialogInterface;I)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://media.admob.com/mraid/v1/mraid_app_banner.js"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/internal/ec, shouldInterceptRequest(Landroid/webkit/WebView;Ljava/lang/String;)Landroid/webkit/WebResourceResponse; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://xmlpull.org/v1/doc/features.html#process-namespaces"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lorg/kxml2/io/KXmlParser, getFeature(Ljava/lang/String;)Z >",
+          "< Application, Lorg/kxml2/io/KXmlParser, setFeature(Ljava/lang/String;Z)V >",
+          "< Application, Lcom/flurry/sdk/ck, a(Ljava/lang/String;)Lcom/flurry/sdk/ci; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/lang/String, toLowerCase()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": ":"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "int",
+                "source": "method return: < Application, Ljava/net/URI, getPort()I >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/xmlrpc/XMLRPCClient, send(Ljava/lang/String;[Ljava/lang/Object;Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://schemas.android.com/apk/lib/com.google.android.gms.plus"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/plus/PlusOneButton, getAnnotation(Landroid/content/Context;Landroid/util/AttributeSet;)I >",
+          "< Application, Lcom/google/android/gms/plus/PlusOneButton, getSize(Landroid/content/Context;Landroid/util/AttributeSet;)I >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://reporting.tapstream.com/v1/timelines/lookup?secret=%s&event_session=%s"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/tapstream/sdk/Core, getConversionData(Lcom/tapstream/sdk/ConversionListener;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://media.admob.com/mraid/v1/mraid_app_interstitial.js"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/internal/ec, shouldInterceptRequest(Landroid/webkit/WebView;Ljava/lang/String;)Landroid/webkit/WebResourceResponse; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/vimeolib/remove.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_identify.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://play.google.com/store/apps/details"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/youtube/player/internal/z, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_update_profile.php?"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "field access: < Application, Lcom/quoord/tapatalkpro/TapatalkApp, APP_KEY, <Application,Ljava/lang/String> >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&au_id="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "int",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/bean/TapatalkId, getAuid()I >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&token="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/bean/TapatalkId, getToken()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&username="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Landroid/text/Editable, toString()Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/activity/directory/ics/FavForumsFragment$3, onClick(Landroid/content/DialogInterface;I)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://ads.flurry.com/v10/getAds.do"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/flurry/android/impl/ads/FlurryAdModule, w()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/get_recommend_forums_by_fids.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://www.facebook.com/connect/login_success.html"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/androidquery/auth/FacebookHandle$FbWebViewClient, checkDone(Ljava/lang/String;)Z >",
+          "< Application, Lcom/androidquery/auth/FacebookHandle, webAuth()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://www.youtube.com/user/"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "parameter"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/youtube/player/YouTubeIntents, createUserIntent(Landroid/content/Context;Ljava/lang/String;)Landroid/content/Intent; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://graph.facebook.com/"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "field access: < Application, Lcom/facebook/Request, graphPath, <Application,Ljava/lang/String> >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/facebook/Request, getUrlForSingleRequest()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/id/manage.php?token="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/bean/TapatalkId, getToken()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&code="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/util/Util, getMD5(Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&from="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/activity/directory/ics/FavForumsFragment$2$1, onClick(Landroid/content/DialogInterface;I)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_add_account.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://api.tapstream.com/%s/event/%s/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/tapstream/sdk/Core, fireEvent(Lcom/tapstream/sdk/Event;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://data.flurry.com/aap.do"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/flurry/sdk/dd, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://schemas.android.com/apk/res/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/amazon/device/ads/AdLayout, initialize(Landroid/content/Context;Landroid/util/AttributeSet;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_update_push_setting.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://chrometophone.appspot.com/_ah/login?continue="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/AppEngineClient, makeRequestNoRetry(Ljava/lang/String;Ljava/util/List;Z)Lorg/apache/http/HttpResponse; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://log.tapatalk.com/ab_tid_card_reg.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://www.google.com"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/internal/dg, <init>(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://androidquery.appspot.com"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/androidquery/service/MarketService, getHost()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://flurry.cachefly.net/vast/videocontrols/v1/android.zip"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/flurry/sdk/t, e()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://www.googleapis.com/auth/games"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/games/internal/GamesClientImpl, b([Ljava/lang/String;)V >",
+          "< Application, Lcom/google/android/gms/games/Games, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://www.googleapis.com/auth/drive.apps"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/drive/Drive, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_invite_user.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://img.youtube.com/vi/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/bean/AttachmentInfo$5, onClick(Landroid/view/View;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/bean/AttachmentInfo, addBeanToFinished(Landroid/app/Activity;Lcom/quoord/tapatalkpro/adapter/forum/ForumRootAdapter;Lcom/quoord/tapatalkpro/bean/ImageInThread;Ljava/lang/String;Lcom/quoord/tapatalkpro/bean/ParseableData;Ljava/lang/String;Lcom/quoord/tapatalkpro/bean/ForumStatus;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/adapter/forum/MessageContentAdapter, addBeanToFinished(Lcom/quoord/tapatalkpro/bean/ImageInThread;Ljava/lang/String;Lcom/quoord/tapatalkpro/bean/ParseableData;Ljava/lang/String;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/ads/AdDetailFragment$MyHandler, handleMessage(Landroid/os/Message;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/adapter/forum/MessageContentAdapter$2, onClick(Landroid/view/View;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://amazon-adsystem.com"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/amazon/device/ads/WebViewFactory, updateAdIdCookie()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/get_search_hot_terms.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://chrometophone.appspot.com"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/AppEngineClient, makeRequestNoRetry(Ljava/lang/String;Ljava/util/List;Z)Lorg/apache/http/HttpResponse; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/lang/String, substring(I)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Ltwitter4j/conf/ConfigurationBase, fixURL(ZLjava/lang/String;)Ljava/lang/String; >",
+          "< Application, Lcom/quoord/tapatalkpro/util/BBcodeUtil$BBElement, setValue(Ljava/lang/String;Lcom/quoord/tapatalkpro/bean/ForumStatus;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://www.googleapis.com/auth/games.firstparty"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/games/internal/GamesClientImpl, b([Ljava/lang/String;)V >",
+          "< Application, Lcom/google/android/gms/games/Games, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://graph.facebook.com/%s/picture"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/facebook/widget/ImageRequest, getProfilePictureUrl(Ljava/lang/String;II)Ljava/net/URL; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://chrometophone.appspot.com"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "parameter"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/AppEngineClient, makeRequestNoRetry(Ljava/lang/String;Ljava/util/List;Z)Lorg/apache/http/HttpResponse; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_add_subscribed_forum.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/get_forums_by_byo_accounts.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://www.youtube.com/watch?v="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "parameter"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/youtube/player/YouTubeIntents, createPlayVideoIntentWithOptions(Landroid/content/Context;Ljava/lang/String;ZZ)Landroid/content/Intent; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://api.facebook.com/method/"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "field access: < Application, Lcom/facebook/Request, restMethod, <Application,Ljava/lang/String> >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/facebook/Request, getUrlForSingleRequest()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/report_forum.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://www.googleapis.com/auth/plus.me"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/plus/Plus, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://api.twitter.com/oauth2/invalidate_token"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Ltwitter4j/conf/ConfigurationBase, <init>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/get_function_config.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://chrometophone.appspot.com/_ah/login?continue="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/net/URLEncoder, encode(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/AppEngineClient, makeRequestNoRetry(Ljava/lang/String;Ljava/util/List;Z)Lorg/apache/http/HttpResponse; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_update_account_order.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://twitter4j.org/en/twitter4j-"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Ltwitter4j/conf/ConfigurationBase, <init>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://log.tapatalk.com/subscribed_topic.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://api.twitter.com/oauth/request_token"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/androidquery/auth/TwitterHandle, <init>(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/lang/String, toLowerCase()Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/GeoPictureUploader, uploadPictureToForum(Ljava/util/ArrayList;Ljava/lang/String;Landroid/content/Context;)Ljava/lang/Object; >",
+          "< Application, Lcom/quoord/xmlrpc/JSONRPCClient, send(Ljava/util/HashMap;Landroid/content/Context;)V >",
+          "< Application, Lcom/quoord/xmlrpc/XMLRPCClient, send(Ljava/lang/String;[Ljava/lang/Object;Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_avatar.php?au_id="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ics/slidingMenu/login/TapatalkFacebookSigninFragment, showEditUsernameDialog()V >",
+          "< Application, Lcom/quoord/tapatalkpro/ics/slidingMenu/login/ForumJoinFragment, initViewByPrefetchAccount()V >",
+          "< Application, Lcom/quoord/tapatalkpro/ics/slidingMenu/login/ForumJoinFragment, showEditUsernameDialog(Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://log.tapatalk.com/common.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/bean/ForumStatus, getPrefectUrl()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "reply/"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "field access: < Application, Lcom/quoord/tapatalkpro/bean/PostData, postId, <Application,Ljava/lang/String> >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/bean/PostData, actionOpenPostInBrowser(Lcom/quoord/tapatalkpro/bean/ForumStatus;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/search.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://log.tapatalk.com/new_pm.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_update_profile.php?username="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil, encodePara(Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil, callUpdateUsername(Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/get_iab_nested_category.json"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/id/manage.php?token="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/bean/TapatalkId, getToken()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&code="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/util/Util, getMD5(Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/activity/directory/ics/FavForumsFragment$2$1, onClick(Landroid/content/DialogInterface;I)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://adlog.flurry.com"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/flurry/android/impl/ads/FlurryAdModule, x()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_get_info.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/lang/String, toLowerCase()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": ":"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "int",
+                "source": "method return: < Application, Ljava/net/URI, getPort()I >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/xmlrpc/JSONRPCClient, send(Ljava/util/HashMap;Landroid/content/Context;)V >",
+          "< Application, Lcom/quoord/xmlrpc/XMLRPCClient, send(Ljava/lang/String;[Ljava/lang/Object;Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/lang/String, substring(I)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Ltwitter4j/conf/ConfigurationBase, fixURL(ZLjava/lang/String;)Ljava/lang/String; >",
+          "< Application, Ltwitter4j/auth/OAuthAuthorization, getOAuthAccessToken(Ljava/lang/String;Ljava/lang/String;)Ltwitter4j/auth/AccessToken; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://search.tapatalk.com/search_forum"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_delete_account.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://log.tapatalk.com/register_token_rb.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_update_profile.php?"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "field access: < Application, Lcom/quoord/tapatalkpro/TapatalkApp, APP_KEY, <Application,Ljava/lang/String> >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&au_id="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "int",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/bean/TapatalkId, getAuid()I >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/activity/directory/ics/FavForumsFragment$3, onClick(Landroid/content/DialogInterface;I)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://yukusupport.yuku.com/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/adapter/directory/ics/RebrandAdapter, addDefualtForum()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://apicdn.viglink.com/api/click?key="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/adapter/forum/MessageContentAdapter, doByoVglink(Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://log.tapatalk.com/new_session.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_update_profile.php?"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "field access: < Application, Lcom/quoord/tapatalkpro/TapatalkApp, APP_KEY, <Application,Ljava/lang/String> >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&au_id="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "int",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/bean/TapatalkId, getAuid()I >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&token="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/bean/TapatalkId, getToken()Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/activity/directory/ics/FavForumsFragment$3, onClick(Landroid/content/DialogInterface;I)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://tapatalk.com/privacy.php?from=app"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ics/slidingMenu/SettingsFragment, onPreferenceClick(Landroid/preference/Preference;)Z >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/get_forum_by_url.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/get_recommended.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://log.tapatalk.com/image_download.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "undefined",
+                "source": "method return: < Application, Ljava/lang/String, replaceAll(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/AsyncBitmapLoader, getRomoteBitmapWithType(Landroid/content/Context;Lcom/quoord/tools/ForumHttpStatus;Ljava/lang/String;I)Lcom/quoord/tapatalkpro/util/CustomBitmapWithType; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://m.facebook.com/dialog/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/facebook/android/Facebook, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/lang/String, toLowerCase()Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/GeoPictureUploader, uploadPictureToForum(Ljava/util/ArrayList;Ljava/lang/String;Landroid/content/Context;)Ljava/lang/Object; >",
+          "< Application, Lcom/quoord/xmlrpc/JSONRPCClient, send(Ljava/util/HashMap;Landroid/content/Context;)V >",
+          "< Application, Lcom/quoord/xmlrpc/XMLRPCClient, send(Ljava/lang/String;[Ljava/lang/Object;Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://googleads.g.doubleclick.net/mads/static/mad/sdk/native/sdk-core-v40.html"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/internal/ax, <init>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://search.tapatalk.com/api/image?fid="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/vimeolib/bind.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/bean/ForumStatus, getPrefectUrl()Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/bean/PostData, actionOpenPostInBrowser(Lcom/quoord/tapatalkpro/bean/ForumStatus;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_get_accounts.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://www.youtube.com/watch?v="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "other"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/adapter/forum/MessageContentAdapter$2, onClick(Landroid/view/View;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/bean/AttachmentInfo$5, onClick(Landroid/view/View;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/ads/AdDetailFragment$MyHandler, handleMessage(Landroid/os/Message;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://googleads.g.doubleclick.net/mads/static/sdk/native/sdk-core-v40.html"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/internal/ab, a(Lcom/google/android/gms/internal/ad;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://sitestream.twitter.com/1.1/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Ltwitter4j/conf/ConfigurationBase, <init>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_log_signin.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_sign_up.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_resend_code.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://data.flurry.com/aap.do"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/flurry/sdk/dd, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/lang/String, trim()Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ads/AdDetailFragment, doWeb(Ljava/lang/String;Ljava/lang/String;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/adapter/forum/MessageContentAdapter, doWeb(Ljava/lang/String;Ljava/lang/String;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/util/Util, getHost(Ljava/lang/String;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_reset_password.php?email="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/TapatalkIdForgetPasswordFragment$1, onClick(Landroid/view/View;)V >",
+          "< Application, Lcom/quoord/newonboarding/TapatalkIdForgetPasswordFragment$1, onClick(Landroid/view/View;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://www.youtube.com/user/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/youtube/player/YouTubeIntents, canResolveUserIntent(Landroid/content/Context;)Z >",
+          "< Application, Lcom/google/android/youtube/player/YouTubeIntents, createUserIntent(Landroid/content/Context;Ljava/lang/String;)Landroid/content/Intent; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://search.tapatalk.com/api/popular"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_update_profile.php?"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/activity/directory/ics/FavForumsFragment$3, onClick(Landroid/content/DialogInterface;I)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_update_profile.php?username="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil, encodePara(Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil, callUpdateUsername(Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_update_profile.php?"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "field access: < Application, Lcom/quoord/tapatalkpro/TapatalkApp, APP_KEY, <Application,Ljava/lang/String> >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&au_id="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/activity/directory/ics/FavForumsFragment$3, onClick(Landroid/content/DialogInterface;I)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://www.googleapis.com/auth/drive.appdata"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/drive/Drive, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://www.amazon.com/gp/mas/dl/android?p=com.quoord.tapatalkpro.activity"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/TapatalkApp, onCreate()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://pt.tapatalk.com/redirect.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/adapter/forum/MessageContentAdapter, doVglink(Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://search.tapatalk.com/v2/search"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_get_recommended_forums.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://xmlpull.org/v1/doc/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lorg/kxml2/io/KXmlParser, isProp(Ljava/lang/String;ZLjava/lang/String;)Z >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://facebook.com"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/facebook/internal/Utility, clearFacebookCookies(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/get_forums_by_iab_category.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://ssl.google-analytics.com/collect"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/analytics/ah, a(Lcom/google/android/gms/analytics/ab;Ljava/net/URL;Z)V >",
+          "< Application, Lcom/google/android/gms/analytics/ah, a(Lcom/google/android/gms/analytics/x;)Ljava/net/URL; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://support.tapatalk.com"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/activity/GCMIntentService, getBroadcastNotification(Landroid/content/Context;Landroid/content/Intent;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://api.twitter.com/oauth/request_token"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Ltwitter4j/conf/ConfigurationBase, <init>()V >",
+          "< Application, Ltwitter4j/conf/ConfigurationBase, fixRestBaseURL()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_delete_subscribed_forum.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://link2.tapatalk.com/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/adapter/forum/MessageContentAdapter, doSkimlik(Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://hostname/?"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/tagmanager/ay, m(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://tapatalk.com/promoted.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ads/AdWebviewActivity, onCreate(Landroid/os/Bundle;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://twitter4j.org/en/twitter4j-"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ltwitter4j/Version, getVersion()Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Ltwitter4j/conf/ConfigurationBase, <init>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/get_nested_category2.json"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://stream.twitter.com/1.1/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Ltwitter4j/conf/ConfigurationBase, <init>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/get_random_forums_by_iab_category.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://graph.facebook.com/me"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/androidquery/auth/FacebookHandle, ajaxProfile(Lcom/androidquery/callback/AjaxCallback;J)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://adlog.flurry.com"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/flurry/android/impl/ads/FlurryAdModule, x()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/lang/String, toLowerCase()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": ":"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "int",
+                "source": "method return: < Application, Ljava/net/URI, getPort()I >"
+              }
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/net/URI, getPath()Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/xmlrpc/JSONRPCClient, send(Ljava/util/HashMap;Landroid/content/Context;)V >",
+          "< Application, Lcom/quoord/xmlrpc/XMLRPCClient, send(Ljava/lang/String;[Ljava/lang/Object;Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_get_feed.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://api.twitter.com/oauth2/token"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Ltwitter4j/conf/ConfigurationBase, <init>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://api.tapstream.com/%s/hit/%s.gif"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/tapstream/sdk/Core, fireHit(Lcom/tapstream/sdk/Hit;Lcom/tapstream/sdk/Hit$CompletionHandler;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://market.android.com/details?id="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/flurry/sdk/r, a(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_update_profile.php?username="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ics/tapatalkid/SignInWithOtherUtil, callUpdateUsername(Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/lang/String, toLowerCase()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": ":"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/xmlrpc/XMLRPCClient, send(Ljava/lang/String;[Ljava/lang/Object;Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://www.googleapis.com/auth/appstate"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/android/gms/internal/ei, b([Ljava/lang/String;)V >",
+          "< Application, Lcom/google/android/gms/appstate/AppStateManager, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/ads/AdDetailFragment, doWeb(Ljava/lang/String;Ljava/lang/String;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/adapter/directory/ics/RebrandAdapter, getView(ILandroid/view/View;Landroid/view/ViewGroup;)Landroid/view/View; >",
+          "< Application, Lcom/quoord/tapatalkpro/cache/AppCacheManager, getNewCachePath(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; >",
+          "< Application, Lcom/quoord/tapatalkpro/ics/slidingMenu/login/TapatalkFacebookSigninFragment, initLoad()V >",
+          "< Application, Lcom/quoord/tapatalkpro/activity/directory/ics/YukuSearchFragment$YukuSearchAdapter, getView(ILandroid/view/View;Landroid/view/ViewGroup;)Landroid/view/View; >",
+          "< Application, Lcom/quoord/tapatalkpro/util/ImageInThreadLoader, getRomoteBitmapLocalUrl(Lcom/quoord/tapatalkpro/bean/ForumStatus;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;ILandroid/content/Context;)Ljava/lang/String; >",
+          "< Application, Lcom/quoord/tapatalkpro/bean/ForumStatus, getCachePath()Ljava/lang/String; >",
+          "< Application, Lcom/quoord/tapatalkpro/util/AsyncBitmapLoader, getRomoteBitmapWithType(Landroid/content/Context;Lcom/quoord/tools/ForumHttpStatus;Ljava/lang/String;I)Lcom/quoord/tapatalkpro/util/CustomBitmapWithType; >",
+          "< Application, Lcom/quoord/xmlrpc/JSONRPCClient, send(Ljava/util/HashMap;Landroid/content/Context;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/adapter/forum/MessageContentAdapter, doWeb(Ljava/lang/String;Ljava/lang/String;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/util/DownloadUtil, getRomoteBitmapLocalUrl(Lcom/quoord/tapatalkpro/bean/ForumStatus;Ljava/lang/String;Landroid/content/Context;)Ljava/lang/String; >",
+          "< Application, Ltwitter4j/conf/ConfigurationBase, fixURL(ZLjava/lang/String;)Ljava/lang/String; >",
+          "< Application, Lcom/quoord/tapatalkpro/util/GeoPictureUploader, uploadPictureToForum(Ljava/util/ArrayList;Ljava/lang/String;Landroid/content/Context;)Ljava/lang/Object; >",
+          "< Application, Lcom/quoord/tapatalkpro/util/DownloadUtil, getRomoteBitmapLocalUrl(Landroid/content/Context;Ljava/lang/String;Z)Ljava/lang/String; >",
+          "< Application, Lcom/quoord/tapatalkpro/util/Util, getHost(Ljava/lang/String;)Ljava/lang/String; >",
+          "< Application, Lcom/quoord/tapatalkpro/util/ForumUrlUtil, openFromUrl(Landroid/content/Intent;Landroid/app/Activity;Ljava/lang/String;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/ics/slidingMenu/login/ForumJoinFragment, onActivityCreated(Landroid/os/Bundle;)V >",
+          "< Application, Lcom/quoord/tapatalkpro/ics/slidingMenu/login/ForumRegisterFragment, getUrl()Ljava/lang/String; >",
+          "< Application, Lcom/quoord/tapatalkpro/util/DownloadUtil, getRomoteBitmapLocalUrl(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String; >",
+          "< Application, Ltwitter4j/auth/OAuthAuthorization, constructRequestURL(Ljava/lang/String;)Ljava/lang/String; >",
+          "< Application, Lcom/quoord/tapatalkpro/util/Util, getRefer(Ljava/lang/String;)Ljava/lang/String; >",
+          "< Application, Lcom/quoord/xmlrpc/XMLRPCClient, send(Ljava/lang/String;[Ljava/lang/Object;Landroid/content/Context;)V >",
+          "< Application, Ltwitter4j/auth/OAuthAuthorization, getOAuthAccessToken(Ljava/lang/String;Ljava/lang/String;)Ltwitter4j/auth/AccessToken; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_update_profile.php?"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "field access: < Application, Lcom/quoord/tapatalkpro/TapatalkApp, APP_KEY, <Application,Ljava/lang/String> >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/activity/directory/ics/FavForumsFragment$3, onClick(Landroid/content/DialogInterface;I)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://.facebook.com"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/facebook/internal/Utility, clearFacebookCookies(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/au_get_subscribed_forums.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/get_branded.php?app_type=android&bid="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "field access: < Application, Lcom/quoord/tapatalkpro/TapatalkApp, rebranding_id, <Application,Ljava/lang/String> >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "&device_id="
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/action/RebrandingChecker, <init>(Lcom/quoord/tapatalkpro/activity/directory/ics/IcsRebrandingEntryActivity;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://directory.tapatalk.com/get_root_category.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/quoord/tapatalkpro/util/TapatalkJsonEngine, <clinit>()V >"
+        ]
+      }
+    ],
+    "wala-time": 3.7054277760000787
+  }
+}
