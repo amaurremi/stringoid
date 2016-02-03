@@ -1,0 +1,11 @@
+{
+  "unattributed": [
+    "http://sdk.appbrain.com:80/api/pb?action=up", 
+    "http://media.admob.com:80/sdk-core-v40.js"
+  ], 
+  "unique": 29, 
+  "in_response_exact": 10, 
+  "in_static": 1, 
+  "total": 87, 
+  "in_response_confirmed": 16
+}

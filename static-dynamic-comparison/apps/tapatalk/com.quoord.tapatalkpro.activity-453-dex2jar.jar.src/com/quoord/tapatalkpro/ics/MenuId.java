@@ -1,0 +1,101 @@
+package com.quoord.tapatalkpro.ics;
+
+public class MenuId {
+    public static final int ACTIONMODE_MULTI_DELETE = 1102;
+    public static final int DRAWERMENU_LOGOUT = 2002;
+    public static final int DRAWERMENU_MORE = 2003;
+    public static final int DRAWERMENU_PROFILE = 2001;
+    public static final int DRAWERMENU_SETTING = 2000;
+    public static final int FEED_DRAWLAYOUT_MENU = 6000;
+    public static final int FEED_MENU_DESELECTALL = 4001;
+    public static final int FEED_MENU_SELECTALL = 4000;
+    public static final int ICS_ADVANCE_SEARCH_IN_FORUM = 1081;
+    public static final int ICS_ADVANCE_SEARCH_IN_SEARCH = 1082;
+    public static final int ICS_FORUM_LOGIN = 1002;
+    public static final int ICS_FORUM_REFERESH = 1001;
+    public static final int ICS_LOGOUT = 1070;
+    public static final int ICS_MENU_NEWTOPIC = 1004;
+    public static final int ICS_MENU_SORTBYCATETORYY = 1006;
+    public static final int ICS_MENU_SORTBYNAME = 1005;
+    public static final int ICS_MENU_SUBSCRIBE = 1003;
+    public static final int ICS_MENU_UNSUBSCRIBE = 1007;
+    public static final int ICS_PROFILE = 1071;
+    public static final int ICS_SLIDING_MENU = 2000;
+    public static final int ICS_SLIDING_MENU_ADVANCESEARCH = 1011;
+    public static final int ICS_SLIDING_MENU_ALERT = 1024;
+    public static final int ICS_SLIDING_MENU_ALLFORUMS = 1018;
+    public static final int ICS_SLIDING_MENU_BLOGFILTER = 6000;
+    public static final int ICS_SLIDING_MENU_BLOGS = 1201;
+    public static final int ICS_SLIDING_MENU_CONVERSATION = 1020;
+    public static final int ICS_SLIDING_MENU_DELETE_POST = 1041;
+    public static final int ICS_SLIDING_MENU_DELETE_TOPIC = 1040;
+    public static final int ICS_SLIDING_MENU_DISPLAYUNREAD = 1037;
+    public static final int ICS_SLIDING_MENU_FEED = 2002;
+    public static final int ICS_SLIDING_MENU_FEEDFILTER = 5000;
+    public static final int ICS_SLIDING_MENU_FORUMS = 1017;
+    public static final int ICS_SLIDING_MENU_LOGIN = 1027;
+    public static final int ICS_SLIDING_MENU_MESSAGE = 1035;
+    public static final int ICS_SLIDING_MENU_MODERATION = 1038;
+    public static final int ICS_SLIDING_MENU_MODERATION_POST = 1039;
+    public static final int ICS_SLIDING_MENU_MODERATION_TOPIC = 1043;
+    public static final int ICS_SLIDING_MENU_NEWTOPIC = 1044;
+    public static final int ICS_SLIDING_MENU_OTHRE = 1025;
+    public static final int ICS_SLIDING_MENU_PARTICIPATEDTOPICS = 1014;
+    public static final int ICS_SLIDING_MENU_PEOPLE = 1028;
+    public static final int ICS_SLIDING_MENU_PM = 1021;
+    public static final int ICS_SLIDING_MENU_PM_IN_BOX = 1023;
+    public static final int ICS_SLIDING_MENU_PM_SEND_BOX = 1022;
+    public static final int ICS_SLIDING_MENU_PROFILE = 1010;
+    public static final int ICS_SLIDING_MENU_REGIST = 1026;
+    public static final int ICS_SLIDING_MENU_REPORT_TOPIC = 1042;
+    public static final int ICS_SLIDING_MENU_SETTINGS = 1029;
+    public static final int ICS_SLIDING_MENU_SUBFORUM = 1033;
+    public static final int ICS_SLIDING_MENU_SUBSCRIBEFORUMS = 1019;
+    public static final int ICS_SLIDING_MENU_SUBSCRIBETOPICS = 1036;
+    public static final int ICS_SLIDING_MENU_TIMELINETOPICS = 1016;
+    public static final int ICS_SLIDING_MENU_TIPS = 1031;
+    public static final int ICS_SLIDING_MENU_TOPICS = 1012;
+    public static final int ICS_SLIDING_MENU_UNREADTOPICS = 1013;
+    public static final int ICS_SLIDING_MENU_WEB = 1034;
+    public static final int ICS_USER_TOPIC = 1072;
+    public static final int MENU_MARKREAD = 1030;
+    public static final int MENU_MAUNRKREAD = 2030;
+    public static final int MENU_NEWPM = 1060;
+    public static final int MODERATION_MERGE_POST = 5001;
+    public static final int MODERATION_MERGE_TOPIC = 5002;
+    public static final int MODERATION_MOVE_POST = 5000;
+    public static final int MOVETOPIC_MENU_SEND = 1100;
+    public static final int MOVETOPIC_MOVETO = 1101;
+    public static final int ONBOARD_MENU_DONE = 3002;
+    public static final int ONBOARD_MENU_NEXT = 3000;
+    public static final int ONBOARD_MENU_SKIP = 3001;
+    public static final int QUICK_ACTION_CONVERSATION = 1140;
+    public static final int QUICK_ACTION_COPY_CONTENT = 1143;
+    public static final int QUICK_ACTION_COPY_URL = 1144;
+    public static final int QUICK_ACTION_DELETE = 1147;
+    public static final int QUICK_ACTION_EDIT = 1043;
+    public static final int QUICK_ACTION_EDIT_TITLE = 1149;
+    public static final int QUICK_ACTION_FORWARD = 1049;
+    public static final int QUICK_ACTION_LIKE = 1048;
+    public static final int QUICK_ACTION_MODIFY = 1044;
+    public static final int QUICK_ACTION_MORE = 1047;
+    public static final int QUICK_ACTION_MULTI = 1042;
+    public static final int QUICK_ACTION_NOTIFICATION = 1148;
+    public static final int QUICK_ACTION_PM = 1141;
+    public static final int QUICK_ACTION_QUOTE = 1041;
+    public static final int QUICK_ACTION_REPLY = 1040;
+    public static final int QUICK_ACTION_REPORT = 1142;
+    public static final int QUICK_ACTION_SHARE = 1045;
+    public static final int QUICK_ACTION_THANKS = 1046;
+    public static final int QUICK_ACTION_UNLIKE = 1049;
+    public static final int QUICK_ACTION_VIEW_IN_BROWSER = 1146;
+    public static final int QUICK_ACTION_VIEW_PROFILE = 1145;
+    public static final int QUICK_MUTI_CANCLE = 1050;
+    public static final int QUICK_MUTI_QUOTE = 1051;
+}
+
+
+/* Location:              /Users/amaurremi/uw/stringoid stuff/static vs dynamic/tapatalk/com.quoord.tapatalkpro.activity-453-dex2jar.jar!/com/quoord/tapatalkpro/ics/MenuId.class
+ * Java compiler version: 6 (50.0)
+ * JD-Core Version:       0.7.1
+ */

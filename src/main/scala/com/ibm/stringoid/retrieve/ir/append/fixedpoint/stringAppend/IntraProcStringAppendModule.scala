@@ -8,6 +8,7 @@ import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.IntraProcASB
 import com.ibm.wala.dataflow.graph.AbstractMeetOperator
 import com.ibm.wala.fixpoint.FixedPointConstants._
 import com.ibm.wala.fixpoint.UnaryOperator
+import com.ibm.wala.ipa.cfg.ExceptionPrunedCFG
 import com.ibm.wala.ssa.analysis.{ExplodedControlFlowGraph, IExplodedBasicBlock}
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAArrayStoreInstruction, SSAPhiInstruction}
 import com.ibm.wala.util.graph.traverse.SCCIterator
@@ -23,7 +24,8 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
     * Get the string concatenation results.
     */
   def stringAppends(node: Node): StringPartAutomaton = {
-    val solver  = getAppendSolver(node, idToAsboForNode(node))
+    val node1: Map[ValueNumber, Set[ASBO]] = idToAsboForNode(node)
+    val solver  = getAppendSolver(node, node1)
     val result  = solver.result
     val mapping = solver.ataRefMapping
     val ataRefs: Set[Int] = (solver.cfg map {
@@ -55,7 +57,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
 
     lazy val initialMapping = initialAtaRefMapping(node)
 
-    override lazy val cfg = ExplodedControlFlowGraph.make(node.getIr)
+    override lazy val cfg = ExceptionPrunedCFG.make(ExplodedControlFlowGraph.make(node.getIr))
 
     override protected def transferFunctions: StringAppendTransferFunctions = new IntraProcStringAppendTransferFunctions
 
@@ -219,7 +221,10 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
 
       // todo test intra- and inter-procedural cycles
       private[this] lazy val stronglyConnectedComponents: Set[util.Set[BB]] =
-        (new SCCIterator(cfg) filter { _.size() > 1 }).toSet
+        (new SCCIterator(cfg) filter {
+          blocks =>
+            (blocks.size() > 1) || cfg.hasEdge(blocks.head, blocks.head)
+        }).toSet
 
       case class StringMeetOperator() extends AbstractMeetOperator[AtaReference] {
 

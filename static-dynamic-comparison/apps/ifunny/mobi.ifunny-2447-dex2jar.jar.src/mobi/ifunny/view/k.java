@@ -1,0 +1,15 @@
+package mobi.ifunny.view;
+
+public abstract interface k {
+    public abstract void a(int paramInt, boolean paramBoolean);
+
+    public abstract void b(int paramInt);
+
+    public abstract void c(int paramInt);
+}
+
+
+/* Location:              /Users/amaurremi/uw/stringoid stuff/static vs dynamic/ifunny/mobi.ifunny-2447-dex2jar.jar!/mobi/ifunny/view/k.class
+ * Java compiler version: 6 (50.0)
+ * JD-Core Version:       0.7.1
+ */

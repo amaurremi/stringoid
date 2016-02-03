@@ -17,9 +17,9 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
   describe("StringBuilder + String.format analysis") {
 
     it("reproduces failing tests") {
-//      val file = Paths.get("src/test/java/failing")
-//      val analysisConfig = AnalysisConfig(irSource = IrSource.Cha, ignoreLibs = true, analysis = AnalysisType.Append, file = file, outputUrls = false)
-//      run(analysisConfig)
+      val file = Paths.get("src/test/java/failing")
+      val analysisConfig = AnalysisConfig(irSource = IrSource.Cha, ignoreLibs = true, analysis = AnalysisType.Append, file = file, outputUrls = false)
+      run(analysisConfig)
     }
 
     it("computes URLs in CHA IR analysis") {
@@ -28,11 +28,11 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
       run(analysisConfig)
     }
 
-    it("computes URLs in inter-procedural analysis") {
-      val file = Paths.get("src/test/java/interProcTestPrograms")
-      val analysisConfig = AnalysisConfig(irSource = IrSource.InterProc, ignoreLibs = true, analysis = AnalysisType.Append, file = file, outputUrls = true)
+//    it("computes URLs in inter-procedural analysis") {
+//      val file = Paths.get("src/test/java/interProcTestPrograms")
+//      val analysisConfig = AnalysisConfig(irSource = IrSource.InterProc, ignoreLibs = true, analysis = AnalysisType.Append, file = file, outputUrls = true)
 //      run(analysisConfig)
-    }
+//    }
 
     def run(config: AnalysisConfig) = {
       retriever(config) match {

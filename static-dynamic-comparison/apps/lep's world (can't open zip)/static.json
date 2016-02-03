@@ -1,0 +1,808 @@
+{
+  "config": {
+    "analysis": "append (extracting string concatentations through StringBuilders/StringBuffers and '+')",
+    "libs": "ignoring",
+    "reachability": "class hierarchy analysis"
+  },
+  "runtime": 19.156682579000062,
+  "result": {
+    "url2methods": [
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://www.facebook.com/dialog/oauth"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/facebook/android/b, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://community.scoreloop.com/games/"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/scoreloop/client/android/core/model/Game, getIdentifier()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "/feed"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/scoreloop/client/android/core/addon/RSSFeed, a()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://localhost/"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/lang/Integer, toString(I)Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/inmobi/androidsdk/IMAdInterstitial, <init>(Landroid/app/Activity;Ljava/lang/String;)V >",
+          "< Application, Lcom/inmobi/androidsdk/IMAdView, <init>(Landroid/app/Activity;ILjava/lang/String;J)V >",
+          "< Application, Lcom/inmobi/androidsdk/IMAdInterstitial, <init>(Landroid/app/Activity;Ljava/lang/String;J)V >",
+          "< Application, Lcom/inmobi/androidsdk/IMAdView, <init>(Landroid/content/Context;Landroid/util/AttributeSet;)V >",
+          "< Application, Lcom/inmobi/androidsdk/IMAdView, <init>(Landroid/app/Activity;ILjava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://acceptance.vungle.com"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/vungle/sdk/e, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://community.scoreloop.com/games/"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/scoreloop/client/android/core/model/Game, getIdentifier()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "/users/"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/scoreloop/client/android/core/model/User, getIdentifier()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "/feed"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/scoreloop/client/android/core/addon/RSSFeed, a()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://android.heyzap.com/in_game_api/sdk/"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "parameter"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/heyzap/internal/APIClient, getAbsoluteUrl(Ljava/lang/String;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://www.gstatic.com/safa/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/ads/internal/c, f()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://ads.heyzap.com/in_game_api/ads/register_click"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/heyzap/sdk/ads/AdUnit$4, run()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://community.scoreloop.com/games/"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/scoreloop/client/android/core/model/Game, getIdentifier()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "/users/"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/scoreloop/client/android/core/model/User, getIdentifier()Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/scoreloop/client/android/core/addon/RSSFeed, a()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://ads.heyzap.com/in_game_api/ads/register_impression"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/heyzap/sdk/ads/AdUnit$3, run()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://api.scoreloop.com/bayeux"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/scoreloop/client/android/core/model/Client, a(Landroid/content/Context;Lcom/scoreloop/client/android/core/model/ClientObserver;Ljava/util/Properties;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://ads.heyzap.com/in_game_api/ads/track_impression_event"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/heyzap/sdk/ads/Manager$1, run()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://media.admob.com/mraid/v1/mraid_app_expanded_banner.js"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/ads/m$a, <init>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://e.admob.com/clk?ad_loc=@gw_adlocid@&qdata=@gw_qdata@&ad_network_id=@gw_adnetid@&js=@gw_sdkver@&session_id=@gw_sessid@&seq_num=@gw_seqnum@&nr=@gw_adnetrefresh@"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/ads/internal/d, b(Lcom/google/ads/f;Ljava/lang/Boolean;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://android.heyzap.com"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/heyzap/internal/APIClient, getAbsoluteUrl(Ljava/lang/String;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://e.admob.com/nofill?ad_loc=@gw_adlocid@&qdata=@gw_qdata@&js=@gw_sdkver@&session_id=@gw_sessid@&seq_num=@gw_seqnum@&adt=@gw_adt@&aec=@gw_aec@"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/ads/internal/d, a(Ljava/util/List;Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://p.scoreloop.com/user_terms"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/scoreloop/client/android/core/settings/Settings, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://i.w.inmobi.com/showad.asm"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/inmobi/androidsdk/IMAdInterstitial, <init>(Landroid/app/Activity;Ljava/lang/String;)V >",
+          "< Application, Lcom/inmobi/androidsdk/IMAdInterstitial, <init>(Landroid/app/Activity;Ljava/lang/String;J)V >",
+          "< Application, Lcom/inmobi/androidsdk/IMAdView, <init>(Landroid/content/Context;)V >",
+          "< Application, Lcom/inmobi/androidsdk/IMAdView, <init>(Landroid/content/Context;Landroid/util/AttributeSet;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://localhost/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/inmobi/androidsdk/IMAdInterstitial, <init>(Landroid/app/Activity;Ljava/lang/String;)V >",
+          "< Application, Lcom/inmobi/androidsdk/IMAdView, <init>(Landroid/app/Activity;ILjava/lang/String;J)V >",
+          "< Application, Lcom/inmobi/androidsdk/IMAdInterstitial, <init>(Landroid/app/Activity;Ljava/lang/String;J)V >",
+          "< Application, Lcom/inmobi/androidsdk/IMAdView, <init>(Landroid/content/Context;Landroid/util/AttributeSet;)V >",
+          "< Application, Lcom/inmobi/androidsdk/IMAdView, <init>(Landroid/app/Activity;ILjava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/inmobi/androidsdk/impl/IMClickProcessingTask, a(Ljava/lang/String;)V >",
+          "< Application, Lcom/inmobi/androidsdk/ai/container/IMWebView, b(Ljava/lang/String;)V >",
+          "< Application, Lcom/heyzap/internal/APIClient, getAbsoluteUrl(Ljava/lang/String;)Ljava/lang/String; >",
+          "< Application, Lcom/inmobi/androidsdk/ai/container/IMWebView$10, shouldOverrideUrlLoading(Landroid/webkit/WebView;Ljava/lang/String;)Z >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://p.scoreloop.com"
+            },
+            {
+              "kind": "constant",
+              "value": "/games/"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/scoreloop/client/android/core/model/Game, getIdentifier()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "/banner?size="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/scoreloop/client/android/core/model/Game$BannerSize, a(Lcom/scoreloop/client/android/core/model/Game$BannerSize;)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/scoreloop/client/android/core/model/Game, getBannerUrl(Lcom/scoreloop/client/android/core/model/Game$BannerSize;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://community.scoreloop.com/games/"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/scoreloop/client/android/core/model/Game, getIdentifier()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "/users/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/scoreloop/client/android/core/addon/RSSFeed, a()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://www.google-analytics.com/collect"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/analytics/tracking/android/SimpleNetworkDispatcher, getUrl(Lcom/google/analytics/tracking/android/Hit;)Ljava/net/URL; >",
+          "< Application, Lcom/google/analytics/tracking/android/PersistentAnalyticsStore, writeHitToDatabase(Ljava/util/Map;JLjava/lang/String;)V >",
+          "< Application, Lcom/google/analytics/tracking/android/GAThread, getHostUrl(Ljava/util/Map;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://ads.heyzap.com/in_game_api/ads/fetch_ad"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/heyzap/sdk/ads/AdUnit$1, run()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://www.scoreloop.com/android/updates"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/scoreloop/client/android/core/server/Server, <init>(Landroid/content/Context;Ljava/net/URL;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://api.vungle.com"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/vungle/sdk/e, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://community.scoreloop.com/games/"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/scoreloop/client/android/core/model/Game, getIdentifier()Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/scoreloop/client/android/core/addon/RSSFeed, a()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://media.admob.com/mraid/v1/mraid_app_banner.js"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/ads/m$a, <init>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://media.admob.com/mraid/v1/mraid_app_interstitial.js"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/ads/m$a, <init>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://api.scoreloop.com/bayeux/android/v2"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/scoreloop/client/android/core/server/Server, <init>(Landroid/content/Context;Ljava/net/URL;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://media.admob.com/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/ads/internal/c, f()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://android.heyzap.com"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "parameter"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/heyzap/internal/APIClient, getAbsoluteUrl(Ljava/lang/String;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://twitter.com/oauth/authorize"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/scoreloop/client/android/core/socialprovider/twitter/c, a(Landroid/app/Activity;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://p.scoreloop.com"
+            },
+            {
+              "kind": "constant",
+              "value": "/activities/"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/scoreloop/client/android/core/model/Activity, getIdentifier()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind": "constant",
+              "value": "/image?size="
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Lcom/scoreloop/client/android/core/model/Activity$ImageSize, a(Lcom/scoreloop/client/android/core/model/Activity$ImageSize;)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/scoreloop/client/android/core/model/Activity, getImageUrl(Lcom/scoreloop/client/android/core/model/Activity$ImageSize;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://i.w.sandbox.inmobi.com/showad.asm"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/inmobi/androidsdk/IMAdInterstitial, <init>(Landroid/app/Activity;Ljava/lang/String;)V >",
+          "< Application, Lcom/inmobi/androidsdk/IMAdInterstitial, <init>(Landroid/app/Activity;Ljava/lang/String;J)V >",
+          "< Application, Lcom/inmobi/androidsdk/IMAdView, <init>(Landroid/content/Context;)V >",
+          "< Application, Lcom/inmobi/androidsdk/IMAdView, <init>(Landroid/content/Context;Landroid/util/AttributeSet;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://p.scoreloop.com"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/scoreloop/client/android/core/model/Game, getBannerUrl(Lcom/scoreloop/client/android/core/model/Game$BannerSize;)Ljava/lang/String; >",
+          "< Application, Lcom/scoreloop/client/android/core/model/Activity, getImageUrl(Lcom/scoreloop/client/android/core/model/Activity$ImageSize;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://badad.googleplex.com/s/reportAd"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/ads/m$a, <init>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://localhost/"
+            },
+            {
+              "kind": "variable",
+              "value": {
+                "type": "cone:<Primordial,Ljava/lang/String>",
+                "source": "method return: < Application, Ljava/lang/Integer, toString(I)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/inmobi/androidsdk/IMAdInterstitial, <init>(Landroid/app/Activity;Ljava/lang/String;)V >",
+          "< Application, Lcom/inmobi/androidsdk/IMAdView, <init>(Landroid/app/Activity;ILjava/lang/String;J)V >",
+          "< Application, Lcom/inmobi/androidsdk/IMAdInterstitial, <init>(Landroid/app/Activity;Ljava/lang/String;J)V >",
+          "< Application, Lcom/inmobi/androidsdk/IMAdView, <init>(Landroid/content/Context;Landroid/util/AttributeSet;)V >",
+          "< Application, Lcom/inmobi/androidsdk/IMAdView, <init>(Landroid/app/Activity;ILjava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://e.admob.com/imp?ad_loc=@gw_adlocid@&qdata=@gw_qdata@&ad_network_id=@gw_adnetid@&js=@gw_sdkver@&session_id=@gw_sessid@&seq_num=@gw_seqnum@&nr=@gw_adnetrefresh@&adt=@gw_adt@&aec=@gw_aec@"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/ads/internal/d, a(Lcom/google/ads/f;Ljava/lang/Boolean;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://android.heyzap.com/in_game_api/sdk/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/heyzap/internal/APIClient, getAbsoluteUrl(Ljava/lang/String;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://schemas.android.com/apk/lib/com.google.ads"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/ads/AdView, a(Ljava/lang/String;Landroid/content/Context;Landroid/util/AttributeSet;Z)Z >",
+          "< Application, Lcom/google/ads/AdView, a(Ljava/lang/String;Landroid/util/AttributeSet;)Z >",
+          "< Application, Lcom/google/ads/AdView, b(Ljava/lang/String;Landroid/content/Context;Landroid/util/AttributeSet;Z)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://localhost:3000"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/vungle/sdk/e, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://ssl.google-analytics.com/collect"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/google/analytics/tracking/android/GAThread, getHostUrl(Ljava/util/Map;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "https://www.facebook.com/connect/uiserver.php"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/facebook/android/b, <clinit>()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://community.scoreloop.com/games/"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/scoreloop/client/android/core/addon/RSSFeed, a()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://twitter.com/oauth/access_token"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/scoreloop/client/android/core/socialprovider/twitter/b, a(Ljava/lang/String;Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://m.facebook.com/pages/Leps-World/308673292512740"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lat/nerbrothers/SuperJump/SuperJump$4, run()V >"
+        ]
+      },
+      {
+        "url": {
+          "concat": [
+            {
+              "kind": "constant",
+              "value": "http://twitter.com/oauth/request_token"
+            }
+          ]
+        },
+        "methods": [
+          "< Application, Lcom/scoreloop/client/android/core/socialprovider/twitter/b, b()V >"
+        ]
+      }
+    ],
+    "wala-time": 2.41587588099992
+  }
+}

@@ -1,0 +1,1298 @@
+{
+  "config" : {
+    "analysis" : "append (extracting string concatentations through StringBuilders/StringBuffers and '+')",
+    "libs" : "ignoring",
+    "reachability" : "class hierarchy analysis"
+  },
+  "runtime" : 7.607228385000781,
+  "result" : {
+    "url2methods" : [
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.s5hex"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_s5hex, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.gflex"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_gflex, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://d21aw2xov4zz0i.cloudfront.net/android/ads/v2/ads_"
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "method return: < Application, Ljava/lang/String, toLowerCase()Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/AdManager, init(Landroid/app/Activity;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://play.google.com"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/appbrain/a/aa, b(Ljava/lang/String;)Z >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.lotus"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_lotus, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://d21aw2xov4zz0i.cloudfront.net/android/ads/3rdparty/ads.json"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/AdManager, init(Landroid/app/Activity;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.sakura"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_sakura, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.glitter"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_glitter, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.snow"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_snow, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.xperiaaurora"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_xperiaaurora, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.s5diamond"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_s5diamond, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.note3"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_note3, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.dandelion"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_dandelion, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://www.gstatic.com/safa/"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/ads/internal/c, f()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.s4nature"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_s4nature, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.heart"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_heart, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.s5oil"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_s5oil, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.nexusmatrix"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_nexusmatrix, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.cny2014"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_cny2014, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.halloweennight"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_halloweennight, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.g2"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_g2, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.shakescary"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_shakescary, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.iphone5wave"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_iphone5wave, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://media.admob.com/mraid/v1/mraid_app_expanded_banner.js"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/ads/m$a, <init>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://e.admob.com/clk?ad_loc=@gw_adlocid@&qdata=@gw_qdata@&ad_network_id=@gw_adnetid@&js=@gw_sdkver@&session_id=@gw_sessid@&seq_num=@gw_seqnum@&nr=@gw_adnetrefresh@"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/ads/internal/d, b(Lcom/google/ads/f;Ljava/lang/Boolean;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/developer?id=Wasabi"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/livewallpaper/xperiaz/AppLauncher, onClick(Landroid/view/View;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.sunflower"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_sunflower, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.ios7galaxy"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_ios7galaxy, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://sdk.appbrain.com,http://sdk-b.apptornado.com"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/appbrain/a/aw, g()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.heart3d"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_heart3d, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://applift-a.apptornado.com,http://applift-b.apptornado.com"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/appbrain/a/ao, d()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://e.admob.com/nofill?ad_loc=@gw_adlocid@&qdata=@gw_qdata@&js=@gw_sdkver@&session_id=@gw_sessid@&seq_num=@gw_seqnum@&adt=@gw_adt@&aec=@gw_aec@"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/ads/internal/d, a(Ljava/util/List;Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.nexus7"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_nexus7, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.nexusdot"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_nexusdot, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://d21aw2xov4zz0i.cloudfront.net/android/new/wasabi/default"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/NewAppManager, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.snowfall"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_snowfall, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.countdown"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_countdown, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.s4lake"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_s4lake, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.xperiaz"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_xperiaz, setInfo(Landroid/content/Context;)V >",
+          "< Application, Lcom/androidwasabi/livewallpaper/xperiaz/m, onPreferenceClick(Landroid/preference/Preference;)Z >",
+          "< Application, Lcom/androidwasabi/livewallpaper/xperiaz/t, h()V >",
+          "< Application, Lcom/androidwasabi/livewallpaper/xperiaz/t, onSharedPreferenceChanged(Landroid/content/SharedPreferences;Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/appbrain/a/aa, b(Landroid/content/Context;Ljava/lang/String;)Z >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/appbrain/a/aa, b(Ljava/lang/String;)Z >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.snowflake"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_snowflake, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.glitter3d"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_glitter3d, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.s53d"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_s53d, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.snowflake2"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_snowflake2, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.jellybean"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_jellybean, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.parallax"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_parallax, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.s4"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_s4, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.ics"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_ics, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.feather2"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_feather2, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://applift-a.apptornado.com"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/appbrain/a/ao, e()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.galaxy"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_galaxy, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://media.admob.com/mraid/v1/mraid_app_banner.js"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/ads/m$a, <init>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://media.admob.com/mraid/v1/mraid_app_interstitial.js"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/ads/m$a, <init>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://d21aw2xov4zz0i.cloudfront.net/android/ads/v2/ads_"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/AdManager, init(Landroid/app/Activity;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.shakecrack"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_shakecrack, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.crackedscreen"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_crackedscreen, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.autumn"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_autumn, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.waterdrop"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_waterdrop, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.sunbeam"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_sunbeam, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.s4fly"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_s4fly, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://media.admob.com/"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/ads/internal/c, f()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.xperiaz1"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_xperiaz1, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.xperiasirius"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_xperiasirius, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/AdHandler$2, shouldOverrideUrlLoading(Landroid/webkit/WebView;Ljava/lang/String;)Z >",
+          "< Application, Lcom/androidwasabi/ads/AdManager, adHandler(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://54.83.11.161/getcid.php"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/AdManager$LoadAdTask, doInBackground([Ljava/lang/String;)Ljava/lang/Boolean; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.iphonedrop"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_iphonedrop, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.raindrop"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_raindrop, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://badad.googleplex.com/s/reportAd"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/ads/m$a, <init>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.halloweenghost"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_halloweenghost, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.s5"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_s5, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.drop"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_drop, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.nexuswave"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_nexuswave, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://e.admob.com/imp?ad_loc=@gw_adlocid@&qdata=@gw_qdata@&ad_network_id=@gw_adnetid@&js=@gw_sdkver@&session_id=@gw_sessid@&seq_num=@gw_seqnum@&nr=@gw_adnetrefresh@&adt=@gw_adt@&aec=@gw_aec@"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/ads/internal/d, a(Lcom/google/ads/f;Ljava/lang/Boolean;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.ios7"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_ios7, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.g2star"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_g2star, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.s4leaf"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_s4leaf, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.s4drop"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_s4drop, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.bokeh"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_bokeh, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.jbcube"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_jbcube, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.maple"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_maple, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://schemas.android.com/apk/lib/com.google.ads"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/ads/AdView, a(Ljava/lang/String;Landroid/content/Context;Landroid/util/AttributeSet;Z)Z >",
+          "< Application, Lcom/google/ads/AdView, a(Ljava/lang/String;Landroid/util/AttributeSet;)Z >",
+          "< Application, Lcom/google/ads/AdView, b(Ljava/lang/String;Landroid/content/Context;Landroid/util/AttributeSet;Z)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.nexus5"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_nexus5, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.dna"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_dna, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://d21aw2xov4zz0i.cloudfront.net/android/ads/v2/ads_"
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "method return: < Application, Ljava/lang/String, toLowerCase()Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind" : "constant",
+              "value" : ".json"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/AdManager, init(Landroid/app/Activity;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.g2nightsky"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_g2nightsky, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.rose"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_rose, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.fireworks"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_fireworks, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.note8"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_note8, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.christmas"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_christmas, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.lavender"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_lavender, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.shakefireworks"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_shakefireworks, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.halloweenpumpkin"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_halloweenpumpkin, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/appbrain/a/aa, b(Landroid/content/Context;Ljava/lang/String;)Z >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.pixelheart"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_pixelheart, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.notepro"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_notepro, setInfo(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id=com.androidwasabi.livewallpaper.feather"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/androidwasabi/ads/PreferenceAd_feather, setInfo(Landroid/content/Context;)V >"
+        ]
+      }
+    ],
+    "wala-time" : 0.6956837390025612
+  }
+}

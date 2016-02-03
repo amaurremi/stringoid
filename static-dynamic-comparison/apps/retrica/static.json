@@ -1,0 +1,877 @@
+{
+  "config" : {
+    "analysis" : "append (extracting string concatentations through StringBuilders/StringBuffers and '+')",
+    "libs" : "ignoring",
+    "reachability" : "class hierarchy analysis"
+  },
+  "runtime" : 12.535343847997865,
+  "result" : {
+    "url2methods" : [
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://maps.google.com/maps?f=q&q=(%s,%s)"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/venticake/retrica/view/album/Util, openMaps(Landroid/content/Context;DD)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://plus.google.com/"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/internal/he, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://apache.org/xml/properties/internal/dtd-scanner"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDocumentScannerImpl, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://www.googleapis.com/auth/plus.login"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/plus/Plus, <clinit>()V >",
+          "< Application, Lcom/google/android/gms/plus/PlusShare$Builder, <init>(Landroid/app/Activity;Lcom/google/android/gms/plus/PlusClient;)V >",
+          "< Application, Lcom/google/android/gms/plus/internal/i, <init>(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://apache.org/xml/features/namespaces"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/PropertyManager, setProperty(Ljava/lang/String;Ljava/lang/Object;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://xml.org/sax/features/namespaces"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDocumentFragmentScannerImpl, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://apache.org/xml/properties/internal/error-reporter"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLReaderImpl, init(Lcom/amazonaws/javax/xml/stream/PropertyManager;)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDTDScannerImpl, <clinit>()V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityManager, <clinit>()V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityStorage, reset(Lcom/amazonaws/javax/xml/stream/PropertyManager;)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDocumentFragmentScannerImpl, <clinit>()V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityManager, reset(Lcom/amazonaws/javax/xml/stream/PropertyManager;)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityReaderImpl, reset(Lcom/amazonaws/javax/xml/stream/PropertyManager;)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLScanner, reset(Lcom/amazonaws/javax/xml/stream/PropertyManager;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://apache.org/xml/properties/internal/symbol-table"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLReaderImpl, init(Lcom/amazonaws/javax/xml/stream/PropertyManager;)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDTDScannerImpl, <clinit>()V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityManager, <clinit>()V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDocumentFragmentScannerImpl, <clinit>()V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityManager, reset(Lcom/amazonaws/javax/xml/stream/PropertyManager;)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityReaderImpl, reset(Lcom/amazonaws/javax/xml/stream/PropertyManager;)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDTDScannerImpl, init()V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLScanner, reset(Lcom/amazonaws/javax/xml/stream/PropertyManager;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://xml.org/sax/features/validation"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDocumentFragmentScannerImpl, <clinit>()V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityManager, <clinit>()V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDTDScannerImpl, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://www.w3.org/TR/1999/REC-xml-names-19990114"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLNSDocumentScannerImpl, scanAttribute(Lcom/amazonaws/javax/xml/stream/xerces/util/XMLAttributesImpl;)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLNSDocumentScannerImpl, scanStartElement()Z >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://www.w3.org/TR/1998/REC-xml-19980210"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDTDScannerImpl, scanConditionalSect(I)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityStorage, addExternalEntity(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityStorage, addUnparsedEntity(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityManager, startEntity(Ljava/lang/String;Z)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityStorage, addInternalEntity(Ljava/lang/String;Ljava/lang/String;)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDTDScannerImpl, endEntity(Ljava/lang/String;)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityReaderImpl, createReader(Ljava/io/InputStream;Ljava/lang/String;Ljava/lang/Boolean;)Ljava/io/Reader; >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDTDScannerImpl, startPE(Ljava/lang/String;Z)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLScanner, scanAttributeValue(Lcom/amazonaws/javax/xml/stream/xerces/xni/XMLString;Lcom/amazonaws/javax/xml/stream/xerces/xni/XMLString;Ljava/lang/String;Lcom/amazonaws/javax/xml/stream/xerces/xni/XMLAttributes;IZ)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/StaxErrorReporter, <init>()V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityManager, createReader(Ljava/io/InputStream;Ljava/lang/String;Ljava/lang/Boolean;)Ljava/io/Reader; >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLScanner, reportFatalError(Ljava/lang/String;[Ljava/lang/Object;)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDocumentFragmentScannerImpl, scanEntityReference(Lcom/amazonaws/javax/xml/stream/xerces/util/XMLStringBuffer;)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLNSDocumentScannerImpl, scanStartElement()Z >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://apache.org/xml/features/validation/warn-on-undeclared-elemdef"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/PropertyManager, initConfigurableReaderProperties()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://media.admob.com/mraid/v1/mraid_app_expanded_banner.js"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/internal/fa, shouldInterceptRequest(Landroid/webkit/WebView;Ljava/lang/String;)Landroid/webkit/WebResourceResponse; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://www.googleapis.com/auth/drive"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/drive/Drive, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://apache.org/xml/features/scanner/notify-char-refs"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDocumentFragmentScannerImpl, <clinit>()V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDTDScannerImpl, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://xml.org/sax/features/external-parameter-entities"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityManager, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://hostname/?"
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "parameter"
+              }
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/tagmanager/ai, a(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://www.googletagmanager.com"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/tagmanager/dz, <init>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://www.googleapis.com/auth/drive.file"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/drive/Drive, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://www.w3.org/2000/xmlns/"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/events/NamespaceImpl, <init>(Ljava/lang/String;Ljava/lang/String;)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/xerces/xni/NamespaceContext, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/jirbo/adcolony/ADCDownload, run()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://www.w3.org/XML/1998/namespace"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/xerces/xni/NamespaceContext, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://www.google-analytics.com/collect"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/analytics/h, a(Ljava/util/Map;JLjava/lang/String;)V >",
+          "< Application, Lcom/google/android/gms/analytics/p, a(Lcom/google/android/gms/analytics/av;)Ljava/net/URL; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://apache.org/xml/properties/internal/entity-manager"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDocumentFragmentScannerImpl, <clinit>()V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLScanner, reset(Lcom/amazonaws/javax/xml/stream/PropertyManager;)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLReaderImpl, init(Lcom/amazonaws/javax/xml/stream/PropertyManager;)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDTDScannerImpl, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://apache.org/xml/features/nonvalidating/load-external-dtd"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDocumentScannerImpl, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://apache.org/xml/features/disallow-doctype-decl"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDocumentScannerImpl, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://java.sun.com/xml/stream/properties/ignore-external-dtd"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDocumentScannerImpl, reset(Lcom/amazonaws/javax/xml/stream/PropertyManager;)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/PropertyManager, initConfigurableReaderProperties()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://java.sun.com/xml/stream/properties/outputstream"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/PropertyManager, initWriterProps()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://apache.org/xml/properties/internal/error-handler"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLErrorReporter, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://xml.org/sax/features/external-general-entities"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityManager, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://media.admob.com/mraid/v1/mraid_app_banner.js"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/internal/fa, shouldInterceptRequest(Landroid/webkit/WebView;Ljava/lang/String;)Landroid/webkit/WebResourceResponse; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://apache.org/xml/properties/input-buffer-size"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityManager, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://schemas.android.com/apk/lib/com.google.android.gms.plus"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/plus/PlusOneButton, getAnnotation(Landroid/content/Context;Landroid/util/AttributeSet;)I >",
+          "< Application, Lcom/google/android/gms/plus/PlusOneButton, getSize(Landroid/content/Context;Landroid/util/AttributeSet;)I >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://media.admob.com/mraid/v1/mraid_app_interstitial.js"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/internal/fa, shouldInterceptRequest(Landroid/webkit/WebView;Ljava/lang/String;)Landroid/webkit/WebResourceResponse; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://xml.org/sax/features/string-interning"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/PropertyManager, initConfigurableReaderProperties()V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/PropertyManager, setProperty(Ljava/lang/String;Ljava/lang/Object;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://java.sun.com/xml/stream/properties/report-cdata-event"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDocumentFragmentScannerImpl, reset(Lcom/amazonaws/javax/xml/stream/PropertyManager;)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/PropertyManager, initConfigurableReaderProperties()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://apache.org/xml/properties/internal/validation-manager"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDocumentScannerImpl, <clinit>()V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityManager, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://data.flurry.com/aap.do"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/flurry/sdk/dd, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://www.google.com"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/internal/ec, <init>(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://www.googleapis.com/auth/games"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/games/internal/GamesClientImpl, b([Ljava/lang/String;)V >",
+          "< Application, Lcom/google/android/gms/games/Games, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://www.googleapis.com/auth/drive.apps"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/drive/Drive, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://java.sun.com/xml/stream/properties/implementation-name"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/PropertyManager, initConfigurableReaderProperties()V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/PropertyManager, initWriterProps()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://apache.org/xml/features/validation/warn-on-duplicate-attdef"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/PropertyManager, initConfigurableReaderProperties()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://www.googleapis.com/auth/games.firstparty"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/games/internal/GamesClientImpl, b([Ljava/lang/String;)V >",
+          "< Application, Lcom/google/android/gms/games/Games, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://apache.org/xml/properties/internal/stax-entity-resolver"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/PropertyManager, setProperty(Ljava/lang/String;Ljava/lang/Object;)V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityManager, reset(Lcom/amazonaws/javax/xml/stream/PropertyManager;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://www.googleapis.com/auth/plus.me"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/plus/Plus, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://apache.org/xml/properties/internal/entity-resolver"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityManager, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://apache.org/xml/features/warn-on-duplicate-entitydef"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/PropertyManager, initConfigurableReaderProperties()V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityManager, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://apache.org/xml/features/continue-after-fatal-error"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLErrorReporter, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://androidads21.adcolony.com/configure"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/jirbo/adcolony/c, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://googleads.g.doubleclick.net/mads/static/mad/sdk/native/sdk-core-v40.html"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/internal/ay, <init>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://googleads.g.doubleclick.net/mads/static/sdk/native/sdk-core-v40.html"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/internal/ac, a(Lcom/google/android/gms/internal/ae;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://www.facebook.com/"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/venticake/retrica/setting/SettingActivity, o()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://retrica.co/_faq/"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/venticake/retrica/setting/SettingActivity, q()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://data.flurry.com/aap.do"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/flurry/sdk/dd, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://apache.org/xml/features/allow-java-encodings"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/PropertyManager, initConfigurableReaderProperties()V >",
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLEntityManager, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://www.googleapis.com/auth/drive.appdata"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/drive/Drive, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://ssl.google-analytics.com/collect"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/analytics/p, a(Lcom/google/android/gms/analytics/g;Ljava/net/URL;Z)V >",
+          "< Application, Lcom/google/android/gms/analytics/p, a(Lcom/google/android/gms/analytics/av;)Ljava/net/URL; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://hostname/?"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/tagmanager/ai, a(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://apache.org/xml/features/scanner/notify-builtin-refs"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/amazonaws/javax/xml/stream/XMLDocumentFragmentScannerImpl, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://www.googleapis.com/auth/appstate"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/android/gms/internal/ga, b([Ljava/lang/String;)V >",
+          "< Application, Lcom/google/android/gms/appstate/AppStateManager, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/jirbo/adcolony/ADCDownload, run()V >"
+        ]
+      }
+    ],
+    "wala-time" : 0.5160381239984417
+  }
+}

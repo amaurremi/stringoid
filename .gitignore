@@ -5,3 +5,4 @@ out/
 target/
 projectFilesBackup/
 project/target/
+.DS_Store

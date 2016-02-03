@@ -16,12 +16,6 @@ object Main extends StringoidAnalysis {
 
   // Program arguments example
   // -a append --lib false --ir-source cha -u true <apk file>
-  // failing
-  // /Users/amaurremi/uw/stringoid/src/test/resources/failing/at.software.vn.facechanger-62.apk
-  // /Users/amaurremi/uw/stringoid/src/test/resources/failing/com.minifactory.topsnipershooting-2.apk
-  // /Users/amaurremi/uw/stringoid/src/test/resources/failing/com.myjoapps.textdecorator-10.apk
-  // /Users/amaurremi/uw/stringoid/src/test/resources/failing/com.teslacoilsw.notifier-700.apk
-  // /Users/amaurremi/uw/stringoid/src/test/resources/failing/jp.cbrains-15.apk
 
   def main(args: Array[String]): Unit =
     parser.parse(args, CmdOptions()) foreach { options =>
@@ -76,7 +70,7 @@ object Main extends StringoidAnalysis {
     head("stringoid")
     opt[AnalysisType]('a', "analysis") required() valueName "<analysis type>" action {
       (analysis, opts) =>
-        opts.copy(config = opts.config.copy(analysis = analysis)) // todo lenses
+        opts.copy(config = opts.config.copy(analysis = analysis))
     } text s"analysis type (one of $analysisTypes)"
     opt[Boolean]('u', "urls") optional() valueName "<output URLs?>" action {
       (outputUrls, opts) =>
@@ -88,11 +82,11 @@ object Main extends StringoidAnalysis {
     } text "output directory"
     opt[Boolean]("lib") optional() valueName "<include libraries>" action {
       (includeLibs, opts) =>
-        opts.copy(config = opts.config.copy(ignoreLibs = !includeLibs)) // todo lenses + invert flag ignoreLibs to includeLibs
+        opts.copy(config = opts.config.copy(ignoreLibs = !includeLibs))
     } text "ignore libraries?"
     opt[IrSource]("ir-source") optional() valueName "<IR source>" action {
       (irSource, opts) =>
-        opts.copy(config = opts.config.copy(irSource = irSource)) // todo lenses
+        opts.copy(config = opts.config.copy(irSource = irSource))
     } text s"construct call graph to only retrieve URLs in reachable methods? options: $irSources"
     arg[Path]("<file>...") unbounded() action {
       (f, opts) =>

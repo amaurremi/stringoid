@@ -1,0 +1,20 @@
+{
+  "unattributed": [
+    "http://goweatherex.3g.cn:80/goweatherex/weather/getWeather?lang=en_US&sys=4.2.2&ps=2.0&chan=100&cliVersion=5.21&cliId=14474589898955b87b2fea3a3da3e&w=go1004750&h=24&timestamp=0&sce=1&payment=0&refleshTime=1", 
+    "http://goupdate.3g.cn:80/GOClientData/DR?ptl=10&is_zip=1", 
+    "http://goweatherex.3g.cn:80/goweatherex/weather/getWeather?lang=en_US&sys=4.2.2&ps=2.0&chan=100&cliVersion=5.21&cliId=14474589898955b87b2fea3a3da3e&w=go1143420&h=24&timestamp=0&sce=1&payment=0&refleshTime=1", 
+    "http://goweatherex.3g.cn:80/goweatherex/city/search?k=Kuala&lang=en_US&sys=4.2.2&ps=2.0", 
+    "http://imupdate.3g.cn:8888/versions/check?p=42&bn=248&v=5.21&lang=en-US&channel=200&type=1&vc=124", 
+    "http://goweatherex.3g.cn:80/goweatherex/city/search?k=Aug&lang=en_US&sys=4.2.2&ps=2.0", 
+    "http://goweatherex.3g.cn:80/goweatherex/city/search?k=Albe&lang=en_US&sys=4.2.2&ps=2.0", 
+    "http://goweatherex.3g.cn:80/goweatherex/weather/getWeather?lang=en_US&sys=4.2.2&ps=2.0&chan=100&cliVersion=5.21&cliId=14474589898955b87b2fea3a3da3e&w=go1143426&h=24&timestamp=0&sce=1&payment=0&refleshTime=1", 
+    "http://www.google-analytics.com:80/collect?ul=en-us&sr=768x1184&a=1042544256&sc=start&aid=com.gau.go.launcherex.gowidget.weatherwidget&cid=5fb33ee995f9f577&av=5.21&v=1&t=appview&an=GO+Weather+EX&tid=UA-44744186-1&_u=.nUWlMB&_v=ma1b3&cd=com.gau.go.launcherex.gowidget.weather.view.WeatherDetailActivity&qt=5042&z=1", 
+    "http://gostore.3g.cn:80/gostore/entrance", 
+    "http://goweatherex.3g.cn:80/goweatherex/weather/getWeather?lang=en_US&sys=4.2.2&ps=2.0&chan=100&cliVersion=5.21&cliId=14474589898955b87b2fea3a3da3e&w=go1042497&h=24&timestamp=0&sce=1&payment=0&refleshTime=1"
+  ], 
+  "unique": 27, 
+  "in_response_exact": 6, 
+  "in_static": 0, 
+  "total": 193, 
+  "in_response_confirmed": 10
+}

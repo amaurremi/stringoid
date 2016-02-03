@@ -1,0 +1,54 @@
+package com.go.weatherex.setting;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.support.v4.app.FragmentActivity;
+import android.view.View;
+import android.widget.CheckBox;
+import com.gau.go.launcherex.gowidget.framework.GoWidgetApplication;
+import com.gau.go.launcherex.gowidget.weather.d.f;
+
+class bq
+  extends BroadcastReceiver
+{
+  private bq(bm parambm) {}
+  
+  public void onReceive(Context paramContext, Intent paramIntent)
+  {
+    paramContext = paramIntent.getAction();
+    if (paramContext == null) {}
+    do
+    {
+      do
+      {
+        return;
+        if (!paramContext.equals("com.gau.go.launcherex.gowidget.weatherwidget.PURCHASE_CHANGE")) {
+          break;
+        }
+      } while ((!GoWidgetApplication.b(this.a.getActivity().getApplicationContext()).b()) || (bm.p(this.a) == null) || (bm.q(this.a) == null));
+      if (!bm.q(this.a).isChecked())
+      {
+        bm.q(this.a).setEnabled(true);
+        bm.q(this.a).setChecked(true);
+      }
+      bm.r(this.a).setVisibility(8);
+      bm.q(this.a).setVisibility(0);
+      return;
+      if ("com.gau.go.launcherex.gowidget.weatherwidget.action_calendar_binding_app".equals(paramContext))
+      {
+        bm.a(this.a, paramIntent.getStringExtra("app_name"));
+        bm.b(this.a, paramIntent.getStringExtra("app_package_name"));
+        return;
+      }
+    } while (!"com.gau.go.launcherex.gowidget.weatherwidget.action_clock_binding_app".equals(paramContext));
+    bm.c(this.a, paramIntent.getStringExtra("app_name"));
+    bm.d(this.a, paramIntent.getStringExtra("app_package_name"));
+  }
+}
+
+
+/* Location:              /Users/amaurremi/uw/stringoid/static-dynamic-comparison/apps/go weather ex/com.gau.go.launcherex.gowidget.weatherwidget-124-dex2jar.jar!/com/go/weatherex/setting/bq.class
+ * Java compiler version: 6 (50.0)
+ * JD-Core Version:       0.7.1
+ */

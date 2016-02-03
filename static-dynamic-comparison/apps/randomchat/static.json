@@ -1,0 +1,1110 @@
+{
+  "config" : {
+    "analysis" : "append (extracting string concatentations through StringBuilders/StringBuffers and '+')",
+    "libs" : "ignoring",
+    "reachability" : "class hierarchy analysis"
+  },
+  "runtime" : 8.507064342000376,
+  "result" : {
+    "url2methods" : [
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://10.0.2.2:6013"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcrittercism/android/d, a()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://www.appcred.com"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcrittercism/android/d, a()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://chat.mocoplex.com:20001/match.jsp"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/pioong/global/Network, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://market.android.com/details?id="
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "method return: < Application, Ljava/lang/String, substring(I)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/flurry/android/FlurryAds, a(Landroid/content/Context;Ljava/lang/String;Lcom/flurry/android/AdUnit;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://www.gstatic.com/safa/"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/ads/internal/c, f()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://ads.flurry.com/v5/getAds.do"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/flurry/android/FlurryAds, a(Landroid/content/Context;Ljava/lang/String;Landroid/view/ViewGroup;ZLcom/flurry/android/FlurryAdSize;)Ljava/util/List; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://192.168.1.185:6013"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcrittercism/android/d, a()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://gw.adotsolution.com:14000/indicator?m_sdk_ver="
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/skplanet/tad/controller/f, a([Ljava/lang/String;)Ljava/lang/Integer; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://ad-dev.adotsolution.com:15000/inapp/ad_request"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/skplanet/tad/controller/a, a()Lcom/skplanet/tad/protocol/AdInAppResponse; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://adlog.flurry.com"
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "parameter"
+              }
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/flurry/android/FlurryAds, b([BLjava/lang/String;)Z >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://10.0.2.2:6000"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/parse/ParseTestUtils, useBadServerPort(Ljava/lang/String;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://220.103.245.209:8002/appinfo.do"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/skplanet/tad/v2/controller/b, a()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://media.admob.com/mraid/v1/mraid_app_expanded_banner.js"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/ads/m$a, <init>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://ads.flurry.com"
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "parameter"
+              }
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/flurry/android/FlurryAds, b([BLjava/lang/String;)Z >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://e.admob.com/clk?ad_loc=@gw_adlocid@&qdata=@gw_qdata@&ad_network_id=@gw_adnetid@&js=@gw_sdkver@&session_id=@gw_sessid@&seq_num=@gw_seqnum@&nr=@gw_adnetrefresh@"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/ads/internal/d, b(Lcom/google/ads/f;Ljava/lang/Boolean;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://10.0.1.7:6013"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcrittercism/android/d, a()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://192.168.1.110:6013"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcrittercism/android/d, a()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://ads.flurry.com"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/flurry/android/FlurryAds, b([BLjava/lang/String;)Z >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://ads.flurry.com"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/flurry/android/FlurryAds, b([BLjava/lang/String;)Z >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://api.twitter.com/oauth/authorize"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/parse/twitter/Twitter, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://e.admob.com/nofill?ad_loc=@gw_adlocid@&qdata=@gw_qdata@&js=@gw_sdkver@&session_id=@gw_sessid@&seq_num=@gw_seqnum@&adt=@gw_adt@&aec=@gw_aec@"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/ads/internal/d, a(Ljava/util/List;Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id="
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/flurry/android/FlurryAds, performAction$3deb3ec3(Lcom/flurry/android/af;Lcom/flurry/android/FlurryAds;I)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://ad.adlibr.com/dlg/dlg.jsp"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/mocoplex/adlib/AdlibConfig, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://chat.mocoplex.com:20001/sendm.jsp"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/pioong/global/Network, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://play.google.com/store/apps/details?id="
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "other"
+              }
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/flurry/android/FlurryAds, performAction$3deb3ec3(Lcom/flurry/android/af;Lcom/flurry/android/FlurryAds;I)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://chat.mocoplex.com:20001/sendi.jsp"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/pioong/global/Network, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://ad.adlibr.com/smartad/rlink/shortcut.jsp"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/mocoplex/adlib/AdlibWebBrowserActivity, a(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://api.twitter.com/oauth/access_token"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/parse/twitter/Twitter, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://www.adotsolution.com/pinfo/terms/update"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/skplanet/tad/controller/g, a([Ljava/lang/Integer;)Ljava/lang/Boolean; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://ad.adlibr.com/smartad/rlink/icon.jsp"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/mocoplex/adlib/AdlibConfig, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://220.103.245.209:16000/bin/InappRequest"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/skplanet/tad/v2/controller/b, c()Lcom/skplanet/tad/v2/content/a; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://api.parse.com"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/parse/ParseObject, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://event.adotsolution.com:16000/logger"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/skplanet/tad/common/b, <init>(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://event-dev.adotsolution.com:16000/logger"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/skplanet/tad/controller/c, run()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://media.admob.com/mraid/v1/mraid_app_banner.js"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/ads/m$a, <init>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://192.168.1.80:6013"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcrittercism/android/d, a()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://media.admob.com/mraid/v1/mraid_app_interstitial.js"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/ads/m$a, <init>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://gw.adotsolution.com:14000/indicator?m_sdk_ver="
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "other"
+              }
+            },
+            {
+              "kind" : "constant",
+              "value" : "&"
+            },
+            {
+              "kind" : "constant",
+              "value" : "m_client_id="
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "other"
+              }
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/skplanet/tad/controller/f, a([Ljava/lang/String;)Ljava/lang/Integer; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://chat.mocoplex.com:20001/out.jsp"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/pioong/global/Network, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://media.admob.com/"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/ads/internal/c, f()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://data.flurry.com/aap.do"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/flurry/android/FlurryAgent, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://ad.adlibr.com/rsch.jsp"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/mocoplex/adlib/AdlibConfig, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://chat.mocoplex.com:20001/rcv.jsp"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/pioong/global/Network, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://ads.flurry.com"
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "parameter"
+              }
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/flurry/android/FlurryAds, b([BLjava/lang/String;)Z >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://10.0.2.2:3000"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/parse/ParseTestUtils, setUpPushTest(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://app.t-ad.co.kr/appinfo.do"
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "method return: < Application, Lcom/skplanet/tad/v2/controller/e, b()Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/skplanet/tad/v2/controller/e, run()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://ad.adlibr.com/dlg/dcampaign.jsp"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/mocoplex/adlib/AdlibConfig, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://192.168.2.1:6013"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcrittercism/android/d, a()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://192.168.1.100:6013"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcrittercism/android/d, a()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://api.twitter.com/oauth/request_token"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/parse/twitter/Twitter, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://adlog.flurry.com"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/flurry/android/FlurryAds, b([BLjava/lang/String;)Z >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://badad.googleplex.com/s/reportAd"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/ads/m$a, <init>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://api.crittercism.com"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcrittercism/android/d, a()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://ad.adlibr.com/smartad/req_rb2.jsp"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/mocoplex/adlib/SubAdlibAdViewRewardBanner, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://www.adotsolution.com/pinfo/policy/getLatestPolicyInfo"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/skplanet/tad/view/e$4, onClick(Landroid/view/View;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://adlog.flurry.com"
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "parameter"
+              }
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/flurry/android/FlurryAds, b([BLjava/lang/String;)Z >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://e.admob.com/imp?ad_loc=@gw_adlocid@&qdata=@gw_qdata@&ad_network_id=@gw_adnetid@&js=@gw_sdkver@&session_id=@gw_sessid@&seq_num=@gw_seqnum@&nr=@gw_adnetrefresh@&adt=@gw_adt@&aec=@gw_aec@"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/ads/internal/d, a(Lcom/google/ads/f;Ljava/lang/Boolean;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://invalid.server:3000"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/parse/ParseTestUtils, useInvalidServer()Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://220.103.245.39:80/getLatestPolicyInfo.do"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/skplanet/tad/view/e$4, onClick(Landroid/view/View;)V >",
+          "< Application, Lcom/skplanet/tad/v2/controller/e, run()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://ads.flurry.com/v5/getAds.do"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/flurry/android/FlurryAds, a(Landroid/content/Context;Ljava/lang/String;Landroid/view/ViewGroup;ZLcom/flurry/android/FlurryAdSize;)Ljava/util/List; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://chat.mocoplex.com:20001/login.jsp"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/pioong/global/Network, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://ad.t-ad.co.kr:15000/bin/InappRequest"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/skplanet/tad/v2/controller/b, c()Lcom/skplanet/tad/v2/content/a; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://ad.adlibr.com/my2/parta.jsp"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/mocoplex/adlib/AdlibConfig, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://data.flurry.com/aap.do"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/flurry/android/FlurryAgent, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://schemas.android.com/apk/lib/com.google.ads"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/google/ads/AdView, a(Ljava/lang/String;Landroid/content/Context;Landroid/util/AttributeSet;Z)Z >",
+          "< Application, Lcom/google/ads/AdView, a(Ljava/lang/String;Landroid/util/AttributeSet;)Z >",
+          "< Application, Lcom/google/ads/AdView, b(Ljava/lang/String;Landroid/content/Context;Landroid/util/AttributeSet;Z)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://ad.adlibr.com/report3.jsp"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/mocoplex/adlib/f, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://ad.adlibr.com/smartad/smart_cache2.jsp"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/mocoplex/adlib/AdlibConfig, <clinit>()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://adlog.flurry.com"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/flurry/android/FlurryAds, b([BLjava/lang/String;)Z >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://gw.adotsolution.com:14000/indicator?m_sdk_ver="
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "other"
+              }
+            },
+            {
+              "kind" : "constant",
+              "value" : "&"
+            },
+            {
+              "kind" : "constant",
+              "value" : "m_client_id="
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/skplanet/tad/controller/f, a([Ljava/lang/String;)Ljava/lang/Integer; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://gw.adotsolution.com:14000/indicator?m_sdk_ver="
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "other"
+              }
+            },
+            {
+              "kind" : "constant",
+              "value" : "&"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/skplanet/tad/controller/f, a([Ljava/lang/String;)Ljava/lang/Integer; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "https://market.android.com/details?id="
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/flurry/android/FlurryAds, a(Landroid/content/Context;Ljava/lang/String;Lcom/flurry/android/AdUnit;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://m.tstore.co.kr/"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/skplanet/tad/v2/controller/a, d(Landroid/content/Context;Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://ad.adotsolution.com:15000/inapp/ad_request"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/skplanet/tad/common/b, <init>(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://ad.adlibr.com/smartad/rlink/clk.jsp"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/mocoplex/adlib/AdlibConfig$5, run()V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://gw.adotsolution.com:14000/indicator?m_sdk_ver="
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "other"
+              }
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/skplanet/tad/controller/f, a([Ljava/lang/String;)Ljava/lang/Integer; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://app.t-ad.co.kr/appinfo.do"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/skplanet/tad/v2/controller/e, <init>(Landroid/content/Context;Ljava/lang/String;Z)V >",
+          "< Application, Lcom/skplanet/tad/v2/controller/e, run()V >",
+          "< Application, Lcom/skplanet/tad/v2/controller/b, a()Ljava/lang/String; >"
+        ]
+      }
+    ],
+    "wala-time" : 0.4578622759981954
+  }
+}

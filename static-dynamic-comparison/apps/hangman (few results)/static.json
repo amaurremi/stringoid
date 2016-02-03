@@ -1,0 +1,357 @@
+{
+  "config" : {
+    "analysis" : "append (extracting string concatentations through StringBuilders/StringBuffers and '+')",
+    "libs" : "ignoring",
+    "reachability" : "class hierarchy analysis"
+  },
+  "runtime" : 1.1498173809995933,
+  "result" : {
+    "url2methods" : [
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://en.wikipedia.org/wiki/"
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "method return: < Application, Lcom/games/HangManGame/Hints, getWikiId(Ljava/lang/String;I)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/games/HangManGame/HangMan$1, onClick(Landroid/view/View;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://mm.admob.com/static/android/i18n/20100527"
+            },
+            {
+              "kind" : "constant",
+              "value" : "/"
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "field access: < Application, Lcom/admob/android/ads/o, d, <Application,Ljava/lang/String> >"
+              }
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/admob/android/ads/o, <init>(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://mm.admob.com/static/android/i18n/20100527"
+            },
+            {
+              "kind" : "constant",
+              "value" : "/"
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "field access: < Application, Lcom/admob/android/ads/o, d, <Application,Ljava/lang/String> >"
+              }
+            },
+            {
+              "kind" : "constant",
+              "value" : ".properties"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/admob/android/ads/o, <init>(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://en.wikipedia.org/wiki/"
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "method return: < Application, Lcom/games/HangManGame/HangMan, access$1(Lcom/games/HangManGame/HangMan;)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/games/HangManGame/HangMan$1, onClick(Landroid/view/View;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://a.admob.com/f0?"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/admob/android/ads/analytics/InstallReceiver, a(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://schemas.android.com/apk/res/"
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "method return: < Application, Landroid/content/Context, getPackageName()Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/admob/android/ads/AdView, <init>(Landroid/content/Context;Landroid/util/AttributeSet;I)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://mm.admob.com/static/android/i18n/20100527"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/admob/android/ads/o, <init>(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://r.admob.com/ad_source.php"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/admob/android/ads/u, <clinit>()V >",
+          "< Application, Lcom/admob/android/ads/u, a(Ljava/lang/String;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://schemas.android.com/apk/res/"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/admob/android/ads/AdView, <init>(Landroid/content/Context;Landroid/util/AttributeSet;I)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://api.admob.com/v1/pubcode/android_sdk_emulator_notice"
+            },
+            {
+              "kind" : "constant",
+              "value" : "?"
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "method return: < Application, Lcom/admob/android/ads/u, a(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;I)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/admob/android/ads/t, a(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://api.admob.com/v1/pubcode/android_sdk_emulator_notice"
+            },
+            {
+              "kind" : "constant",
+              "value" : "?"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/admob/android/ads/t, a(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://market.android.com/details?id=com.caprusIT.games"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/games/HangManGame/AboutUsActivity$1, onClick(Landroid/view/View;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://a.admob.com/f0?"
+            },
+            {
+              "kind" : "cycle",
+              "value" : "undefined"
+            },
+            {
+              "kind" : "constant",
+              "value" : "&"
+            },
+            {
+              "kind" : "constant",
+              "value" : "isu"
+            },
+            {
+              "kind" : "constant",
+              "value" : "="
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "method return: < Application, Ljava/net/URLEncoder, encode(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            },
+            {
+              "kind" : "constant",
+              "value" : "&"
+            },
+            {
+              "kind" : "constant",
+              "value" : "app_id"
+            },
+            {
+              "kind" : "constant",
+              "value" : "="
+            },
+            {
+              "kind" : "variable",
+              "value" : {
+                "type" : "cone:<Primordial,Ljava/lang/String>",
+                "source" : "method return: < Application, Ljava/net/URLEncoder, encode(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; >"
+              }
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/admob/android/ads/analytics/InstallReceiver, a(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String; >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://mm.admob.com/static/android/i18n/20100527"
+            },
+            {
+              "kind" : "constant",
+              "value" : "/"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/admob/android/ads/o, <init>(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://api.admob.com/v1/pubcode/android_sdk_emulator_notice"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/admob/android/ads/t, a(Landroid/content/Context;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://en.wikipedia.org/wiki/"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/games/HangManGame/HangMan$1, onClick(Landroid/view/View;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://market.android.com/details?id=com.games.speedtester"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/games/HangManGame/AboutUsActivity$2, onClick(Landroid/view/View;)V >"
+        ]
+      },
+      {
+        "url" : {
+          "concat" : [
+            {
+              "kind" : "constant",
+              "value" : "http://mm.admob.com/static/android/canvas.html"
+            }
+          ]
+        },
+        "methods" : [
+          "< Application, Lcom/admob/android/ads/view/AdMobWebView$a, onPageFinished(Landroid/webkit/WebView;Ljava/lang/String;)V >",
+          "< Application, Lcom/admob/android/ads/d, a(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;II)Landroid/view/View; >"
+        ]
+      }
+    ],
+    "wala-time" : 0.38748716299960506
+  }
+}
