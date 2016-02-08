@@ -137,6 +137,7 @@ public class TapatalkJsonEngine {
     private Object result = null;
 
     static {
+        // todo static non-final fields that have URL prefixes
         GET_ROOT = "https://directory.tapatalk.com/get_iab_root_category.json";
         GET_NESTED = "https://directory.tapatalk.com/get_iab_nested_category.json";
         GET_CATEGORY = "https://directory.tapatalk.com/get_random_forums_by_iab_category.php";

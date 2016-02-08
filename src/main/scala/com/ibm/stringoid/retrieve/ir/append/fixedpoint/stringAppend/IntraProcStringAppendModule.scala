@@ -11,6 +11,7 @@ import com.ibm.wala.fixpoint.UnaryOperator
 import com.ibm.wala.ipa.cfg.ExceptionPrunedCFG
 import com.ibm.wala.ssa.analysis.{ExplodedControlFlowGraph, IExplodedBasicBlock}
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAArrayStoreInstruction, SSAPhiInstruction}
+import com.ibm.wala.types.FieldReference
 import com.ibm.wala.util.graph.traverse.SCCIterator
 import seqset.regular.Automaton
 
@@ -23,9 +24,9 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
   /**
     * Get the string concatenation results.
     */
-  def stringAppends(node: Node): StringPartAutomaton = {
-    val node1: Map[ValueNumber, Set[ASBO]] = idToAsboForNode(node)
-    val solver  = getAppendSolver(node, node1)
+  def stringAppends(node: Node, fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
+    val idToAsbo: Map[ValueNumber, Set[ASBO]] = idToAsboForNode(node)
+    val solver  = getAppendSolver(node, idToAsbo, fieldToAutomaton)
     val result  = solver.result
     val mapping = solver.ataRefMapping
     val ataRefs: Set[Int] = (solver.cfg map {
@@ -45,17 +46,21 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
     }
   }
 
-  def getAppendSolver(node: Node, vnToAsbo: Map[Identifier, Set[ASBO]]) =
-    new IntraProcStringAppendSolver(node, vnToAsbo)
+  def getAppendSolver(
+    node: Node,
+    vnToAsbo: Map[Identifier, Set[ASBO]],
+    fieldToAutomaton: Map[FieldReference, StringPartAutomaton]
+  ) = new IntraProcStringAppendSolver(node, vnToAsbo, fieldToAutomaton)
 
   class IntraProcStringAppendSolver(
     node: Node,
-    idToAsbo: Map[Identifier, Set[ASBO]]
-  ) extends StringAppendFixedPointSolver(idToAsbo) {
+    idToAsbo: Map[Identifier, Set[ASBO]],
+    fieldToAutomaton: Map[FieldReference, StringPartAutomaton]
+  ) extends StringAppendFixedPointSolver(idToAsbo, fieldToAutomaton) {
 
     override type BB = IExplodedBasicBlock
 
-    lazy val initialMapping = initialAtaRefMapping(node)
+    lazy val initialMapping: ArrayBuffer[AsboToAutomaton] = initialAtaRefMapping(node)
 
     override lazy val cfg = ExceptionPrunedCFG.make(ExplodedControlFlowGraph.make(node.getIr))
 
@@ -88,6 +93,9 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
             IdentityOperator()
         }
 
+      /**
+        * returns automaton to append and map that keeps tracks of new valnums that have to be mapped to automata that come from phi instructions
+        */
       private[this] def getAppendAutomaton(
         id: Identifier,
         rhsMap: AsboMap,
@@ -201,7 +209,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
         appendId: Identifier
       ) extends AbstractAppendOperator {
 
-        override def createNewMap(rhsMap: AsboMap) = {
+        override def createNewMap(rhsMap: AsboMap): mutable.Map[ASBO, StringPartAutomaton] = {
           val newMap = mutable.Map.empty[ASBO, StringPartAutomaton] ++= rhsMap
           val (appendAutomaton, toAppend) = getAppendAutomaton(appendId, rhsMap)
           newMap ++= toAppend

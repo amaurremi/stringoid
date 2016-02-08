@@ -9,6 +9,7 @@ import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.StringAppend
 import com.ibm.stringoid.retrieve.ir.{IrUrlRetriever, ValueNumber}
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ssa._
+import com.ibm.wala.types.FieldReference
 
 import scala.collection.breakOut
 
@@ -23,6 +24,8 @@ abstract class FixedPointAppendIrRetriever(
       getUrlsWithSources.asJson
     else
       getAutomataWithSources.aws.toList.asJson
+
+  lazy val fieldsToAutomaton: Map[FieldReference, StringPartAutomaton] = ???
 
   def getAutomataWithSources: AutomataWithSources = {
     val TimeResult(nodes, walaTime) = TimeResult(getNodes)

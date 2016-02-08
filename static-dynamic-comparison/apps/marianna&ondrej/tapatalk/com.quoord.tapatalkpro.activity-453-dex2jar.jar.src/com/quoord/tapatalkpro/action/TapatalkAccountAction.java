@@ -728,8 +728,6 @@ public class TapatalkAccountAction {
         ArrayList localArrayList1 = new ArrayList();
         ArrayList localArrayList2 = new ArrayList();
         int i = 0;
-        label30:
-        label70:
         ForumAccountBean localForumAccountBean;
         if (i >= paramJSONArray2.length()) {
             i = 0;

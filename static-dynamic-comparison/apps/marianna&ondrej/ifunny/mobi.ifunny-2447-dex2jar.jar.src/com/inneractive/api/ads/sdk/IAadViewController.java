@@ -69,11 +69,7 @@ final class IAadViewController
                 break label116;
             }
         }
-        label116:
         Object localObject1;
-        label321:
-        label389:
-        label424:
         do {
             do {
                 return;

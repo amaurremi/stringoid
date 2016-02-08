@@ -6,7 +6,7 @@ import mobi.ifunny.rest.retrofit.RestHttpHandler;
 
 public final class IFunnyThirdPartyRequest$Facebook {
     public static <T extends e> void getCounters(T paramT, String paramString1, String paramString2, RestHttpHandler<FacebookShareCounters, T> paramRestHttpHandler) {
-        new RestErrorHandleTask(paramT, paramString1, new IFunnyThirdPartyRequest.Facebook.GetCountersCallable(OthersRetrofit.facebook, paramString2), paramRestHttpHandler, FacebookGraphError.class).execute(new Void[0]);
+        new RestErrorHandleTask(paramT, paramString1, new IFunnyThirdPartyRequest$Facebook$GetCountersCallable(OthersRetrofit.facebook, paramString2), paramRestHttpHandler, FacebookGraphError.class).execute(new Void[0]);
     }
 }
 

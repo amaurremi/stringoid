@@ -4,10 +4,10 @@ import java.util.concurrent.Callable;
 
 public class IFunnyThirdPartyRequest$Twitter$GetCountersCallable
         implements Callable<TwitterShareCounters> {
-    private OthersRetrofit.TwitterInterface twitterInterface;
+    private OthersRetrofit$TwitterInterface twitterInterface;
     private String url;
 
-    public IFunnyThirdPartyRequest$Twitter$GetCountersCallable(OthersRetrofit.TwitterInterface paramTwitterInterface, String paramString) {
+    public IFunnyThirdPartyRequest$Twitter$GetCountersCallable(OthersRetrofit$TwitterInterface paramTwitterInterface, String paramString) {
         this.twitterInterface = paramTwitterInterface;
         this.url = paramString;
     }

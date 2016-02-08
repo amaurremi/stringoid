@@ -4,6 +4,8 @@ import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.AbstractStringBuilderModule
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{IVariable, UnaryOperator}
+import com.ibm.wala.ssa.SSAFieldAccessInstruction
+import com.ibm.wala.types.FieldReference
 import com.ibm.wala.util.graph.Graph
 import com.ibm.wala.util.graph.impl.NodeWithNumber
 import seqset.regular.Automaton
@@ -25,7 +27,10 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
   protected def singleAutomaton(sp: StringPart) = Automaton.empty[StringPart] + Seq(sp)
 
-  abstract class StringAppendFixedPointSolver(vnToAsbo: Map[Identifier, Set[ASBO]]) {
+  abstract class StringAppendFixedPointSolver(
+    vnToAsbo: Map[Identifier, Set[ASBO]],
+    fieldToAutomaton: Map[FieldReference, StringPartAutomaton]
+  ) {
 
     type BB
     type AsboMap = mutable.Map[ASBO, StringPartAutomaton]
@@ -60,6 +65,15 @@ trait StringAppendModule extends AbstractStringBuilderModule {
             val automaton = Automaton.empty[StringPart] + Seq(StringIdentifier(createIdentifier(vn, node)))
             val asboMap = mutable.Map(createAsbo(vn, node) -> automaton)
             refMapping += AsboToAutomaton(asboMap, None)
+          } else {
+            node.getDu getDef vn match {
+              case fdAccess: SSAFieldAccessInstruction =>
+                fieldToAutomaton get fdAccess.getDeclaredField foreach {
+                  automaton =>
+                    val asboMap = mutable.Map(createAsbo(vn, node) -> automaton)
+                    refMapping += AsboToAutomaton(asboMap, None)
+                }
+            }
           }
       }
       refMapping
@@ -68,7 +82,8 @@ trait StringAppendModule extends AbstractStringBuilderModule {
     // ITransferFunctionProvider's methods force the lattice elements to be mutable
     /**
      * The map from ASBOs to string concatenations
-     * @param bb we need to keep track of the basic block in order to see whether a statement
+      *
+      * @param bb we need to keep track of the basic block in order to see whether a statement
      *           appears in a strongly connected component
      */
     case class AsboToAutomaton(asboToAutomaton: AsboMap, bb: Option[BB])

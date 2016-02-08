@@ -4,10 +4,10 @@ import java.util.concurrent.Callable;
 
 public class IFunnyThirdPartyRequest$Facebook$GetCountersCallable
         implements Callable<FacebookShareCounters> {
-    private OthersRetrofit.FacebookInterface facebookInterface;
+    private OthersRetrofit$FacebookInterface facebookInterface;
     private String url;
 
-    public IFunnyThirdPartyRequest$Facebook$GetCountersCallable(OthersRetrofit.FacebookInterface paramFacebookInterface, String paramString) {
+    public IFunnyThirdPartyRequest$Facebook$GetCountersCallable(OthersRetrofit$FacebookInterface paramFacebookInterface, String paramString) {
         this.facebookInterface = paramFacebookInterface;
         this.url = paramString;
     }

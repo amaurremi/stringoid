@@ -9,8 +9,8 @@ import retrofit.Endpoints;
 public class OthersRetrofit {
     private static final String FACEBOOK_API_SERVER = "http://graph.facebook.com";
     private static final String TWITTER_API_SERVER = "http://cdn.api.twitter.com/1/";
-    static OthersRetrofit.FacebookInterface facebook;
-    static OthersRetrofit.TwitterInterface twitter;
+    static OthersRetrofit$FacebookInterface  facebook;
+    static OthersRetrofit$TwitterInterface twitter;
 
     public static void init(Context paramContext) {
         BaseRestAdapter.Builder localBuilder = new BaseRestAdapter.Builder(paramContext);

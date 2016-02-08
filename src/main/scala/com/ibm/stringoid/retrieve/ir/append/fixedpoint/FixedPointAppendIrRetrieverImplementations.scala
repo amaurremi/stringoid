@@ -10,6 +10,7 @@ import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.{InterProcSt
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ipa.callgraph.CallGraph
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAFieldAccessInstruction}
+import com.ibm.wala.types.FieldReference
 import com.ibm.wala.util.debug.UnimplementedError
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
@@ -70,9 +71,10 @@ object FixedPointAppendIrRetrieverImplementations {
       UrlsWithSources(urlWithSourcesMap, walaTime)
     }
 
+    lazy val fieldToAutomaton: Map[FieldReference, StringPartAutomaton] = ???
 
     def getConcatUrls(node: Node): Iterable[(Url, Method)] = {
-      val appendAutomaton = stringAppends(node)
+      val appendAutomaton = stringAppends(node, fieldToAutomaton)
       val ir              = node.getIr
       val table           = ir.getSymbolTable
       (for {
@@ -85,7 +87,7 @@ object FixedPointAppendIrRetrieverImplementations {
 
     override def getAutomaton(node: Node): (Json, Method) = {
       println(node.ir.getMethod.toString)
-      val automaton = stringAppends(node).toDFA.toJson {
+      val automaton = stringAppends(node, fieldToAutomaton).toDFA.toJson {
         sp: StringPart =>
           stringPartToUrlPart(node, sp).asJson.toString()
       }

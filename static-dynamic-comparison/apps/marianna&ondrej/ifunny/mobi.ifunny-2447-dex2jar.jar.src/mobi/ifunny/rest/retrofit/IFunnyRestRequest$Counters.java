@@ -3,8 +3,8 @@ package mobi.ifunny.rest.retrofit;
 import mobi.ifunny.l.a;
 
 public final class IFunnyRestRequest$Counters {
-    public static <T extends a> void getCounters(T paramT, String paramString, RestHttpHandler<RestNotification.Counters, T> paramRestHttpHandler) {
-        new ActivityIFunnyRestTask(paramT, paramString, new IFunnyRestRequest.Counters.GetCountersCallable(Retrofit.rest), paramRestHttpHandler, IFunnyRestRequest.access$000()).execute(new Void[0]);
+    public static <T extends a> void getCounters(T paramT, String paramString, RestHttpHandler<RestNotification$Counters, T> paramRestHttpHandler) {
+        new ActivityIFunnyRestTask(paramT, paramString, new IFunnyRestRequest$Counters$GetCountersCallable(Retrofit.rest), paramRestHttpHandler, IFunnyRestRequest.access$000()).execute(new Void[0]);
     }
 }
 

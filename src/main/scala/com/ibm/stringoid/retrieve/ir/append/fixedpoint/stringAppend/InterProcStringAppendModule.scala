@@ -8,17 +8,20 @@ import com.ibm.wala.fixpoint.UnaryOperator
 import com.ibm.wala.ipa.cfg.{BasicBlockInContext, ExplodedInterproceduralCFG}
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAReturnInstruction}
+import com.ibm.wala.types.FieldReference
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
 
 trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOModule {
 
-  def getAppendSolver = new InterProcStringAppendSolver(identifierToAsbo)
+  def getAppendSolver(fieldToAutomaton: Map[FieldReference, StringPartAutomaton]) =
+    new InterProcStringAppendSolver(identifierToAsbo, fieldToAutomaton)
 
   class InterProcStringAppendSolver(
-    idToAsbo: Map[Identifier, Set[ASBO]]
-  ) extends StringAppendFixedPointSolver(idToAsbo) {
+    idToAsbo: Map[Identifier, Set[ASBO]],
+    fieldToAutomaton: Map[FieldReference, StringPartAutomaton]
+  ) extends StringAppendFixedPointSolver(idToAsbo, fieldToAutomaton) {
 
     type BB = BasicBlockInContext[IExplodedBasicBlock]
 

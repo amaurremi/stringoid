@@ -20,6 +20,7 @@ import android.widget.PopupWindow.OnDismissListener;
 
 import java.util.Random;
 
+import javafx.stage.PopupWindow;
 import mobi.ifunny.IFunnyApplication;
 import mobi.ifunny.gallery.GalleryFragment;
 import mobi.ifunny.gallery.ak;
@@ -29,9 +30,12 @@ import mobi.ifunny.profile.ProfileStubFragment;
 import mobi.ifunny.rest.Features;
 import mobi.ifunny.rest.Features.RateTexts;
 import mobi.ifunny.rest.Features.RateThisAppParams;
+import mobi.ifunny.rest.retrofit.IFunnyRestRequest;
+import mobi.ifunny.rest.retrofit.IFunnyRestRequest$Counters;
 import mobi.ifunny.rest.retrofit.IFunnyRestRequest.App;
 import mobi.ifunny.rest.retrofit.IFunnyRestRequest.Counters;
 import mobi.ifunny.rest.retrofit.RestHttpHandler;
+import mobi.ifunny.rest.retrofit.RestNotification;
 import mobi.ifunny.rest.retrofit.RestNotification.Counters;
 import mobi.ifunny.search.SearchActivity;
 import mobi.ifunny.util.cache.IFunnyCache;
@@ -54,7 +58,7 @@ public class IFunnyMenuActivity
 
     private void D() {
         if (!e("rest.getCounters")) {
-            IFunnyRestRequest.Counters.getCounters(this, "rest.getCounters", y);
+            IFunnyRestRequest$Counters.getCounters(this, "rest.getCounters", y);
         }
     }
 
