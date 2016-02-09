@@ -10,7 +10,7 @@ import com.ibm.wala.fixpoint.FixedPointConstants._
 import com.ibm.wala.fixpoint.UnaryOperator
 import com.ibm.wala.ipa.cfg.ExceptionPrunedCFG
 import com.ibm.wala.ssa.analysis.{ExplodedControlFlowGraph, IExplodedBasicBlock}
-import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAArrayStoreInstruction, SSAPhiInstruction}
+import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAArrayStoreInstruction, SSAFieldAccessInstruction, SSAPhiInstruction}
 import com.ibm.wala.types.FieldReference
 import com.ibm.wala.util.graph.traverse.SCCIterator
 import seqset.regular.Automaton
@@ -93,6 +93,14 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
             IdentityOperator()
         }
 
+      def createAutomaton(vn: ValueNumber): StringPartAutomaton =
+        node.getDu getDef vn match {
+          case instr: SSAFieldAccessInstruction if fieldToAutomaton contains instr.getDeclaredField =>
+            fieldToAutomaton(instr.getDeclaredField)
+          case _                                                                                    =>
+            singleAutomaton(StringIdentifier(vn))
+        }
+
       /**
         * returns automaton to append and map that keeps tracks of new valnums that have to be mapped to automata that come from phi instructions
         */
@@ -111,7 +119,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
                 automaton <- rhsMap get asbo
               } yield automaton
               val newValNumAutomaton = if (automata.isEmpty)
-                singleAutomaton(StringIdentifier(id))
+                createAutomaton(id)
               else
                 mergeAutomata(automata)
               (newValNumAutomaton, mutable.Map.empty[ASBO, StringPartAutomaton])
@@ -129,7 +137,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
                   }) + (createAsbo(phi.getDef, node) -> mergedAutomaton)
                   (mergedAutomaton, mergedMap)
                 case _                      =>
-                  (singleAutomaton(StringIdentifier(id)), mutable.Map.empty[ASBO, StringPartAutomaton])
+                  (createAutomaton(id), mutable.Map.empty[ASBO, StringPartAutomaton])
               }
           }
 
@@ -146,27 +154,31 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
         override def createNewMap(rhsMap: AsboMap): AsboMap = {
           val newMap = mutable.Map.empty[ASBO, StringPartAutomaton]
           newMap ++= rhsMap
-          val sfArgs = reorderStringFormatArgs
-          if (sfArgs.isEmpty)
+          val sfArgSeqs: Seq[Seq[StringPart]] = reorderStringFormatArgs
+          if (sfArgSeqs.isEmpty)
             rhsMap
           else {
-            val sfTail = sfArgs.tail
-            val automaton = sfTail.foldLeft(singleAutomaton(sfArgs.head)) {
-              case (resultAutomaton, stringFormatArg) =>
-                stringFormatArg match {
-                  case StringIdentifier(id) =>
-                    val (auto, toAppend) = getAppendAutomaton(id, newMap)
-                    newMap ++= toAppend
-                    resultAutomaton +++ auto
-                  case other =>
-                    val appendAutomaton = singleAutomaton(other)
-                    resultAutomaton +++ appendAutomaton
+            sfArgSeqs foreach {
+              sfArgs =>
+                val sfTail = sfArgs.tail
+                val automaton = sfTail.foldLeft(singleAutomaton(sfArgs.head)) {
+                  case (resultAutomaton, stringFormatArg) =>
+                    stringFormatArg match {
+                      case StringIdentifier(id) =>
+                        val (auto, toAppend) = getAppendAutomaton(id, newMap)
+                        newMap ++= toAppend
+                        resultAutomaton +++ auto
+                      case other =>
+                        val appendAutomaton = singleAutomaton(other)
+                        resultAutomaton +++ appendAutomaton
+                    }
                 }
-            }
 
-            // the ASBO corresponding to String.format can't be already contained in rhsMap,
-            // so we just add the result to the map
-            newMap += (createAsbo(instr.getDef, node) -> automaton)
+                // the ASBO corresponding to String.format can't be already contained in rhsMap,
+                // so we just add the result to the map
+                newMap += (createAsbo(instr.getDef, node) -> automaton)
+              }
+            newMap
           }
         }
 
@@ -177,27 +189,36 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
           }
 
         /**
-          * Produce sequence of [[StringPart]]s for String.format arguments in the right concatenation order.
+          * Produce sequence of [[StringPart]]s for String.format arguments in the right concatenation order,
+          * in the form of an automaton.
           * This method does not substitute the value numbers with the corresponding automata or [[ASBO]]s.
           */
-        def reorderStringFormatArgs: Seq[StringPart] = {
+        def reorderStringFormatArgs: Vector[Vector[StringPart]] = {
           val firstArg = getFirstStringFormatArg(instr)
           val formatArrayValNum = getStringFormatArray(instr)
           val table = node.getIr.getSymbolTable
           if (table isStringConstant firstArg) {
             val argValNums = getArrayValNums(formatArrayValNum)
             val (formattedParts, specifierNum) = parse(table getStringValue firstArg)
-            formattedParts.foldLeft(Vector.empty[StringPart]) {
+            formattedParts.foldLeft(Vector.empty[Vector[StringPart]]) {
               case (parts, FormattedStringPart(string)) =>
-                parts :+ StringFormatPart(string)
+                val stringPart = StaticFieldPart(string)
+                if (parts.isEmpty) Vector(Vector(stringPart))
+                else parts map {
+                  _ :+ stringPart
+                }
               case (parts, Specifier(count)) =>
-                val newVariable =
+                val newVariables =
                   if (argValNums.hasNext)
-                    StringIdentifier(createIdentifier(argValNums.next(), node))
-                  else MissingStringFormatArgument
-                parts :+ newVariable
+                    createAutomaton(createIdentifier(argValNums.next(), node)).iterator.toVector
+                  else Vector(Seq(MissingStringFormatArgument))
+                if (parts.isEmpty) newVariables map { _.toVector }
+                else for {
+                  v <- newVariables
+                  p <- parts
+                } yield p ++ v
             }
-          } else Seq.empty[StringPart]
+          } else Vector.empty[Vector[StringPart]]
         }
       }
 

@@ -10,7 +10,6 @@ import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.{InterProcSt
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ipa.callgraph.CallGraph
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAFieldAccessInstruction}
-import com.ibm.wala.types.FieldReference
 import com.ibm.wala.util.debug.UnimplementedError
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
@@ -38,7 +37,7 @@ object FixedPointAppendIrRetrieverImplementations {
 
     override def getSource(node: CallGraphNode, vn: ValueNumber): VariableSource = ???
 
-    override def hasUrls(node: CallGraphNode): Boolean = ???
+    override def hasUrlWithoutStaticField(node: CallGraphNode): Boolean = ???
 
     protected def getConcatUrls(entryNode: CallGraphNode): scala.Iterable[(Url, Method)] = ???
 
@@ -60,7 +59,7 @@ object FixedPointAppendIrRetrieverImplementations {
       val urlsWithSources: Iterator[(Url, Method)] =
         for {
           node      <- nodes
-          if hasUrls(node)
+          if hasUrlWithoutStaticField(node) || hasStaticFieldUrl(node)
           urlMethod <- getConcatUrls(node)
         } yield urlMethod
       val urlWithSourcesMap = urlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
@@ -71,18 +70,14 @@ object FixedPointAppendIrRetrieverImplementations {
       UrlsWithSources(urlWithSourcesMap, walaTime)
     }
 
-    lazy val fieldToAutomaton: Map[FieldReference, StringPartAutomaton] = ???
-
     def getConcatUrls(node: Node): Iterable[(Url, Method)] = {
       val appendAutomaton = stringAppends(node, fieldToAutomaton)
       val ir              = node.getIr
-      val table           = ir.getSymbolTable
       (for {
-        vn           <- 1 to table.getMaxValueNumber
-        if isUrlPrefixVn(vn, table)
-        stringValNum  = StringIdentifier(vn)
-        stringTail   <- (appendAutomaton tails stringValNum).iterator take 100
-      } yield (Url(parseUrl(node, stringValNum +: stringTail)), ir.getMethod.toString))(breakOut)
+        vn           <- 1 to ir.getSymbolTable.getMaxValueNumber
+        stringPart   <- urlPrefixes(vn, node)
+        stringTail   <- (appendAutomaton tails stringPart).iterator take 100
+      } yield (Url(parseUrl(node, stringPart +: stringTail)), ir.getMethod.toString))(breakOut)
     }
 
     override def getAutomaton(node: Node): (Json, Method) = {
@@ -94,12 +89,10 @@ object FixedPointAppendIrRetrieverImplementations {
       (automaton.toString.parseOption.get, node.getIr.getMethod.toString)
     }
 
-    override def hasUrls(node: Node): Boolean = {
-      val table = node.getIr.getSymbolTable
-      1 to table.getMaxValueNumber exists {
-        isUrlPrefixVn(_, table)
+    override def hasUrlWithoutStaticField(node: Node): Boolean =
+      1 to node.getIr.getSymbolTable.getMaxValueNumber exists {
+        urlPrefixes(_, node).nonEmpty
       }
-    }
 
     override def idToStringPart(node: Node, id: Identifier): UrlPart = {
       val ir = node.getIr

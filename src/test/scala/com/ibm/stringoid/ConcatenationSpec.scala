@@ -16,6 +16,12 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
 
   describe("StringBuilder + String.format analysis") {
 
+//    it("reproduces debugging test") {
+//      val file = Paths.get("src/test/java/debug")
+//      val analysisConfig = AnalysisConfig(irSource = IrSource.Cha, ignoreLibs = true, analysis = AnalysisType.Append, file = file, outputUrls = false)
+//      run(analysisConfig)
+//    }
+
     it("reproduces failing tests") {
       val file = Paths.get("src/test/java/failing")
       val analysisConfig = AnalysisConfig(irSource = IrSource.Cha, ignoreLibs = true, analysis = AnalysisType.Append, file = file, outputUrls = false)
@@ -28,11 +34,11 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
       run(analysisConfig)
     }
 
-//    it("computes URLs in inter-procedural analysis") {
-//      val file = Paths.get("src/test/java/interProcTestPrograms")
-//      val analysisConfig = AnalysisConfig(irSource = IrSource.InterProc, ignoreLibs = true, analysis = AnalysisType.Append, file = file, outputUrls = true)
-//      run(analysisConfig)
-//    }
+    //    it("computes URLs in inter-procedural analysis") {
+    //      val file = Paths.get("src/test/java/interProcTestPrograms")
+    //      val analysisConfig = AnalysisConfig(irSource = IrSource.InterProc, ignoreLibs = true, analysis = AnalysisType.Append, file = file, outputUrls = true)
+    //      run(analysisConfig)
+    //    }
 
     def run(config: AnalysisConfig) = {
       retriever(config) match {
@@ -52,15 +58,15 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
             }
 
           val actualUrls: Seq[(Set[Method], String)] = (ret.getUrlsWithSources.uws collect {
-        case (Url(urlParts), methods) =>
-          val actualUrl = urlParts.foldLeft("") {
-            case (result, UrlString(string)) =>
-              result + string
-            case (result, _) =>
-              result
-          }
-          (methods, actualUrl)
-      })(breakOut)
+            case (Url(urlParts), methods) =>
+              val actualUrl = urlParts.foldLeft("") {
+                case (result, UrlString(string)) =>
+                  result + string
+                case (result, _) =>
+                  result
+              }
+              (methods, actualUrl)
+          }) (breakOut)
           expectedUrls foreach {
             case (method, expectedUrl) =>
               val hasUrl = actualUrls exists {

@@ -1,6 +1,4 @@
-package tmp;
-
-import intraProcTestPrograms.*;
+package failing;
 
 public class IfStatement4 {
 

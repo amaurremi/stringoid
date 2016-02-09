@@ -42,6 +42,7 @@ trait Nodes {
 
   sealed trait StringPart
   case class StringIdentifier(vn: Identifier) extends StringPart
+  case class StaticFieldPart(string: String) extends StringPart
   case class StringFormatPart(string: String) extends StringPart
   case object MissingStringFormatArgument extends StringPart
   case object StringCycle extends StringPart

@@ -1,4 +1,4 @@
-package tmp;
+package failing;
 
 public class AliasAnalysis {
     public static void main(String[] args) {

@@ -11,6 +11,7 @@ import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ssa._
 import com.ibm.wala.types.FieldReference
 
+import scala.collection.JavaConversions._
 import scala.collection.breakOut
 
 abstract class FixedPointAppendIrRetriever(
@@ -25,22 +26,77 @@ abstract class FixedPointAppendIrRetriever(
     else
       getAutomataWithSources.aws.toList.asJson
 
-  lazy val fieldsToAutomaton: Map[FieldReference, StringPartAutomaton] = ???
-
   def getAutomataWithSources: AutomataWithSources = {
     val TimeResult(nodes, walaTime) = TimeResult(getNodes)
     val automataWithSources: Iterator[(Json, Method)] =
       for {
         node <- nodes
-        if hasUrls(node)
+        if hasUrlWithoutStaticField(node)
       } yield getAutomaton(node)
     AutomataWithSources(automataWithSources, walaTime)
   }
 
-  def hasUrls(node: Node): Boolean
+  def hasUrls(node: Node) = hasUrlWithoutStaticField(node) || hasStaticFieldUrl(node)
 
-  protected def isUrlPrefixVn(vn: ValueNumber, table: SymbolTable): Boolean =
-    (table isStringConstant vn) && isUrlPrefix(table getStringValue vn)
+  def hasUrlWithoutStaticField(node: Node): Boolean
+
+  /**
+    * collect all assignments to static fields into map from field to sum-automaton
+    */
+  lazy val fieldToAutomaton: Map[FieldReference, StringPartAutomaton] =
+    getNodes.foldLeft(Map.empty[FieldReference, StringPartAutomaton]) {
+      case (oldMap, node) =>
+        node.getIr.iterateNormalInstructions().foldLeft(oldMap) {
+          case (oldMap2, instr: SSAPutInstruction) =>
+            val field    = instr.getDeclaredField
+            val writeVal = instr.getVal
+            val table    = node.getIr.getSymbolTable
+            if (table isConstant writeVal) {
+              val stringPart = singleAutomaton(StaticFieldPart(String.valueOf(table getConstantValue writeVal)))
+              val automaton =
+                if (oldMap2 contains field) oldMap2(field) | stringPart
+                else stringPart
+              oldMap2 + (field -> automaton)
+            } else oldMap2
+          case (oldMap2, _)                        =>
+            oldMap2
+        }
+    }
+
+  def hasStaticFieldUrl(node: Node): Boolean = staticUrlFields(node).nonEmpty
+
+  def staticUrlFields(node: Node): Seq[StringPart] =
+    1 to node.getIr.getSymbolTable.getMaxValueNumber flatMap {
+      vn =>
+        node.getDu getDef vn match {
+          case instr: SSAFieldAccessInstruction if fieldToAutomaton contains instr.getDeclaredField =>
+            fieldToAutomaton(instr.getDeclaredField).iterator map { _.head }
+          case _                                                                                    =>
+            Seq.empty[StringPart]
+        }
+    }
+
+  protected def urlPrefixes(vn: ValueNumber, node: Node): Seq[StringPart] = {
+    val table = node.getIr.getSymbolTable
+    val inTable = (table isStringConstant vn) && isUrlPrefix(table getStringValue vn)
+    if (inTable)
+      Seq(StringIdentifier(createIdentifier(vn, node)))
+    else {
+      node.getDu getDef vn match {
+        case instr: SSAFieldAccessInstruction =>
+          val strings = for {
+            automaton <- (fieldToAutomaton get instr.getDeclaredField).toSeq
+            seq       <- automaton.iterator
+          } yield seq.head
+          strings filter {
+            case StaticFieldPart(str) => isUrlPrefix(str)
+            case _                    => false
+          }
+        case _                                =>
+          Seq.empty[StringPart]
+      }
+    }
+  }
 
   protected def getAutomaton(entryNode: Node): (Json, Method)
 
@@ -51,8 +107,10 @@ abstract class FixedPointAppendIrRetriever(
 
   protected def stringPartToUrlPart(node: Node, string: StringPart): UrlPart =
     string match {
-      case StringIdentifier(id)            =>
+      case StringIdentifier(id)        =>
         idToStringPart(node, id)
+      case StaticFieldPart(str)     =>
+        UrlString(str)
       case StringCycle                 =>
         UrlWithCycle
       case MissingStringFormatArgument =>

@@ -73,6 +73,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
                     val asboMap = mutable.Map(createAsbo(vn, node) -> automaton)
                     refMapping += AsboToAutomaton(asboMap, None)
                 }
+              case _                                   => ()
             }
           }
       }
