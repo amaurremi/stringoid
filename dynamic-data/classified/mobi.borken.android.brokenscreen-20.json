@@ -1,6 +1,5 @@
 {
   "unattributed": [
-    "http://applift-a.apptornado.com:80/static/download_icon.png", 
     "http://data.appflood.com:80/get_token?model=6&sm=1&ts=1447457726939&data=LYSbSN%2FR6gkKYEa8IVYeG83BD6la44hc45ZGi3L%2F%2BSAxQKrVyGURvZnUnwYDtNaqczVVrcQ8CUDhLesQUSYX65IUvA5eFUQw%2BUYnfBAOOxrAzYh7NQPGcD7tkxhl%2FTPqOPG0n%2FYbRpsvD6wKkxvKGTpJOjH1Dy5u8cpBHy5dRnEf%2BUmWwe64%2B3zCkDbSXapDoJ6TzvQlj1y60D9snU3Tw2XqPJCM4ORsvFf3kHvmu8ZMHygcLWqVNdsuZ%2FBScEa0e3qigmXXGpBxFRX6ktFTIExDs%2BrcuzzgbMw1NS%2FDPX2tZ80TD4%2BQ%2FQ%3D%3D&adtype=255&app_key=KRCTyIWfsc6GsGsR&mac=&aid=SqJFH%2F%2FNc2PIojfC17xlul8CZdwuqGBB&v=2.22&adid=&duid=&bm=kAiJF0jSnBootIkxQaJLnmHud46qsDbC%2FaOiM8mC0KzALWOyd5vgNQ%3D%3D&uuid=myL32GwmmD9GnqIM4pZNahYIL87qUDbZ4w9Yj%2FqjrVEIN2w2fRGaXg%3D%3D&signature=e0f17dddf31f755a043d5d0c6f5210a9", 
     "http://api.vungle.com:80/api/v1/config", 
     "http://api.vungle.com:80/api/v1/requestAd", 
@@ -26,5 +25,5 @@
   "in_response_exact": 12, 
   "in_static": 0, 
   "total": 335, 
-  "in_response_confirmed": 11
+  "in_response_confirmed": 12
 }
