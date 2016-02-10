@@ -6,7 +6,8 @@
 
 APK=${1:?"Please provide an apk file."}
 
-UNPACK_DIR=$(mktemp -d)
+# Supposedly portable on Linux/OSX
+UNPACK_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'mytmpdir')
 
 unzip -q ${APK} -d ${UNPACK_DIR} 
 
