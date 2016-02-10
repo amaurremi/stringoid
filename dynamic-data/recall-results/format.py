@@ -17,6 +17,8 @@ def no_zero(i):
         return str(i)
 
 if __name__ == "__main__":
+    manually      = 0
+    automatically = 0
 
     print '%-35s, %s, %s, %s, %s, %s, %s, %s, %s, %11s, %11s, %11s, %11s' % (
         '"Name"',
@@ -60,5 +62,10 @@ if __name__ == "__main__":
             )
 
 
-            
+            automatically += d["from_responses_auto"]
+            manually += d["from_responses_manual"]
+            manually += d["from_app"]
+
+    print "Automatically classified: %d" % automatically
+    print "Manually classified     : %d" % manually 
 
