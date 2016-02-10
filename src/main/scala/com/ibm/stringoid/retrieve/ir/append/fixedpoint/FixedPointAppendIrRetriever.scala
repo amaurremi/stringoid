@@ -31,14 +31,12 @@ abstract class FixedPointAppendIrRetriever(
     val automataWithSources: Iterator[(Json, Method)] =
       for {
         node <- nodes
-        if hasUrlWithoutStaticField(node)
+        if hasUrls(node)
       } yield getAutomaton(node)
     AutomataWithSources(automataWithSources, walaTime)
   }
 
-  def hasUrls(node: Node) = hasUrlWithoutStaticField(node) || hasStaticFieldUrl(node)
-
-  def hasUrlWithoutStaticField(node: Node): Boolean
+  def hasUrls(node: Node): Boolean
 
   /**
     * collect all assignments to static fields into map from field to sum-automaton
@@ -60,19 +58,6 @@ abstract class FixedPointAppendIrRetriever(
             } else oldMap2
           case (oldMap2, _)                        =>
             oldMap2
-        }
-    }
-
-  def hasStaticFieldUrl(node: Node): Boolean = staticUrlFields(node).nonEmpty
-
-  def staticUrlFields(node: Node): Seq[StringPart] =
-    1 to node.getIr.getSymbolTable.getMaxValueNumber flatMap {
-      vn =>
-        node.getDu getDef vn match {
-          case instr: SSAFieldAccessInstruction if fieldToAutomaton contains instr.getDeclaredField =>
-            fieldToAutomaton(instr.getDeclaredField).iterator map { _.head }
-          case _                                                                                    =>
-            Seq.empty[StringPart]
         }
     }
 

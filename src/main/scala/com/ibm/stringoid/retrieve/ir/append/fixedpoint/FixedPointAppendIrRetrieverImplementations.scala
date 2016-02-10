@@ -37,7 +37,7 @@ object FixedPointAppendIrRetrieverImplementations {
 
     override def getSource(node: CallGraphNode, vn: ValueNumber): VariableSource = ???
 
-    override def hasUrlWithoutStaticField(node: CallGraphNode): Boolean = ???
+    override def hasUrls(node: CallGraphNode): Boolean = ???
 
     protected def getConcatUrls(entryNode: CallGraphNode): scala.Iterable[(Url, Method)] = ???
 
@@ -59,7 +59,7 @@ object FixedPointAppendIrRetrieverImplementations {
       val urlsWithSources: Iterator[(Url, Method)] =
         for {
           node      <- nodes
-          if hasUrlWithoutStaticField(node) || hasStaticFieldUrl(node)
+          if hasUrls(node)
           urlMethod <- getConcatUrls(node)
         } yield urlMethod
       val urlWithSourcesMap = urlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
@@ -89,7 +89,7 @@ object FixedPointAppendIrRetrieverImplementations {
       (automaton.toString.parseOption.get, node.getIr.getMethod.toString)
     }
 
-    override def hasUrlWithoutStaticField(node: Node): Boolean =
+    override def hasUrls(node: Node): Boolean =
       1 to node.getIr.getSymbolTable.getMaxValueNumber exists {
         urlPrefixes(_, node).nonEmpty
       }
