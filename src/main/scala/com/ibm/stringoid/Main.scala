@@ -23,7 +23,7 @@ object Main extends StringoidAnalysis {
       files foreach {
         file =>
           TimeResult.printTime("processing " + file.toString) {
-              write(AnalysisResult.fromConfig(config.copy(file = file)), file, outDir)
+              write(AnalysisResult.fromConfig(config.copy(file = file)), file, outDir, spaces = false)
             }
           }
       }
@@ -42,11 +42,12 @@ object Main extends StringoidAnalysis {
   /**
    * Write the output of the URL retrieval to specified file
    */
-  def write(result: AnalysisResult, apkPath: Path, outDir: Path): Unit = {
+  def write(result: AnalysisResult, apkPath: Path, outDir: Path, spaces: Boolean = true): Unit = {
     val logName = "%s_%s.json".format(apkPath.getFileName.toString, result.config.analysis)
     Files.createDirectories(outDir)
     val logPath = Paths.get(outDir.toString, logName)
-    Files.write(logPath, result.asJson.spaces2.getBytes)
+    val json = if (spaces) result.asJson.spaces2 else result.asJson.nospaces
+    Files.write(logPath, json.getBytes)
   }
 
   case class CmdOptions (
