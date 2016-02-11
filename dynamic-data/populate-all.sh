@@ -6,9 +6,9 @@ RESULTS="$(cd "$(dirname "$RESULTS")"; pwd)/$(basename "$RESULTS")"
 
 (cd apps ; ./populate.sh)
 
-(cd static-app-content ; ./populate.sh)
+# (cd static-app-content ; ./populate.sh)
 
-(cd http-traffic; ./populate.sh)
+# (cd http-traffic; ./populate.sh)
 
 (cd automata; ./populate.sh ${RESULTS})
 
