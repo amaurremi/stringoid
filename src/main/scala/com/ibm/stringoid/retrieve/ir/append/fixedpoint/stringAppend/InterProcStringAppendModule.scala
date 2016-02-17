@@ -4,25 +4,24 @@ import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.InterProcASBOModule
 import com.ibm.wala.dataflow.graph.AbstractMeetOperator
+import com.ibm.wala.fixpoint.FixedPointConstants._
 import com.ibm.wala.fixpoint.UnaryOperator
+import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.cfg.{BasicBlockInContext, ExplodedInterproceduralCFG}
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
-import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAReturnInstruction}
+import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInvokeInstruction, SSAReturnInstruction}
 import com.ibm.wala.types.FieldReference
 
-import scala.Predef.{Map, Set}
 import scala.collection.JavaConversions._
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOModule {
 
   def stringAppends(node: Node, fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
-    val solver  = getAppendSolver(node, fieldToAutomaton)
+    val solver = new InterProcStringAppendSolver(identifierToAsbo, fieldToAutomaton)
     stringAppendsForSolver(solver)
   }
-
-  def getAppendSolver(node: Node, fieldToAutomaton: Map[FieldReference, StringPartAutomaton]) =
-    new InterProcStringAppendSolver(identifierToAsbo, fieldToAutomaton)
 
   class InterProcStringAppendSolver(
     idToAsbo: Map[Identifier, Set[ASBO]],
@@ -52,7 +51,9 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
 
     override protected def transferFunctions: StringAppendTransferFunctions = new InterProcStringAppendTransferFunctions
 
-    class InterProcStringAppendTransferFunctions extends StringAppendTransferFunctions {
+    class InterProcStringAppendTransferFunctions extends StringAppendTransferFunctions(idToAsbo) {
+
+      override def valNum(id: Identifier): ValueNumber = id.getValueNumber
 
       override def getNodeTransferFunction(bb: BB): UnaryOperator[AtaReference] = {
         val node = CallGraphNode(bb.getNode)
@@ -77,11 +78,12 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             }
           case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)                 =>
             new StringFormatAppendOperator(inv, node)
-          case inv: SSAAbstractInvokeInstruction if hasStringReturnType(inv)            =>
-            val assignTo = ASBO(getId(inv.getDef))
-            // todo problem: multiple return values
-            // todo problem: how do I ensure that by the time we get here, the callee already produced an automaton that it returns?
-            new StringBuilderAppendOperator(Set(assignTo), getId(inv.getReturnValue(0)))
+          case inv: SSAAbstractInvokeInstruction                                        =>
+            new SubstitutionOperator(
+              callGraph.getPossibleTargets(node.node, inv.getCallSite).toSet,
+              argumentAsbos(inv, node))
+//            val assignTo = ASBO(getId(inv.getDef))
+//            new StringBuilderAppendOperator(Set(assignTo), getId(inv.getReturnValue(0)))
           case ret: SSAReturnInstruction                                                =>
             val result = getId(ret.getResult)
             val assignTo = callGraph.getSuccNodes(node.node)
@@ -91,25 +93,68 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
         }
       }
 
+      case class SubstitutionOperator(
+        targetNodes: Set[CGNode],
+        substitutionAsbos: Seq[(ASBO, Int)] // pairs (asbo, argNum) of argument indices (starting at 0) and their corresponding ASBOs
+      ) extends UnaryOperator[AtaReference] {
+
+        def createSubstitutionMap(rhsMap: AsboMap): AsboMap = {
+          val newMap = mutable.Map.empty[ASBO, StringPartAutomaton] ++= rhsMap
+          targetNodes foreach {
+             node =>
+               val cgNode = CallGraphNode(node)
+               substitutionAsbos foreach {
+                 case (asbo, paramIndex) =>
+                   val paramId = createIdentifier(paramIndex + 1, cgNode)
+                   for {
+                     paramAsbo <- idToAsbo getOrElse (paramId, Set(ASBO(paramId)))
+                     automaton <- rhsMap get asbo
+                   } {
+                       newMap += (paramAsbo -> automaton)
+                   }
+               }
+          }
+          newMap
+        }
+
+        override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {
+          val rhsMap = ataRefMapping(rhs.index).asboToAutomaton
+          val newMap = createSubstitutionMap(rhsMap)
+          val lhsMap: AsboMap = ataRefMapping(lhs.index).asboToAutomaton
+
+          if (lhsMap == newMap)
+            NOT_CHANGED
+          else {
+            lhsMap ++= newMap
+            CHANGED
+          }
+        }
+      }
+
+      /**
+        * Do the arguments passed into a call have ASBOS? If yes, get them, together with the argument index
+        */
+      private[this] def argumentAsbos(instr: SSAAbstractInvokeInstruction, node: Node): Seq[(ASBO, Int)] =
+        instr match {
+          case inv: SSAInvokeInstruction =>
+            for {
+              argIndex <- 0 to instr.getNumberOfParameters
+              arg       = instr getUse argIndex
+              asbos    <- idToAsbo get createIdentifier(arg, node)
+              asbo     <- asbos
+            } yield (asbo, argIndex)
+          case _ => throw new UnsupportedOperationException("TODO handle other invoke instruction!")
+        }
+
       private[this] def hasStringReturnType(inv: SSAAbstractInvokeInstruction): Boolean =
         inv.getDeclaredResultType.toString contains "java/lang/String"
 
-      /**
-        * Resolve the union of all automata to which this value number could map.
-        * 1. For each ASBO, checks if value number is in `rhsMap`, and
-        *    - if yes, returns automaton;
-        *    - if no, checks if val num is a phi instruction,
-        *      and if yes, resolves its arguments recursively and adds them to a new AsboMap
-        *      with which we will need to update the lhsMap.
-        */
-      def getAppendAutomaton(node: Node, id: Identifier, rhsMap: AsboMap): (StringPartAutomaton, AsboMap) = ???
-
       case class StringFormatAppendOperator(inv: SSAAbstractInvokeInstruction, node: Node) extends AbstractAppendOperator {
-        override def createNewMap(rhsMap: AsboMap): AsboMap = ???
+        override def createLhsMap(rhsMap: AsboMap): AsboMap = ???
       }
 
       case class StringBuilderAppendOperator(asbos: Set[ASBO], id: Identifier) extends AbstractAppendOperator {
-        override def createNewMap(rhsMap: AsboMap): AsboMap = ???
+        override def createLhsMap(rhsMap: AsboMap): AsboMap = ???
       }
 
       override def getMeetOperator: AbstractMeetOperator[AtaReference] = ???

@@ -4,17 +4,15 @@ import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.AbstractStringBuilderModule
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{IVariable, UnaryOperator}
-import com.ibm.wala.ssa.SSAFieldAccessInstruction
+import com.ibm.wala.ssa.{SSAFieldAccessInstruction, SSAPhiInstruction}
 import com.ibm.wala.types.FieldReference
 import com.ibm.wala.util.graph.NumberedGraph
 import com.ibm.wala.util.graph.impl.NodeWithNumber
 import seqset.regular.Automaton
 
-import scala.Predef.{Map, Set}
-import scala.Seq
 import scala.collection.JavaConversions._
-import scala.collection._
 import scala.collection.mutable.ArrayBuffer
+import scala.collection.{breakOut, mutable}
 
 trait StringAppendModule extends AbstractStringBuilderModule {
 
@@ -56,7 +54,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
   ) {
 
     type BB
-    type AsboMap = mutable.Map[ASBO, StringPartAutomaton]
+    type AsboMap = scala.collection.mutable.Map[ASBO, StringPartAutomaton]
 
     def cfg: NumberedGraph[BB]
 
@@ -159,15 +157,78 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
     protected def transferFunctions: StringAppendTransferFunctions
 
-    abstract class StringAppendTransferFunctions extends ITransferFunctionProvider[BB, AtaReference] {
+    abstract class StringAppendTransferFunctions(idToAsbo: Map[Identifier, Set[ASBO]]) extends ITransferFunctionProvider[BB, AtaReference] {
+
+      def valNum(id: Identifier): ValueNumber
+
+      def createAutomaton(node: Node, id: Identifier): StringPartAutomaton =
+        node.getDu getDef valNum(id) match {
+          case instr: SSAFieldAccessInstruction if fieldToAutomaton contains instr.getDeclaredField =>
+            fieldToAutomaton(instr.getDeclaredField)
+          case _                                                                                    =>
+            singleAutomaton(StringIdentifier(id))
+        }
+
+      /**
+        * Resolve the union of all automata to which this value number could map.
+        * 1. For each ASBO, checks if value number is in `rhsMap`, and
+        *    - if yes, returns automaton;
+        *    - if no, checks if val num is a phi instruction,
+        *      and if yes, resolves its arguments recursively and adds them to a new AsboMap
+        *      with which we will need to update the lhsMap.
+        */
+      private[this] def getAppendAutomaton(
+        node: Node,
+        id: Identifier,
+        rhsMap: AsboMap,
+        processedAcc: Set[Identifier]
+      ): (StringPartAutomaton, AsboMap) =
+        if (processedAcc contains id)
+          (singleAutomaton(StringCycle), mutable.Map.empty[ASBO, StringPartAutomaton])
+        else {
+          idToAsbo get id match {
+            case Some(asbos) =>
+              val automata = for {
+                asbo <- asbos
+                automaton <- rhsMap get asbo
+              } yield automaton
+              val newValNumAutomaton = if (automata.isEmpty)
+                createAutomaton(node, id)
+              else
+                mergeAutomata(automata)
+              (newValNumAutomaton, mutable.Map.empty[ASBO, StringPartAutomaton])
+            case None =>
+              node.getDu getDef valNum(id) match {
+                case phi: SSAPhiInstruction =>
+                  val uses = 0 until phi.getNumberOfUses map phi.getUse filter {
+                    _ > 0
+                  }
+                  val (automata, asboMaps) = (uses map {
+                    u =>
+                      getAppendAutomaton(node, createIdentifier(u, node), rhsMap, processedAcc + id)
+                  }).unzip
+                  val mergedAutomaton = mergeAutomata(automata)
+                  val mergedMap = (asboMaps reduceLeft {
+                    _ ++ _
+                  }) + (createAsbo(phi.getDef, node) -> mergedAutomaton)
+                  (mergedAutomaton, mergedMap)
+                case _ =>
+                  (createAutomaton(node, id), mutable.Map.empty[ASBO, StringPartAutomaton])
+              }
+          }
+        }
+
+      def getAppendAutomaton(node: Node, id: Identifier, rhsMap: AsboMap): (StringPartAutomaton, AsboMap) =
+        getAppendAutomaton(node, id, rhsMap, Set.empty[Identifier])
+
 
       protected trait AbstractAppendOperator extends UnaryOperator[AtaReference] {
 
-        def createNewMap(rhsMap: AsboMap): AsboMap
+        def createLhsMap(rhsMap: AsboMap): AsboMap
 
         override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {
           val rhsMap = ataRefMapping(rhs.index).asboToAutomaton
-          val newMap = createNewMap(rhsMap)
+          val newMap = createLhsMap(rhsMap)
           val lhsMap: AsboMap = ataRefMapping(lhs.index).asboToAutomaton
 
           if (lhsMap == newMap)
@@ -176,6 +237,33 @@ trait StringAppendModule extends AbstractStringBuilderModule {
             lhsMap ++= newMap
             CHANGED
           }
+        }
+      }
+
+      /**
+        * Append the automaton for [[appendId]] to all [[asbos]].
+        */
+      protected case class StringBuilderAppendOperator(
+        asbos: Set[ASBO],
+        appendId: Identifier,
+        node: Node
+      ) extends AbstractAppendOperator {
+
+        override def createLhsMap(rhsMap: AsboMap): AsboMap = {
+          val newMap = mutable.Map.empty[ASBO, StringPartAutomaton] ++= rhsMap
+          val (appendAutomaton, toAppend) = getAppendAutomaton(node, appendId, rhsMap)
+          newMap ++= toAppend
+          asbos foreach {
+            asbo =>
+              val newString = rhsMap get asbo match {
+                case Some(sb) =>
+                  sb +++ appendAutomaton
+                case None =>
+                  appendAutomaton
+              }
+              newMap += asbo -> newString
+          }
+          newMap
         }
       }
 

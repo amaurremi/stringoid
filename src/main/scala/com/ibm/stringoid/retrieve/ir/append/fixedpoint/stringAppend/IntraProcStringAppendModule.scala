@@ -10,7 +10,7 @@ import com.ibm.wala.fixpoint.FixedPointConstants._
 import com.ibm.wala.fixpoint.UnaryOperator
 import com.ibm.wala.ipa.cfg.ExceptionPrunedCFG
 import com.ibm.wala.ssa.analysis.{ExplodedControlFlowGraph, IExplodedBasicBlock}
-import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAArrayStoreInstruction, SSAFieldAccessInstruction, SSAPhiInstruction}
+import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAArrayStoreInstruction}
 import com.ibm.wala.types.FieldReference
 import com.ibm.wala.util.graph.traverse.SCCIterator
 
@@ -50,14 +50,16 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
 
     override protected def transferFunctions: StringAppendTransferFunctions = new IntraProcStringAppendTransferFunctions
 
-    class IntraProcStringAppendTransferFunctions extends StringAppendTransferFunctions {
+    class IntraProcStringAppendTransferFunctions extends StringAppendTransferFunctions(idToAsbo) {
+
+      override def valNum(id: Identifier): ValueNumber = id
 
       override def getNodeTransferFunction(bb: BB): UnaryOperator[AtaReference] =
         bb.getInstruction match {
           case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                =>
             idToAsbo get getFirstSbAppendDef(instr) match {
               case Some(asbos) =>
-                new StringBuilderAppendOperator(asbos, getAppendArgument(instr))
+                new StringBuilderAppendOperator(asbos, getAppendArgument(instr), node)
               case None =>
                 // todo note that this means that we are appending to a StringBuilder for which we haven't added an ASBO to the idToAsbo map.
                 // todo I think this means that the StringBuilder has been passed as a parameter or is a field. We should handle this case too at some point.
@@ -67,7 +69,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
             idToAsbo get getSbConstructorDef(inv) match {
               case Some(asbos) =>
                 val appendArgument = getSbConstructorArgument(inv)
-                new StringBuilderAppendOperator(asbos, appendArgument)
+                new StringBuilderAppendOperator(asbos, appendArgument, node)
               case None =>
                 throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
             }
@@ -77,57 +79,6 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
             IdentityOperator()
         }
 
-      def createAutomaton(vn: ValueNumber): StringPartAutomaton =
-        node.getDu getDef vn match {
-          case instr: SSAFieldAccessInstruction if fieldToAutomaton contains instr.getDeclaredField =>
-            fieldToAutomaton(instr.getDeclaredField)
-          case _                                                                                    =>
-            singleAutomaton(StringIdentifier(vn))
-        }
-
-      /**
-        * returns automaton to append and map that keeps tracks of new valnums that have to be mapped to automata that come from phi instructions
-        */
-      private[this] def getAppendAutomaton(
-        id: Identifier,
-        rhsMap: AsboMap,
-        processedAcc: Set[Identifier]
-      ): (StringPartAutomaton, AsboMap) =
-        if (processedAcc contains id)
-          (singleAutomaton(StringCycle), mutable.Map.empty[ASBO, StringPartAutomaton])
-        else
-          idToAsbo get id match {
-            case Some(asbos) =>
-              val automata = for {
-                asbo      <- asbos
-                automaton <- rhsMap get asbo
-              } yield automaton
-              val newValNumAutomaton = if (automata.isEmpty)
-                createAutomaton(id)
-              else
-                mergeAutomata(automata)
-              (newValNumAutomaton, mutable.Map.empty[ASBO, StringPartAutomaton])
-            case None         =>
-              node.getDu.getDef(id) match {
-                case phi: SSAPhiInstruction =>
-                  val uses = 0 until phi.getNumberOfUses map phi.getUse filter { _ > 0 }
-                  val (automata, asboMaps) = (uses map {
-                    u =>
-                      getAppendAutomaton(u, rhsMap, processedAcc + id)
-                  }).unzip
-                  val mergedAutomaton = mergeAutomata(automata)
-                  val mergedMap = (asboMaps reduceLeft {
-                    _ ++ _
-                  }) + (createAsbo(phi.getDef, node) -> mergedAutomaton)
-                  (mergedAutomaton, mergedMap)
-                case _                      =>
-                  (createAutomaton(id), mutable.Map.empty[ASBO, StringPartAutomaton])
-              }
-          }
-
-      def getAppendAutomaton(vn: Identifier, rhsMap: AsboMap): (StringPartAutomaton, AsboMap) =
-        getAppendAutomaton(vn, rhsMap, Set.empty[Identifier])
-
       protected case class StringFormatAppendOperator(
         instr: SSAAbstractInvokeInstruction,
         node: Node
@@ -135,7 +86,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
         extends AbstractAppendOperator
         with StringFormatSpecifiers {
 
-        override def createNewMap(rhsMap: AsboMap): AsboMap = {
+        override def createLhsMap(rhsMap: AsboMap): AsboMap = {
           val newMap = mutable.Map.empty[ASBO, StringPartAutomaton]
           newMap ++= rhsMap
           val sfArgSeqs: Seq[Seq[StringPart]] = reorderStringFormatArgs
@@ -149,7 +100,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
                   case (resultAutomaton, stringFormatArg) =>
                     stringFormatArg match {
                       case StringIdentifier(id) =>
-                        val (auto, toAppend) = getAppendAutomaton(id, newMap)
+                        val (auto, toAppend) = getAppendAutomaton(node, id, newMap)
                         newMap ++= toAppend
                         resultAutomaton +++ auto
                       case other =>
@@ -194,7 +145,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
               case (parts, Specifier(count)) =>
                 val newVariables =
                   if (argValNums.hasNext)
-                    createAutomaton(createIdentifier(argValNums.next(), node)).iterator.toVector
+                    createAutomaton(node, createIdentifier(argValNums.next(), node)).iterator.toVector
                   else Vector(Seq(MissingStringFormatArgument))
                 if (parts.isEmpty) newVariables map { _.toVector }
                 else for {
@@ -203,32 +154,6 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
                 } yield p ++ v
             }
           } else Vector.empty[Vector[StringPart]]
-        }
-      }
-
-      /**
-        * Append the automaton for [[appendId]] to all [[asbos]].
-        */
-      protected case class StringBuilderAppendOperator(
-        asbos: Set[ASBO],
-        appendId: Identifier
-      ) extends AbstractAppendOperator {
-
-        override def createNewMap(rhsMap: AsboMap): mutable.Map[ASBO, StringPartAutomaton] = {
-          val newMap = mutable.Map.empty[ASBO, StringPartAutomaton] ++= rhsMap
-          val (appendAutomaton, toAppend) = getAppendAutomaton(appendId, rhsMap)
-          newMap ++= toAppend
-          asbos foreach {
-            asbo =>
-              val newString = rhsMap get asbo match {
-                case Some(sb) =>
-                  sb +++ appendAutomaton
-                case None =>
-                  appendAutomaton
-              }
-              newMap += asbo -> newString
-          }
-          newMap
         }
       }
 
