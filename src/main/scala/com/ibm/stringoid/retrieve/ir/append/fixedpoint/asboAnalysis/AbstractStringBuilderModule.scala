@@ -83,9 +83,9 @@ trait AbstractStringBuilderModule extends Nodes {
   }
 
   abstract class AsboFixedPointSolver(
-                                       node: Node,
-                                       val abstractObjectNumbering: AsboMapping
-                                     ) {
+   node: Node,
+   val abstractObjectNumbering: AsboMapping
+  ) {
 
     lazy val valueNumberGraph: Graph[Identifier] = {
       // 1 = new SB();

@@ -81,7 +81,6 @@ object FixedPointAppendIrRetrieverImplementations {
     }
 
     override def getAutomaton(node: Node): (Json, Method) = {
-      println(node.ir.getMethod.toString)
       val automaton = stringAppends(node, fieldToAutomaton).toDFA.toJson {
         sp: StringPart =>
           stringPartToUrlPart(node, sp).asJson.toString()

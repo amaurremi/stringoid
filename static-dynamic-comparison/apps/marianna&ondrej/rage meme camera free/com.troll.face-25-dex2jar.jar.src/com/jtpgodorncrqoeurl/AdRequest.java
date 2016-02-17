@@ -274,7 +274,6 @@ public class AdRequest
     Object localObject6;
     int i2;
     int i1;
-    label126:
     Object localObject7;
     if (this.p != null)
     {
@@ -305,7 +304,6 @@ public class AdRequest
           break label869;
         }
         this.k = ((String)localObject4);
-        label213:
         AdLog.d("LBAdController", "SectionIdToUse =" + this.k);
         this.d = (((DisplayMetrics)localObject3).heightPixels - i2 - i1);
         AdLog.d("LBAdController", "Device Width = " + this.c + ", Height = " + this.d);
@@ -335,7 +333,6 @@ public class AdRequest
       ((List)localObject6).add(new BasicNameValuePair("ref", AdRefValues.adRefValues((Context)localObject1, this.e, this.l, this.m, this.n, this.c, this.d)));
       i2 = 0;
       i1 = 0;
-      label579:
       if ((i2 >= localObject4.length) || (i1 != 0)) {
         break label1172;
       }
@@ -349,10 +346,6 @@ public class AdRequest
       }
       localObject1 = new HttpPost((String)localObject1 + "&get=" + (String)localObject5 + "&section_id=" + this.k);
     }
-    label864:
-    label869:
-    label917:
-    label1009:
     label1172:
     label1177:
     for (;;)
