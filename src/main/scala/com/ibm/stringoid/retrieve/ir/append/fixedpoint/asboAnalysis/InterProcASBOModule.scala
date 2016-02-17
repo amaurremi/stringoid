@@ -10,13 +10,13 @@ import scala.collection.breakOut
 
 trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
 
-  def getCallGraph: CallGraph
+  def callGraph: CallGraph
 
   override def getSolver(node: Node, numbering: AsboMapping) =
-    new InterProcAsboFixedPointSolver(getCallGraph, node, numbering)
+    new InterProcAsboFixedPointSolver(callGraph, node, numbering)
 
   protected def identifierToAsbo: Map[Identifier, Set[ASBO]] =
-    getCallGraph.foldLeft(Map.empty[Identifier, Set[ASBO]]) {
+    callGraph.foldLeft(Map.empty[Identifier, Set[ASBO]]) {
     case (prevMap, n) =>
       val newMap: Map[Identifier, Set[ASBO]] = (for {
         (id, asbos) <- idToAsboForNode(CallGraphNode(n))

@@ -25,14 +25,14 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
 
     type BB = BasicBlockInContext[IExplodedBasicBlock]
 
-    override lazy val cfg = ExplodedInterproceduralCFG.make(getCallGraph)
+    override lazy val cfg = ExplodedInterproceduralCFG.make(callGraph)
 
     /**
       * For efficiency we store our AsboToAutomaton in this array. The analysis operates on its indices
       * that serve as references to the stored AsboToAutomaton objects.
       */
     override def ataRefMapping: ArrayBuffer[AsboToAutomaton] =
-      getCallGraph.foldLeft(ArrayBuffer.empty[AsboToAutomaton]) {
+      callGraph.foldLeft(ArrayBuffer.empty[AsboToAutomaton]) {
         (buffer, node) =>
           buffer ++ initialAtaRefMapping(CallGraphNode(node))
       }
@@ -71,7 +71,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             new StringBuilderAppendOperator(Set(assignTo), getId(inv.getReturnValue(0)))
           case ret: SSAReturnInstruction                                                =>
             val result = getId(ret.getResult)
-            val assignTo = getCallGraph.getSuccNodes(node.node)
+            val assignTo = callGraph.getSuccNodes(node.node)
             ???
           case _ =>
             IdentityOperator()

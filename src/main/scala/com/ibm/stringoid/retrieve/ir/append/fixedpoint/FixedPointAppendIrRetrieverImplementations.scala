@@ -24,22 +24,14 @@ object FixedPointAppendIrRetrieverImplementations {
     with InterProcIrNodes
     with InterProcStringAppendModule {
 
-    /**
-      * Get the string concatenation results.
-      */
-    def stringAppends: StringPartAutomaton = ???
+    override lazy val callGraph: CallGraph = new FlexibleCallGraphBuilder()(configWithApk(config.file)).cg
 
-    override lazy val getCallGraph: CallGraph = new FlexibleCallGraphBuilder()(configWithApk(config.file)).cg
-
-    override def getNodes: Iterator[CallGraphNode] = {
-      getCallGraph.getEntrypointNodes.iterator() map CallGraphNode.apply
-    }
+    override def getNodes: Iterator[CallGraphNode] =
+      callGraph.getEntrypointNodes.iterator() map CallGraphNode.apply
 
     override def getSource(node: CallGraphNode, vn: ValueNumber): VariableSource = ???
 
-    override def hasUrls(node: CallGraphNode): Boolean = ???
-
-    protected def getConcatUrls(entryNode: CallGraphNode): scala.Iterable[(Url, Method)] = ???
+    override def hasUrls(node: CallGraphNode): Boolean = true // todo correct?
 
     override def idToStringPart(node: CallGraphNode, id: Identifier): UrlPart = ???
 
@@ -70,7 +62,7 @@ object FixedPointAppendIrRetrieverImplementations {
       UrlsWithSources(urlWithSourcesMap, walaTime)
     }
 
-    def getConcatUrls(node: Node): Iterable[(Url, Method)] = {
+    private[this] def getConcatUrls(node: Node): Iterable[(Url, Method)] = {
       val appendAutomaton = stringAppends(node, fieldToAutomaton)
       val ir              = node.getIr
       (for {
