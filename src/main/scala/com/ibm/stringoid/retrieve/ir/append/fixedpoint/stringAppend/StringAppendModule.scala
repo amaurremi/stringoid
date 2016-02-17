@@ -6,11 +6,14 @@ import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{IVariable, UnaryOperator}
 import com.ibm.wala.ssa.SSAFieldAccessInstruction
 import com.ibm.wala.types.FieldReference
-import com.ibm.wala.util.graph.Graph
+import com.ibm.wala.util.graph.NumberedGraph
 import com.ibm.wala.util.graph.impl.NodeWithNumber
 import seqset.regular.Automaton
 
-import scala.collection.mutable
+import scala.Predef.{Map, Set}
+import scala.Seq
+import scala.collection.JavaConversions._
+import scala.collection._
 import scala.collection.mutable.ArrayBuffer
 
 trait StringAppendModule extends AbstractStringBuilderModule {
@@ -27,6 +30,26 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
   protected def singleAutomaton(sp: StringPart) = Automaton.empty[StringPart] + Seq(sp)
 
+  def stringAppendsForSolver(solver: StringAppendFixedPointSolver): StringPartAutomaton = {
+    val result  = solver.result
+    val mapping = solver.ataRefMapping
+    val ataRefs: Set[Int] = (solver.cfg map {
+      result.getOut(_).index
+    })(breakOut)
+    // merging concatenations
+    val concats = ataRefs.foldLeft(Automaton.empty[StringPart]) {
+      (automaton, ref) =>
+        val automata = mapping(ref).asboToAutomaton.values
+        automaton | mergeAutomata(automata)
+    }
+    // adding constants
+    solver.initialMapping.foldLeft(concats) {
+      (automaton, asboToAutomaton) =>
+        val automata = asboToAutomaton.asboToAutomaton.values
+        automaton | mergeAutomata(automata)
+    }
+  }
+
   abstract class StringAppendFixedPointSolver(
     vnToAsbo: Map[Identifier, Set[ASBO]],
     fieldToAutomaton: Map[FieldReference, StringPartAutomaton]
@@ -35,7 +58,9 @@ trait StringAppendModule extends AbstractStringBuilderModule {
     type BB
     type AsboMap = mutable.Map[ASBO, StringPartAutomaton]
 
-    def cfg: Graph[BB]
+    def cfg: NumberedGraph[BB]
+
+    def initialMapping: ArrayBuffer[AsboToAutomaton]
 
     def result: DataflowSolver[BB, AtaReference] = {
       val framework = new IKilldallFramework[BB, AtaReference] {
@@ -56,8 +81,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
      */
     def ataRefMapping: ArrayBuffer[AsboToAutomaton]
 
-    def initialAtaRefMapping(node: Node): ArrayBuffer[AsboToAutomaton] = {
-      val refMapping = ArrayBuffer.empty[AsboToAutomaton]
+    def initialAtaRefMapping(refMapping: ArrayBuffer[AsboToAutomaton], node: Node): ArrayBuffer[AsboToAutomaton] = {
       val table = node.getIr.getSymbolTable
       1 to table.getMaxValueNumber foreach {
         vn =>

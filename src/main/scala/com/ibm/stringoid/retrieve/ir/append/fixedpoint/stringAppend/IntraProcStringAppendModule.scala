@@ -13,11 +13,10 @@ import com.ibm.wala.ssa.analysis.{ExplodedControlFlowGraph, IExplodedBasicBlock}
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAArrayStoreInstruction, SSAFieldAccessInstruction, SSAPhiInstruction}
 import com.ibm.wala.types.FieldReference
 import com.ibm.wala.util.graph.traverse.SCCIterator
-import seqset.regular.Automaton
 
 import scala.collection.JavaConversions._
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import scala.collection.{breakOut, mutable}
 
 trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOModule {
 
@@ -26,24 +25,8 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
     */
   def stringAppends(node: Node, fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
     val idToAsbo: Map[ValueNumber, Set[ASBO]] = idToAsboForNode(node)
-    val solver  = getAppendSolver(node, idToAsbo, fieldToAutomaton)
-    val result  = solver.result
-    val mapping = solver.ataRefMapping
-    val ataRefs: Set[Int] = (solver.cfg map {
-      result.getOut(_).index
-    })(breakOut)
-    // merging concatenations
-    val concats = ataRefs.foldLeft(Automaton.empty[StringPart]) {
-      (automaton, ref) =>
-        val automata = mapping(ref).asboToAutomaton.values
-        automaton | mergeAutomata(automata)
-    }
-    // adding constants
-    solver.initialMapping.foldLeft(concats) {
-      (automaton, asboToAutomaton) =>
-        val automata = asboToAutomaton.asboToAutomaton.values
-        automaton | mergeAutomata(automata)
-    }
+    val solver: IntraProcStringAppendSolver = getAppendSolver(node, idToAsbo, fieldToAutomaton)
+    stringAppendsForSolver(solver)
   }
 
   def getAppendSolver(
@@ -60,7 +43,8 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
 
     override type BB = IExplodedBasicBlock
 
-    lazy val initialMapping: ArrayBuffer[AsboToAutomaton] = initialAtaRefMapping(node)
+    override lazy val initialMapping: ArrayBuffer[AsboToAutomaton] =
+      initialAtaRefMapping(ArrayBuffer.empty[AsboToAutomaton], node)
 
     override lazy val cfg = ExceptionPrunedCFG.make(ExplodedControlFlowGraph.make(node.getIr))
 

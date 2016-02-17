@@ -10,12 +10,18 @@ import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAReturnInstruction}
 import com.ibm.wala.types.FieldReference
 
+import scala.Predef.{Map, Set}
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
 
 trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOModule {
 
-  def getAppendSolver(fieldToAutomaton: Map[FieldReference, StringPartAutomaton]) =
+  def stringAppends(node: Node, fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
+    val solver  = getAppendSolver(node, fieldToAutomaton)
+    stringAppendsForSolver(solver)
+  }
+
+  def getAppendSolver(node: Node, fieldToAutomaton: Map[FieldReference, StringPartAutomaton]) =
     new InterProcStringAppendSolver(identifierToAsbo, fieldToAutomaton)
 
   class InterProcStringAppendSolver(
@@ -28,14 +34,21 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
     override lazy val cfg = ExplodedInterproceduralCFG.make(callGraph)
 
     /**
+      * Creates an initial mapping from ASBOs to automata, which contains constants.
+      * At the beginning [[ataRefMapping]] gets assigned this function, but we need to remember its
+      * value to later manually add constants to the result.
+      */
+    override lazy val initialMapping: ArrayBuffer[AsboToAutomaton] =
+      callGraph.foldLeft(ArrayBuffer.empty[AsboToAutomaton]) {
+        case (buffer, node) =>
+          initialAtaRefMapping(buffer, CallGraphNode(node))
+      }
+
+    /**
       * For efficiency we store our AsboToAutomaton in this array. The analysis operates on its indices
       * that serve as references to the stored AsboToAutomaton objects.
       */
-    override def ataRefMapping: ArrayBuffer[AsboToAutomaton] =
-      callGraph.foldLeft(ArrayBuffer.empty[AsboToAutomaton]) {
-        (buffer, node) =>
-          buffer ++ initialAtaRefMapping(CallGraphNode(node))
-      }
+    override def ataRefMapping: ArrayBuffer[AsboToAutomaton] = initialMapping
 
     override protected def transferFunctions: StringAppendTransferFunctions = new InterProcStringAppendTransferFunctions
 

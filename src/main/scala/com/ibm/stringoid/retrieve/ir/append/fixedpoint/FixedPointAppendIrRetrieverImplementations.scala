@@ -37,7 +37,26 @@ object FixedPointAppendIrRetrieverImplementations {
 
     override protected def getAutomaton(entryNode: CallGraphNode): (Json, Method) = ???
 
-    override def getUrlsWithSources: UrlsWithSources = ???
+    override def getUrlsWithSources: UrlsWithSources = {
+      val TimeResult(nodes, walaTime) = TimeResult(getNodes)
+      val urlsWithSources: Iterator[(Url, Method)] =
+        for {
+          node      <- nodes
+          urlMethod <- getConcatUrls(node)
+        } yield urlMethod
+      val urlWithSourcesMap = urlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
+        case (prevMap, (url, method)) =>
+          val prevMethods = prevMap getOrElse (url, Set.empty[Method])
+          prevMap updated(url, prevMethods + method)
+      }
+      UrlsWithSources(urlWithSourcesMap, walaTime)
+    }
+
+    private[this] def getConcatUrls(node: Node): Iterable[(Url, Method)] = {
+      val appendAutomaton = stringAppends(node, fieldToAutomaton)
+      // todo wait for automaton-predicate function
+      ???
+    }
   }
 
   abstract class IntraProcFixedPointAppendIrRetriever(
