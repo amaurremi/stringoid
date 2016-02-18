@@ -1,6 +1,8 @@
 package edu.illinois.wala.ipa.callgraph
 
-import com.ibm.wala.classLoader.IMethod
+import com.ibm.wala.cast.ir.ssa.AstIRFactory.AstDefaultIRFactory
+import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope
+import com.ibm.wala.classLoader.{IMethod, SourceDirectoryTreeModule}
 import com.ibm.wala.dalvik.classLoader.{DexFileModule, DexIRFactory}
 import com.ibm.wala.ipa.callgraph._
 import com.ibm.wala.ipa.callgraph.propagation._
@@ -10,7 +12,7 @@ import com.ibm.wala.ssa.IRFactory
 import com.ibm.wala.types.ClassLoaderReference
 import com.typesafe.config.{Config, ConfigFactory}
 
-import scala.collection.JavaConverters._
+import scala.collection.JavaConversions._
 //import com.ibm.wala.cast.ir.ssa.AstIRFactory
 import com.ibm.wala.ssa.DefaultIRFactory
 //import com.ibm.wala.cast.java.ipa.callgraph.AstJavaSSAPropagationCallGraphBuilder
@@ -42,10 +44,16 @@ class FlexibleCallGraphBuilder(
   // Constructors
   def this(cha: ClassHierarchy, options: AnalysisOptions, irFactory: IRFactory[IMethod]) = this(cha, options, new AnalysisCache(irFactory), new DefaultPointerKeyFactory())
   def this(options: AnalysisOptions) = {
-    this(options.cha, options, if (options.getAnalysisScope.getModules(ClassLoaderReference.Application).asScala.exists {
-      case _: DexFileModule => true
-      case _                => false
-    }) new DexIRFactory() else new DefaultIRFactory())
+    this(options.cha, options,
+      if ((options.getAnalysisScope getModules ClassLoaderReference.Application) exists {
+        case _: DexFileModule => true
+        case _                => false
+      }) new DexIRFactory()
+      else if ((options.getAnalysisScope getModules JavaSourceAnalysisScope.SOURCE) exists {
+        case _: SourceDirectoryTreeModule => true
+        case _                            => false
+      }) new AstDefaultIRFactory()
+      else new DefaultIRFactory())
   }
 
   def this()(implicit config: Config) = this(AnalysisOptions())

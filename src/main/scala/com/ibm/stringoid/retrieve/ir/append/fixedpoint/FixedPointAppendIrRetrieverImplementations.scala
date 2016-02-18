@@ -24,7 +24,10 @@ object FixedPointAppendIrRetrieverImplementations {
     with InterProcIrNodes
     with InterProcStringAppendModule {
 
-    override lazy val callGraph: CallGraph = new FlexibleCallGraphBuilder()(configWithApk(config.file)).cg
+    override lazy val callGraph: CallGraph = {
+      val conf = if (isApk) configWithApk(config.file) else configWithSrc(config.file)
+      new FlexibleCallGraphBuilder()(conf).cg
+    }
 
     override def getNodes: Iterator[CallGraphNode] =
       callGraph.getEntrypointNodes.iterator() map CallGraphNode.apply

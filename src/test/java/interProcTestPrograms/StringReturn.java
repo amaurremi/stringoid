@@ -1,7 +1,5 @@
 package interProcTestPrograms;
 
-import intraProcTestPrograms.Assertions;
-
 public class StringReturn {
 
     public static void main(String[] args) {
