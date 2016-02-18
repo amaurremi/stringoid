@@ -3,11 +3,9 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 import com.ibm.stringoid._
 import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.ir.IrNodesModule.{CgIntraProcIrNodes, ChaIntraProcIrNodes, InterProcIrNodes, IntraProcIrNodes}
-import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.{InterProcStringAppendModule, IntraProcStringAppendModule}
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ipa.callgraph.CallGraph
-import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAFieldAccessInstruction}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
 import scala.collection.JavaConversions._
@@ -15,9 +13,8 @@ import scala.collection.breakOut
 
 object FixedPointAppendIrRetrieverImplementations {
 
-  final class InterProcFixedPointAppendIrRetriever(
-    config: AnalysisConfig
-  ) extends FixedPointAppendIrRetriever(config)
+  final class InterProcFixedPointAppendIrRetriever(config: AnalysisConfig)
+    extends FixedPointAppendIrRetriever(config)
     with InterProcIrNodes
     with InterProcStringAppendModule {
 
@@ -29,21 +26,19 @@ object FixedPointAppendIrRetrieverImplementations {
     override def getNodes: Iterator[CallGraphNode] =
       callGraph.getEntrypointNodes.iterator() map CallGraphNode.apply
 
-    override def getSource(node: CallGraphNode, vn: ValueNumber): VariableSource = ???
-
-    override def hasUrls(node: CallGraphNode): Boolean = true // todo correct?
+    override def hasUrls(node: CallGraphNode): Boolean = true
 
     override def getUrlsWithSources: UrlsWithSources = {
       val TimeResult(nodes, walaTime) = TimeResult(getNodes)
       val urlsWithSources: Iterator[(Url, Method)] =
         for {
-          node      <- nodes
+          node <- nodes
           urlMethod <- getConcatUrls(node)
         } yield urlMethod
       val urlWithSourcesMap = urlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
         case (prevMap, (url, method)) =>
-          val prevMethods = prevMap getOrElse (url, Set.empty[Method])
-          prevMap updated (url, prevMethods + method)
+          val prevMethods = prevMap getOrElse(url, Set.empty[Method])
+          prevMap updated(url, prevMethods + method)
       }
       UrlsWithSources(urlWithSourcesMap, walaTime)
     }
@@ -55,9 +50,8 @@ object FixedPointAppendIrRetrieverImplementations {
     }
   }
 
-  abstract class IntraProcFixedPointAppendIrRetriever(
-    config: AnalysisConfig
-  ) extends FixedPointAppendIrRetriever(config)
+  abstract class IntraProcFixedPointAppendIrRetriever(config: AnalysisConfig)
+    extends FixedPointAppendIrRetriever(config)
     with IntraProcIrNodes
     with IntraProcStringAppendModule {
 
@@ -65,13 +59,13 @@ object FixedPointAppendIrRetrieverImplementations {
       val TimeResult(nodes, walaTime) = TimeResult(getNodes)
       val urlsWithSources: Iterator[(Url, Method)] =
         for {
-          node      <- nodes
+          node <- nodes
           if hasUrls(node)
           urlMethod <- getConcatUrls(node)
         } yield urlMethod
       val urlWithSourcesMap = urlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
         case (prevMap, (url, method)) =>
-          val prevMethods = prevMap getOrElse (url, Set.empty[Method])
+          val prevMethods = prevMap getOrElse(url, Set.empty[Method])
           prevMap updated(url, prevMethods + method)
       }
       UrlsWithSources(urlWithSourcesMap, walaTime)
@@ -79,40 +73,25 @@ object FixedPointAppendIrRetrieverImplementations {
 
     private[this] def getConcatUrls(node: Node): Iterable[(Url, Method)] = {
       val appendAutomaton = stringAppends(node, fieldToAutomaton)
-      val ir              = node.getIr
+      val ir = node.getIr
       (for {
-        vn           <- 1 to ir.getSymbolTable.getMaxValueNumber
-        stringPart   <- urlPrefixes(vn, node)
-        stringTail   <- (appendAutomaton tails stringPart).iterator take 100
-      } yield (Url(parseUrl(node, stringPart +: stringTail)), ir.getMethod.toString))(breakOut)
+        vn <- 1 to ir.getSymbolTable.getMaxValueNumber
+        stringPart <- urlPrefixes(vn, node)
+        stringTail <- (appendAutomaton tails stringPart).iterator take 100
+      } yield (Url(parseUrl(node, stringPart +: stringTail)), ir.getMethod.toString)) (breakOut)
     }
 
     override def hasUrls(node: Node): Boolean =
       1 to node.getIr.getSymbolTable.getMaxValueNumber exists {
         urlPrefixes(_, node).nonEmpty
       }
-
-    override def getSource(node: Node, vn: ValueNumber): VariableSource =
-      if (node.getIr.getSymbolTable.isParameter(vn))
-        Parameter
-      else
-        node.getDu.getDef(vn) match {
-          case fieldAccess: SSAFieldAccessInstruction =>
-            FieldAccess(fieldAccess.getDeclaredField.toString)
-          case invoke: SSAAbstractInvokeInstruction   =>
-            MethodReturn(invoke.getDeclaredTarget.toString)
-          case _                                      =>
-            UnknownSource
-        }
   }
 
-  final class CgIntraProcFixedPointAppendIrRetriever(
-    config: AnalysisConfig
-  ) extends IntraProcFixedPointAppendIrRetriever(config)
+  final class CgIntraProcFixedPointAppendIrRetriever(config: AnalysisConfig)
+    extends IntraProcFixedPointAppendIrRetriever(config)
     with CgIntraProcIrNodes
 
-  final class ChaIntraProcFixedPointAppendIrRetriever(
-    config: AnalysisConfig
-  ) extends IntraProcFixedPointAppendIrRetriever(config)
+  final class ChaIntraProcFixedPointAppendIrRetriever(config: AnalysisConfig)
+    extends IntraProcFixedPointAppendIrRetriever(config)
     with ChaIntraProcIrNodes
 }

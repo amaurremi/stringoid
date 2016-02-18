@@ -114,21 +114,32 @@ abstract class FixedPointAppendIrRetriever(
   protected final def idToStringPart(node: Node, id: Identifier): UrlPart = {
     val ir = node.getIr
     val table = ir.getSymbolTable
-    val valNum = valNum(id)
-    if (table isConstant valNum) {
-      val string = if (table isNullConstant valNum) "null" else (table getConstantValue valNum).toString
+    val vn = valNum(id)
+    if (table isConstant vn) {
+      val string = if (table isNullConstant vn) "null" else (table getConstantValue vn).toString
       UrlString(string)
     }
     else {
       val typeName =
-        try getTypeAbstraction(ir, valNum).toString
+        try getTypeAbstraction(ir, vn).toString
         catch {
           case _: UnimplementedError =>
             "undefined"
         }
-      VariableType(typeName, getSource(node, valNum))
+      VariableType(typeName, getSource(node, vn))
     }
   }
 
-  def getSource(node: Node, vn: ValueNumber): VariableSource
+  protected final def getSource(node: Node, vn: ValueNumber): VariableSource =
+    if (node.getIr.getSymbolTable.isParameter(vn))
+      Parameter
+    else
+      node.getDu.getDef(vn) match {
+        case fieldAccess: SSAFieldAccessInstruction =>
+          FieldAccess(fieldAccess.getDeclaredField.toString)
+        case invoke: SSAAbstractInvokeInstruction   =>
+          MethodReturn(invoke.getDeclaredTarget.toString)
+        case _                                      =>
+          UnknownSource
+      }
 }
