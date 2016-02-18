@@ -8,8 +8,9 @@ import com.ibm.wala.fixpoint.UnaryOperator
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.cfg.{BasicBlockInContext, ExplodedInterproceduralCFG}
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
-import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInvokeInstruction}
+import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInvokeInstruction, SSAReturnInstruction}
 import com.ibm.wala.types.FieldReference
+import seqset.regular.Automaton
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
@@ -78,23 +79,30 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
           case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)                 =>
             new StringFormatAppendOperator(inv, node)
           case inv: SSAAbstractInvokeInstruction                                        =>
-            new SubstitutionOperator(
+            val retValNum = inv.getDef
+            val returnAsbos =
+              if (hasStringReturnType(inv))
+                idToAsbo getOrElse (getId(retValNum), Set(createAsbo(retValNum, node)))
+              else Set.empty[ASBO]
+            new ParamSubstitutionAndReturnOperator(
               callGraph.getPossibleTargets(node.node, inv.getCallSite).toSet,
-              argumentAsbos(inv, node))
-//            val assignTo = ASBO(getId(inv.getDef))
-//            new StringBuilderAppendOperator(Set(assignTo), getId(inv.getReturnValue(0)))
-//          case ret: SSAReturnInstruction                                                =>
-//            val result = getId(ret.getResult)
-//            val assignTo = callGraph.getSuccNodes(node.node)
-//            ???
+              argumentAsbos(inv, node),
+              returnAsbos)
           case _ =>
             IdentityOperator()
         }
       }
 
-      case class SubstitutionOperator(
+      /**
+        * @param targetNodes        nodes of the possible callee methods
+        * @param substitutionAsbos  pairs (asbo, argNum) of String-argument indices (starting at 0) and their corresponding ASBOs
+        * @param returnAsbos        the ASBOs of the left-hand side of the call (the variable to which the result should be assigned);
+        *                           if the function does not return a String, this set should be empty
+        */
+      case class ParamSubstitutionAndReturnOperator(
         targetNodes: Set[CGNode],
-        substitutionAsbos: Seq[(ASBO, Int)] // pairs (asbo, argNum) of argument indices (starting at 0) and their corresponding ASBOs
+        substitutionAsbos: Seq[(ASBO, Int)],
+        returnAsbos: Set[ASBO]
       ) extends UnaryOperator[AtaReference] {
 
         def createSubstitutionMap(rhsMap: AsboMap): AsboMap = {
@@ -116,9 +124,20 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
           newMap
         }
 
+        def addReturnResult(to: AsboMap, rhsMap: AsboMap) =
+          for {
+            target <- targetNodes
+            instr  <- target.getIR.iterateNormalInstructions() filter { _.isInstanceOf[SSAReturnInstruction] }
+            ret     = instr.asInstanceOf[SSAReturnInstruction]
+            id      = createIdentifier(ret.getResult, CallGraphNode(target))
+            asbos  <- idToAsbo get id
+            asbo   <- asbos
+          } to += (asbo -> (rhsMap getOrElse (asbo, Automaton.empty[StringPart])))
+
         override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {
           val rhsMap = ataRefMapping(rhs.index).asboToAutomaton
           val newMap = createSubstitutionMap(rhsMap)
+          addReturnResult(newMap, rhsMap)
           val lhsMap: AsboMap = ataRefMapping(lhs.index).asboToAutomaton
 
           if (lhsMap == newMap)
