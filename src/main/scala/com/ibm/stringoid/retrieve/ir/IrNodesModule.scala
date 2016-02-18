@@ -22,7 +22,6 @@ object IrNodesModule {
   private[IrNodesModule] trait CgNodeRetriever extends IrUrlRetriever {
 
     def getCgNodes: Iterator[CGNode] = {
-      val file = config.file
       val includeLib = !config.ignoreLibs
       val processed = mutable.Set.empty[CGNode]
 
