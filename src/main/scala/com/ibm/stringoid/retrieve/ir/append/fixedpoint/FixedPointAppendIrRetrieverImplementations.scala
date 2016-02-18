@@ -1,7 +1,5 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
-import argonaut.Argonaut._
-import argonaut.Json
 import com.ibm.stringoid._
 import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.ir.IrNodesModule.{CgIntraProcIrNodes, ChaIntraProcIrNodes, InterProcIrNodes, IntraProcIrNodes}
@@ -10,7 +8,6 @@ import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.{InterProcSt
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ipa.callgraph.CallGraph
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAFieldAccessInstruction}
-import com.ibm.wala.util.debug.UnimplementedError
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
 import scala.collection.JavaConversions._
@@ -36,10 +33,6 @@ object FixedPointAppendIrRetrieverImplementations {
 
     override def hasUrls(node: CallGraphNode): Boolean = true // todo correct?
 
-    override def idToStringPart(node: CallGraphNode, id: Identifier): UrlPart = ???
-
-    override protected def getAutomaton(entryNode: CallGraphNode): (Json, Method) = ???
-
     override def getUrlsWithSources: UrlsWithSources = {
       val TimeResult(nodes, walaTime) = TimeResult(getNodes)
       val urlsWithSources: Iterator[(Url, Method)] =
@@ -50,7 +43,7 @@ object FixedPointAppendIrRetrieverImplementations {
       val urlWithSourcesMap = urlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
         case (prevMap, (url, method)) =>
           val prevMethods = prevMap getOrElse (url, Set.empty[Method])
-          prevMap updated(url, prevMethods + method)
+          prevMap updated (url, prevMethods + method)
       }
       UrlsWithSources(urlWithSourcesMap, walaTime)
     }
@@ -94,36 +87,10 @@ object FixedPointAppendIrRetrieverImplementations {
       } yield (Url(parseUrl(node, stringPart +: stringTail)), ir.getMethod.toString))(breakOut)
     }
 
-    override def getAutomaton(node: Node): (Json, Method) = {
-      val automaton = stringAppends(node, fieldToAutomaton).toDFA.toJson {
-        sp: StringPart =>
-          stringPartToUrlPart(node, sp).asJson.toString()
-      }
-      (automaton.toString.parseOption.get, node.getIr.getMethod.toString)
-    }
-
     override def hasUrls(node: Node): Boolean =
       1 to node.getIr.getSymbolTable.getMaxValueNumber exists {
         urlPrefixes(_, node).nonEmpty
       }
-
-    override def idToStringPart(node: Node, id: Identifier): UrlPart = {
-      val ir = node.getIr
-      val table = ir.getSymbolTable
-      if (table isConstant id) {
-        val string = if (table isNullConstant id) "null" else (table getConstantValue id).toString
-        UrlString(string)
-      }
-      else {
-        val typeName =
-          try getTypeAbstraction(ir, id).toString
-          catch {
-            case _: UnimplementedError =>
-              "undefined"
-          }
-        VariableType(typeName, getSource(node, id))
-      }
-    }
 
     override def getSource(node: Node, vn: ValueNumber): VariableSource =
       if (node.getIr.getSymbolTable.isParameter(vn))

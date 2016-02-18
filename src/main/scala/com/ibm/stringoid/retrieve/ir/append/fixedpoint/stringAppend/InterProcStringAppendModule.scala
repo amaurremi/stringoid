@@ -53,8 +53,6 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
 
     class InterProcStringAppendTransferFunctions extends StringAppendTransferFunctions(idToAsbo) {
 
-      override def valNum(id: Identifier): ValueNumber = id.getValueNumber
-
       override def getNodeTransferFunction(bb: BB): UnaryOperator[AtaReference] = {
         val node = CallGraphNode(bb.getNode)
         def getId(vn: ValueNumber) = createIdentifier(vn, node)

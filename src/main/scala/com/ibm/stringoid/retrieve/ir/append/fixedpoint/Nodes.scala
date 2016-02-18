@@ -10,6 +10,8 @@ trait Nodes {
 
   type Identifier
 
+  def valNum(id: Identifier): ValueNumber
+
   case class ASBO(identifier: Identifier)
 
   type Node <: NodeTrait
@@ -52,6 +54,8 @@ trait IrNodes extends Nodes {
 
   override type Identifier = ValueNumber
 
+  override def valNum(id: Identifier): ValueNumber = id
+
   override type Node = IrNode
 
   final override def createIdentifier(vn: ValueNumber, node: IrNode) = vn
@@ -60,6 +64,8 @@ trait IrNodes extends Nodes {
 trait CgNodes extends Nodes {
 
   override type Identifier = LocalPointerKey
+
+  override def valNum(id: Identifier): ValueNumber = id.getValueNumber
 
   override type Node = CallGraphNode
 

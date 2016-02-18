@@ -27,6 +27,11 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
   type StringPartAutomaton = Automaton[StringPart]
 
+  protected def stringAppends(
+   node: Node,
+   fieldToAutomaton: Map[FieldReference, StringPartAutomaton]
+  ): StringPartAutomaton
+
   def mergeAutomata(automata: Iterable[Automaton[StringPart]]) =
     automata.foldLeft(Automaton.empty[StringPart]) { _ | _ }
 
@@ -162,8 +167,6 @@ trait StringAppendModule extends AbstractStringBuilderModule {
     protected def transferFunctions: StringAppendTransferFunctions
 
     abstract class StringAppendTransferFunctions(idToAsbo: Map[Identifier, Set[ASBO]]) extends ITransferFunctionProvider[BB, AtaReference] {
-
-      def valNum(id: Identifier): ValueNumber
 
       // todo different for interproc case?
       def stronglyConnectedComponents: Set[util.Set[BB]] =

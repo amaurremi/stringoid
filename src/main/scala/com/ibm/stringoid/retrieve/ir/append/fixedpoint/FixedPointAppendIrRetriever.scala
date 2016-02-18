@@ -10,6 +10,7 @@ import com.ibm.stringoid.retrieve.ir.{IrUrlRetriever, ValueNumber}
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ssa._
 import com.ibm.wala.types.FieldReference
+import com.ibm.wala.util.debug.UnimplementedError
 
 import scala.collection.JavaConversions._
 import scala.collection.breakOut
@@ -83,7 +84,13 @@ abstract class FixedPointAppendIrRetriever(
     }
   }
 
-  protected def getAutomaton(entryNode: Node): (Json, Method)
+  protected final def getAutomaton(node: Node): (Json, Method) = {
+    val automaton = stringAppends(node, fieldToAutomaton).toDFA.toJson {
+      sp: StringPart =>
+        stringPartToUrlPart(node, sp).asJson.toString()
+    }
+    (automaton.toString.parseOption.get, node.getIr.getMethod.toString)
+  }
 
   protected def parseUrl(node: Node, string: Seq[StringPart]): Vector[UrlPart] =
     (string map {
@@ -104,7 +111,24 @@ abstract class FixedPointAppendIrRetriever(
         UrlString(s)
     }
 
-  def idToStringPart(node: Node, id: Identifier): UrlPart
+  protected final def idToStringPart(node: Node, id: Identifier): UrlPart = {
+    val ir = node.getIr
+    val table = ir.getSymbolTable
+    val valNum = valNum(id)
+    if (table isConstant valNum) {
+      val string = if (table isNullConstant valNum) "null" else (table getConstantValue valNum).toString
+      UrlString(string)
+    }
+    else {
+      val typeName =
+        try getTypeAbstraction(ir, valNum).toString
+        catch {
+          case _: UnimplementedError =>
+            "undefined"
+        }
+      VariableType(typeName, getSource(node, valNum))
+    }
+  }
 
   def getSource(node: Node, vn: ValueNumber): VariableSource
 }
