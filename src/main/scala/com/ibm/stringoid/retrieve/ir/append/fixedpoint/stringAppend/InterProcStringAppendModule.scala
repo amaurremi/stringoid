@@ -3,13 +3,12 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend
 import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.InterProcASBOModule
-import com.ibm.wala.dataflow.graph.AbstractMeetOperator
 import com.ibm.wala.fixpoint.FixedPointConstants._
 import com.ibm.wala.fixpoint.UnaryOperator
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.cfg.{BasicBlockInContext, ExplodedInterproceduralCFG}
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
-import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInvokeInstruction, SSAReturnInstruction}
+import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInvokeInstruction}
 import com.ibm.wala.types.FieldReference
 
 import scala.collection.JavaConversions._
@@ -62,7 +61,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
           case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                =>
             idToAsbo get getId(getFirstSbAppendDef(instr)) match {
               case Some(asbos) =>
-                new StringBuilderAppendOperator(asbos, getId(getAppendArgument(instr)))
+                new StringBuilderAppendOperator(asbos, getId(getAppendArgument(instr)), node)
               case None =>
                 // todo note that this means that we are appending to a StringBuilder for which we haven't added an ASBO to the idToAsbo map.
                 // todo I think this means that the StringBuilder has been passed as a parameter or is a field. We should handle this case too at some point.
@@ -72,7 +71,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             idToAsbo get getId(getSbConstructorDef(inv)) match {
               case Some(asbos) =>
                 val appendArgument = getId(getSbConstructorArgument(inv))
-                new StringBuilderAppendOperator(asbos, appendArgument)
+                new StringBuilderAppendOperator(asbos, appendArgument, node)
               case None =>
                 throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
             }
@@ -84,10 +83,10 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
               argumentAsbos(inv, node))
 //            val assignTo = ASBO(getId(inv.getDef))
 //            new StringBuilderAppendOperator(Set(assignTo), getId(inv.getReturnValue(0)))
-          case ret: SSAReturnInstruction                                                =>
-            val result = getId(ret.getResult)
-            val assignTo = callGraph.getSuccNodes(node.node)
-            ???
+//          case ret: SSAReturnInstruction                                                =>
+//            val result = getId(ret.getResult)
+//            val assignTo = callGraph.getSuccNodes(node.node)
+//            ???
           case _ =>
             IdentityOperator()
         }
@@ -140,7 +139,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             for {
               argIndex <- 0 to instr.getNumberOfParameters
               arg       = instr getUse argIndex
-              asbos    <- idToAsbo get createIdentifier(arg, node)
+              asbos    <- (idToAsbo get createIdentifier(arg, node)).toSeq
               asbo     <- asbos
             } yield (asbo, argIndex)
           case _ => throw new UnsupportedOperationException("TODO handle other invoke instruction!")
@@ -148,20 +147,6 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
 
       private[this] def hasStringReturnType(inv: SSAAbstractInvokeInstruction): Boolean =
         inv.getDeclaredResultType.toString contains "java/lang/String"
-
-      case class StringFormatAppendOperator(inv: SSAAbstractInvokeInstruction, node: Node) extends AbstractAppendOperator {
-        override def createLhsMap(rhsMap: AsboMap): AsboMap = ???
-      }
-
-      case class StringBuilderAppendOperator(asbos: Set[ASBO], id: Identifier) extends AbstractAppendOperator {
-        override def createLhsMap(rhsMap: AsboMap): AsboMap = ???
-      }
-
-      override def getMeetOperator: AbstractMeetOperator[AtaReference] = ???
-
-      case class StringBuilderMeetOperator() extends AbstractMeetOperator[AtaReference] {
-        override def evaluate(lhs: AtaReference, rhs: Array[AtaReference]): Byte = ???
-      }
     }
   }
 }

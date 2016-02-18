@@ -1,13 +1,17 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend
 
+import java.util
+
 import com.ibm.stringoid.retrieve.ir.ValueNumber
+import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.AbstractStringBuilderModule
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{IVariable, UnaryOperator}
-import com.ibm.wala.ssa.{SSAFieldAccessInstruction, SSAPhiInstruction}
+import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAArrayStoreInstruction, SSAFieldAccessInstruction, SSAPhiInstruction}
 import com.ibm.wala.types.FieldReference
 import com.ibm.wala.util.graph.NumberedGraph
 import com.ibm.wala.util.graph.impl.NodeWithNumber
+import com.ibm.wala.util.graph.traverse.SCCIterator
 import seqset.regular.Automaton
 
 import scala.collection.JavaConversions._
@@ -161,6 +165,13 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
       def valNum(id: Identifier): ValueNumber
 
+      // todo different for interproc case?
+      def stronglyConnectedComponents: Set[util.Set[BB]] =
+        (new SCCIterator(cfg) filter {
+          blocks =>
+            (blocks.size() > 1) || cfg.hasEdge(blocks.head, blocks.head)
+        }).toSet
+
       def createAutomaton(node: Node, id: Identifier): StringPartAutomaton =
         node.getDu getDef valNum(id) match {
           case instr: SSAFieldAccessInstruction if fieldToAutomaton contains instr.getDeclaredField =>
@@ -266,6 +277,128 @@ trait StringAppendModule extends AbstractStringBuilderModule {
           newMap
         }
       }
+
+      protected case class StringFormatAppendOperator(
+        instr: SSAAbstractInvokeInstruction,
+        node: Node
+      ) extends AbstractAppendOperator with StringFormatSpecifiers {
+
+        override def createLhsMap(rhsMap: AsboMap): AsboMap = {
+          val newMap = mutable.Map.empty[ASBO, StringPartAutomaton]
+          newMap ++= rhsMap
+          val sfArgSeqs: Seq[Seq[StringPart]] = reorderStringFormatArgs
+          if (sfArgSeqs.isEmpty)
+            rhsMap
+          else {
+            sfArgSeqs foreach {
+              sfArgs =>
+                val sfTail = sfArgs.tail
+                val automaton = sfTail.foldLeft(singleAutomaton(sfArgs.head)) {
+                  case (resultAutomaton, stringFormatArg) =>
+                    stringFormatArg match {
+                      case StringIdentifier(id) =>
+                        val (auto, toAppend) = getAppendAutomaton(node, id, newMap)
+                        newMap ++= toAppend
+                        resultAutomaton +++ auto
+                      case other =>
+                        val appendAutomaton = singleAutomaton(other)
+                        resultAutomaton +++ appendAutomaton
+                    }
+                }
+
+                // the ASBO corresponding to String.format can't be already contained in rhsMap,
+                // so we just add the result to the map
+                newMap += (createAsbo(instr.getDef, node) -> automaton)
+            }
+            newMap
+          }
+        }
+
+        private[this] def getArrayValNums(arrayDef: ValueNumber): Iterator[ValueNumber] =
+          node.getDu getUses arrayDef collect {
+            case store: SSAArrayStoreInstruction =>
+              store getUse 2
+          }
+
+        /**
+          * Produce sequence of [[StringPart]]s for String.format arguments in the right concatenation order,
+          * in the form of an automaton.
+          * This method does not substitute the value numbers with the corresponding automata or [[ASBO]]s.
+          */
+        def reorderStringFormatArgs: Vector[Vector[StringPart]] = {
+          val firstArg = getFirstStringFormatArg(instr)
+          val formatArrayValNum = getStringFormatArray(instr)
+          val table = node.getIr.getSymbolTable
+          if (table isStringConstant firstArg) {
+            val argValNums = getArrayValNums(formatArrayValNum)
+            val (formattedParts, specifierNum) = parse(table getStringValue firstArg)
+            formattedParts.foldLeft(Vector.empty[Vector[StringPart]]) {
+              case (parts, FormattedStringPart(string)) =>
+                val stringPart = StaticFieldPart(string)
+                if (parts.isEmpty) Vector(Vector(stringPart))
+                else parts map {
+                  _ :+ stringPart
+                }
+              case (parts, Specifier(count)) =>
+                val newVariables =
+                  if (argValNums.hasNext)
+                    createAutomaton(node, createIdentifier(argValNums.next(), node)).iterator.toVector
+                  else Vector(Seq(MissingStringFormatArgument))
+                if (parts.isEmpty) newVariables map { _.toVector }
+                else for {
+                  v <- newVariables
+                  p <- parts
+                } yield p ++ v
+            }
+          } else Vector.empty[Vector[StringPart]]
+        }
+      }
+
+      case class StringMeetOperator() extends AbstractMeetOperator[AtaReference] {
+
+        override def evaluate(lhs: AtaReference, rhs: Array[AtaReference]): Byte = {
+          val lhsAta = ataRefMapping(lhs.index)
+
+          val sccForLhs = lhsAta.bb flatMap {
+            block =>
+              stronglyConnectedComponents find {
+                _ contains block
+              }
+          }
+          def addRhsToLhs(l: AsboMap, r: AsboToAutomaton): Unit =
+            sccForLhs match  {
+              case Some(scc) if scc contains r.bb.get =>
+                r.asboToAutomaton foreach {
+                  case (asbo, _) =>
+                    l += asbo -> singleAutomaton(StringCycle)
+                }
+              case _                              =>
+                r.asboToAutomaton foreach {
+                  case (asbo, auto1) =>
+                    l get asbo match {
+                      case Some(auto2) =>
+                        l += asbo -> (auto1 | auto2)
+                      case None =>
+                        l += asbo -> auto1
+                    }
+                }
+            }
+
+          val newMap = mutable.Map.empty[ASBO, StringPartAutomaton]
+          rhs foreach {
+            rmapRef =>
+              addRhsToLhs(newMap, ataRefMapping(rmapRef.index))
+          }
+          if (newMap == lhsAta.asboToAutomaton)
+            NOT_CHANGED
+          else {
+            lhsAta.asboToAutomaton ++= newMap
+            CHANGED
+          }
+        }
+      }
+
+      override def getMeetOperator: AbstractMeetOperator[AtaReference] = StringMeetOperator()
 
       protected case class IdentityOperator() extends UnaryOperator[AtaReference] {
 
