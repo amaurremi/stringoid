@@ -31,7 +31,7 @@ object FixedPointAppendIrRetrieverImplementations {
     override def getNodes: Iterator[CallGraphNode] =
       callGraph.getEntrypointNodes.iterator() map CallGraphNode.apply
 
-    override def hasUrls(node: CallGraphNode): Boolean = true
+    override def hasUrls(node: CallGraphNode): Boolean = Option(node.getIr).isDefined
 
     override def getUrlsWithSources: UrlsWithSources = {
       val TimeResult(nodes, walaTime) = TimeResult(getNodes)

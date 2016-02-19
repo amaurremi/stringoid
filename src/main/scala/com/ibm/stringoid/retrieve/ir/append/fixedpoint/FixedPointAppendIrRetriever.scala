@@ -84,6 +84,9 @@ abstract class FixedPointAppendIrRetriever(
     }
   }
 
+  /**
+    * assumes `node.getIr` is not `null`
+    */
   protected final def getAutomaton(node: Node): (Json, Method) = {
     val automaton = stringAppends(node, fieldToAutomaton).toDFA.toJson {
       sp: StringPart =>

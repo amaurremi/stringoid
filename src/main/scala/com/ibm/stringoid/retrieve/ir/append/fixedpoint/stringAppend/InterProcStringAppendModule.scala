@@ -18,6 +18,9 @@ import scala.collection.mutable.ArrayBuffer
 
 trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOModule {
 
+  /**
+    * assumes [[node.getIr]] is not `null`
+    */
   def stringAppends(node: Node, fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
     val solver = new InterProcStringAppendSolver(identifierToAsbo, fieldToAutomaton)
     stringAppendsForSolver(solver)
