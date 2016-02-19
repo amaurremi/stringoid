@@ -5,7 +5,7 @@ import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.Nodes
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{BitVectorVariable, UnaryOperator}
-import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAPhiInstruction}
+import com.ibm.wala.ssa.{IR, SSAAbstractInvokeInstruction, SSAInstruction, SSAPhiInstruction}
 import com.ibm.wala.util.collections.ObjectArrayMapping
 import com.ibm.wala.util.graph.Graph
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph
@@ -72,7 +72,7 @@ trait AbstractStringBuilderModule extends Nodes {
   }
 
   protected def createAbstractObjectNumbering(node: Node)(implicit tag: ClassTag[ASBO]): AsboMapping = {
-    val abstractObjects = node.getIr.iterateNormalInstructions collect {
+    val abstractObjects = getNormalInstructions(node) collect {
       case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv) =>
         createAsbo(getSbConstructorDef(inv), node)
       case inv: SSAAbstractInvokeInstruction if isStringFormat(inv) =>
@@ -81,6 +81,15 @@ trait AbstractStringBuilderModule extends Nodes {
 
     new ObjectArrayMapping[ASBO](abstractObjects.toArray[ASBO])
   }
+
+  private[this] def getNormalInstructions(node: Node) =
+    getInstructions(node, { _.iterateNormalInstructions() })
+
+  private[this] def getAllInstructions(node: Node) =
+    getInstructions(node, { _.iterateAllInstructions() })
+
+  private[this] def getInstructions(node: Node, f: IR => Iterator[SSAInstruction]) =
+    Option(node.getIr) map { f(_).toIterable } getOrElse Iterable.empty[SSAInstruction]
 
   abstract class AsboFixedPointSolver(
    node: Node,
@@ -108,7 +117,7 @@ trait AbstractStringBuilderModule extends Nodes {
         addNode(target)
         graph addEdge(sourceN, targetN)
       }
-      node.getIr.iterateAllInstructions foreach {
+      getAllInstructions(node) foreach {
         case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv) =>
           getDefs(inv) foreach addNode // todo unnecessary?
         case inv: SSAAbstractInvokeInstruction if isSbAppend(inv) =>

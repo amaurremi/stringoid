@@ -6,6 +6,8 @@ import com.ibm.stringoid.retrieve.ir.IrNodesModule.{CgIntraProcIrNodes, ChaIntra
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.{InterProcStringAppendModule, IntraProcStringAppendModule}
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ipa.callgraph.CallGraph
+import com.typesafe.config.Config
+import com.typesafe.config.impl.ConfigImpl
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
 import scala.collection.JavaConversions._
@@ -19,9 +21,12 @@ object FixedPointAppendIrRetrieverImplementations {
     with InterProcStringAppendModule {
 
     override lazy val callGraph: CallGraph = {
-      val conf = if (isApk) configWithApk(config.file) else configWithSrc(config.file)
+      val conf = if (isApk) configWithApk(config.file) else withMainEntryPoint(configWithSrc(config.file))
       new FlexibleCallGraphBuilder()(conf).cg
     }
+
+    private[this] def withMainEntryPoint(conf: Config): Config =
+      conf withValue ("wala.entry.signature-pattern", ConfigImpl.fromAnyRef(".*main\\(\\[Ljava/lang/String;\\)V", ""))
 
     override def getNodes: Iterator[CallGraphNode] =
       callGraph.getEntrypointNodes.iterator() map CallGraphNode.apply
