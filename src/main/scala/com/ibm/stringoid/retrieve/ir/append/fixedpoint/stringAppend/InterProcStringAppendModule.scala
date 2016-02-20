@@ -19,7 +19,7 @@ import scala.collection.mutable.ArrayBuffer
 trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOModule {
 
   /**
-    * assumes [[node.getIr]] is not `null`
+    * assumes `node.getIr` is not `null`
     */
   def stringAppends(node: Node, fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
     val solver = new InterProcStringAppendSolver(identifierToAsbo, fieldToAutomaton)
@@ -42,8 +42,10 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
       */
     override lazy val initialMapping: ArrayBuffer[AsboToAutomaton] =
       callGraph.foldLeft(ArrayBuffer.empty[AsboToAutomaton]) {
-        case (buffer, node) =>
+        case (buffer, node) if Option(node.getIR).isDefined =>
           initialAtaRefMapping(buffer, CallGraphNode(node))
+        case (buffer, _)                                    =>
+          buffer
       }
 
     /**
@@ -128,6 +130,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
         def addReturnResult(to: AsboMap, rhsMap: AsboMap) =
           for {
             target <- targetNodes
+            if Option(target.getIR).isDefined
             instr  <- target.getIR.iterateNormalInstructions() filter { _.isInstanceOf[SSAReturnInstruction] }
             ret     = instr.asInstanceOf[SSAReturnInstruction]
             id      = createIdentifier(ret.getResult, CallGraphNode(target))

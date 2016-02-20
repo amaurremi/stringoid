@@ -44,12 +44,13 @@ abstract class FixedPointAppendIrRetriever(
     */
   lazy val fieldToAutomaton: Map[FieldReference, StringPartAutomaton] =
     getNodes.foldLeft(Map.empty[FieldReference, StringPartAutomaton]) {
-      case (oldMap, node) =>
-        node.getIr.iterateNormalInstructions().foldLeft(oldMap) {
+      case (oldMap, node) if hasIr(node) =>
+        val ir = node.getIr
+        ir.iterateNormalInstructions().foldLeft(oldMap) {
           case (oldMap2, instr: SSAPutInstruction) =>
             val field    = instr.getDeclaredField
             val writeVal = instr.getVal
-            val table    = node.getIr.getSymbolTable
+            val table    = ir.getSymbolTable
             if (table isConstant writeVal) {
               val stringPart = singleAutomaton(StaticFieldPart(String.valueOf(table getConstantValue writeVal)))
               val automaton =
@@ -60,6 +61,8 @@ abstract class FixedPointAppendIrRetriever(
           case (oldMap2, _)                        =>
             oldMap2
         }
+      case (oldMap, _)                    =>
+        oldMap
     }
 
   protected def urlPrefixes(vn: ValueNumber, node: Node): Seq[StringPart] = {

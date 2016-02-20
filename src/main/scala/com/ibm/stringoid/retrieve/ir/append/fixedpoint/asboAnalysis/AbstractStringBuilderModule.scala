@@ -51,15 +51,16 @@ trait AbstractStringBuilderModule extends Nodes {
   /**
     * The resulting map from value numbers to abstract StringBuilder objects
     */
-  protected final def idToAsboForNode(node: Node): Map[Identifier, Set[ASBO]] = {
-    val solver = asboSolver(node)
-    val result = getResult(solver)
-    (for {
-      vn <- solver.valueNumberGraph
-      intSet <- Option((result getOut vn).getValue)
-      i2a = intSetToAsbo(intSet, solver.abstractObjectNumbering)
-    } yield vn -> i2a) (breakOut)
-  }
+  protected final def idToAsboForNode(node: Node): Map[Identifier, Set[ASBO]] =
+    if (hasIr(node)) {
+      val solver = asboSolver(node)
+      val result = getResult(solver)
+      (for {
+        vn <- solver.valueNumberGraph
+        intSet <- Option((result getOut vn).getValue)
+        i2a = intSetToAsbo(intSet, solver.abstractObjectNumbering)
+      } yield vn -> i2a) (breakOut)
+    } else Map.empty[Identifier, Set[ASBO]]
 
   private[this] def intSetToAsbo(intSet: IntSet, numbering: AsboMapping): Set[ASBO] = {
     val walaIterator = intSet.intIterator

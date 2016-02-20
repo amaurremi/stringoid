@@ -16,6 +16,8 @@ trait Nodes {
 
   type Node <: NodeTrait
 
+  def hasIr(node: Node) = Option(node.getIr).isDefined
+
   sealed trait NodeTrait {
 
     def getIr: IR
