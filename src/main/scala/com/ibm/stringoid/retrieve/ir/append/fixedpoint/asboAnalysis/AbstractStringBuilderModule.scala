@@ -56,10 +56,10 @@ trait AbstractStringBuilderModule extends Nodes {
       val solver = asboSolver(node)
       val result = getResult(solver)
       (for {
-        vn <- solver.valueNumberGraph
-        intSet <- Option((result getOut vn).getValue)
+        id <- solver.valueNumberGraph
+        intSet <- Option((result getOut id).getValue)
         i2a = intSetToAsbo(intSet, solver.abstractObjectNumbering)
-      } yield vn -> i2a)(breakOut)
+      } yield id -> i2a)(breakOut)
     } else Map.empty[Identifier, Set[ASBO]]
 
   private[this] def intSetToAsbo(intSet: IntSet, numbering: AsboMapping): Set[ASBO] = {

@@ -94,6 +94,8 @@ object StringConcatUtil {
       List("Ljava/lang/String, format(",
         "new <Application,Ljava/lang/StringBuilder>",
         "new <Application,Ljava/lang/StringBuffer>",
+        "new <Primordial,Ljava/lang/StringBuilder>",
+        "new <Primordial,Ljava/lang/StringBuffer>",
         "new <Source,Ljava/lang/StringBuilder>",
         "new <Source,Ljava/lang/StringBuffer>") exists {
         instr.toString contains _
