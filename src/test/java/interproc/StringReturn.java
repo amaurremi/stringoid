@@ -1,4 +1,4 @@
-package interProcTestPrograms;
+package interproc;
 
 public class StringReturn {
 

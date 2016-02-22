@@ -20,7 +20,7 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
     case (prevMap, n) =>
       val newMap: Map[Identifier, Set[ASBO]] = (for {
         (id, asbos) <- idToAsboForNode(CallGraphNode(n))
-        prevAsbos = prevMap getOrElse(id, Set.empty[ASBO])
+        prevAsbos = prevMap getOrElse (id, Set.empty[ASBO])
       } yield id -> (prevAsbos ++ asbos))(breakOut)
       newMap
     }

@@ -1,4 +1,4 @@
-package intraProcTestPrograms;
+package interproc;
 
 public class Assertions {
 

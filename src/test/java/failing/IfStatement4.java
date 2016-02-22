@@ -14,7 +14,7 @@ public class IfStatement4 {
         c.append("/c");
         a.append("/a");
 
-        intraProcTestPrograms.Assertions.shouldContainHttp("a.com/a");
-        intraProcTestPrograms.Assertions.shouldContainHttp("a.com/c/a");
+        intraproc.Assertions.shouldContainHttp("a.com/a");
+        intraproc.Assertions.shouldContainHttp("a.com/c/a");
     }
 }

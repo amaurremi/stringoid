@@ -119,9 +119,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
                    for {
                      paramAsbo <- idToAsbo getOrElse (paramId, Set(ASBO(paramId)))
                      automaton <- rhsMap get asbo
-                   } {
-                       newMap += (paramAsbo -> automaton)
-                   }
+                   } newMap += (paramAsbo -> automaton)
                }
           }
           newMap
@@ -160,7 +158,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
         instr match {
           case inv: SSAInvokeInstruction =>
             for {
-              argIndex <- 0 to instr.getNumberOfParameters
+              argIndex <- 0 until instr.getNumberOfParameters
               arg       = instr getUse argIndex
               asbos    <- (idToAsbo get createIdentifier(arg, node)).toSeq
               asbo     <- asbos

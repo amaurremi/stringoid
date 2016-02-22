@@ -1,4 +1,4 @@
-package intraProcTestPrograms;
+package intraproc;
 
 public class IfStatement2 {
 

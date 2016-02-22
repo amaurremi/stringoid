@@ -59,7 +59,7 @@ trait AbstractStringBuilderModule extends Nodes {
         vn <- solver.valueNumberGraph
         intSet <- Option((result getOut vn).getValue)
         i2a = intSetToAsbo(intSet, solver.abstractObjectNumbering)
-      } yield vn -> i2a) (breakOut)
+      } yield vn -> i2a)(breakOut)
     } else Map.empty[Identifier, Set[ASBO]]
 
   private[this] def intSetToAsbo(intSet: IntSet, numbering: AsboMapping): Set[ASBO] = {
