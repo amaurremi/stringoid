@@ -169,7 +169,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
     abstract class StringAppendTransferFunctions(idToAsbo: Map[Identifier, Set[ASBO]]) extends ITransferFunctionProvider[BB, AtaReference] {
 
       // todo different for interproc case?
-      def stronglyConnectedComponents: Set[util.Set[BB]] =
+      lazy val stronglyConnectedComponents: Set[util.Set[BB]] =
         (new SCCIterator(cfg) filter {
           blocks =>
             (blocks.size() > 1) || cfg.hasEdge(blocks.head, blocks.head)

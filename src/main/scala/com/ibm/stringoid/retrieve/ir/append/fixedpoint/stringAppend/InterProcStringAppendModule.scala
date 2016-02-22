@@ -131,7 +131,9 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             if Option(target.getIR).isDefined
             instr  <- target.getIR.iterateNormalInstructions() filter { _.isInstanceOf[SSAReturnInstruction] }
             ret     = instr.asInstanceOf[SSAReturnInstruction]
-            id      = createIdentifier(ret.getResult, CallGraphNode(target))
+            result  = ret.getResult
+            if result > -1
+            id      = createIdentifier(result, CallGraphNode(target))
             asbos  <- idToAsbo get id
             asbo   <- asbos
           } to += (asbo -> (rhsMap getOrElse (asbo, Automaton.empty[StringPart])))
