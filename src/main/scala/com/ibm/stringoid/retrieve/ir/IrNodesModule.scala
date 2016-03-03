@@ -25,7 +25,7 @@ object IrNodesModule {
       val includeLib = !config.ignoreLibs
       val processed = mutable.Set.empty[CGNode]
 
-      new FlexibleCallGraphBuilder().cg.iterator flatMap {
+      FlexibleCallGraphBuilder().cg.iterator flatMap {
         case node if includeLib || isApplicationClass(node.getMethod.getDeclaringClass) =>
           if (processed contains node)
             None

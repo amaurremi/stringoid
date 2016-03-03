@@ -22,7 +22,7 @@ object FixedPointAppendIrRetrieverImplementations {
 
     override lazy val callGraph: CallGraph = {
       val conf = if (isApk) configWithApk(config.file) else withMainEntryPoint(configWithSrc(config.file))
-      new FlexibleCallGraphBuilder()(conf).cg
+      FlexibleCallGraphBuilder()(conf).cg
     }
 
     private[this] def withMainEntryPoint(conf: Config): Config =

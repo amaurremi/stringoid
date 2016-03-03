@@ -2,7 +2,8 @@ package edu.illinois.wala.ipa.callgraph
 
 import java.util
 
-import com.ibm.wala.classLoader.ClassLoaderFactoryImpl
+import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope
+import com.ibm.wala.classLoader.{ClassLoaderFactoryImpl, SourceDirectoryTreeModule}
 import com.ibm.wala.dalvik.util.AndroidEntryPointLocator
 import com.ibm.wala.dalvik.util.AndroidEntryPointLocator.LocatorFlags
 import com.ibm.wala.ipa.callgraph.AnalysisOptions.ReflectionOptions
@@ -38,10 +39,16 @@ object AnalysisOptions {
 
     implicit val cha = ClassHierarchy.make(scope, classLoaderImpl)
 
-    val options = new AnalysisOptions(scope, entrypoints(extraEntrypoints), cha, false)
+    val options = new AnalysisOptions(scope, entrypoints(extraEntrypoints), cha, isSource(scope))
     options.setReflectionOptions(ReflectionOptions.NONE)
     options // !srcDep.isEmpty
   }
+
+  def isSource(scope: AnalysisScope): Boolean =
+    (scope getModules JavaSourceAnalysisScope.SOURCE) exists {
+      case _: SourceDirectoryTreeModule => true
+      case _                            => false
+    }
 
   def entrypoints(extraEntrypoints: Iterable[(String, String)] = Seq())(
     implicit config: Config, cha: ClassHierarchy, scope: AnalysisScope) = {

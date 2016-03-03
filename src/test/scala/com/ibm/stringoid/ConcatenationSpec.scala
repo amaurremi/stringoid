@@ -29,13 +29,13 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
     }
 
     it("computes URLs in CHA IR analysis") {
-      val file = Paths.get("src/test/java/intraProcTestPrograms")
+      val file = Paths.get("src/test/java/intraproc")
       val analysisConfig = AnalysisConfig(irSource = IrSource.Cha, ignoreLibs = true, analysis = AnalysisType.Append, file = file, outputUrls = true)
       run(analysisConfig)
     }
 
     it("computes URLs in inter-procedural analysis") {
-      val file = Paths.get("src/test/java/interProcTestPrograms")
+      val file = Paths.get("src/test/java/interproc")
       val analysisConfig = AnalysisConfig(irSource = IrSource.InterProc, ignoreLibs = true, analysis = AnalysisType.Append, file = file, outputUrls = true)
       run(analysisConfig)
     }

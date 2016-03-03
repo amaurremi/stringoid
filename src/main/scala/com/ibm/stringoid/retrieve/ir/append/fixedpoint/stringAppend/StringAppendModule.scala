@@ -168,11 +168,10 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
     abstract class StringAppendTransferFunctions(idToAsbo: Map[Identifier, Set[ASBO]]) extends ITransferFunctionProvider[BB, AtaReference] {
 
-      // todo different for interproc case?
       lazy val stronglyConnectedComponents: Set[util.Set[BB]] =
         (new SCCIterator(cfg) filter {
           blocks =>
-            (blocks.size() > 1) || cfg.hasEdge(blocks.head, blocks.head)
+            (blocks.size > 1) || cfg.hasEdge(blocks.head, blocks.head)
         }).toSet
 
       def createAutomaton(node: Node, id: Identifier): StringPartAutomaton =
@@ -360,6 +359,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
       case class StringMeetOperator() extends AbstractMeetOperator[AtaReference] {
 
         override def evaluate(lhs: AtaReference, rhs: Array[AtaReference]): Byte = {
+
           val lhsAta = ataRefMapping(lhs.index)
 
           val sccForLhs = lhsAta.bb flatMap {
