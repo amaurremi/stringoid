@@ -1,7 +1,7 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
 import argonaut.Argonaut._
-import argonaut.Json
+import argonaut._
 import com.ibm.stringoid._
 import com.ibm.stringoid.retrieve.UrlCheck.isUrlPrefix
 import com.ibm.stringoid.retrieve.UrlPartDefs._
@@ -13,7 +13,6 @@ import com.ibm.wala.types.FieldReference
 import com.ibm.wala.util.debug.UnimplementedError
 
 import scala.collection.JavaConversions._
-import scala.collection.breakOut
 
 abstract class FixedPointAppendIrRetriever(
   override val config: AnalysisConfig
@@ -27,15 +26,28 @@ abstract class FixedPointAppendIrRetriever(
     else
       getAutomataWithSources.aws.toList.asJson
 
-  def getAutomataWithSources: AutomataWithSources = {
+  protected final def getAutomataWithSources: AutomataWithSources = {
     val TimeResult(nodes, walaTime) = TimeResult(getNodes)
     val automataWithSources: Iterator[(Json, Method)] =
-      for {
-        node <- nodes
-        if hasUrls(node)
-      } yield getAutomaton(node)
+      nodes collect {
+        case node if hasUrls(node) =>
+          getAutomaton(node)
+      }
     AutomataWithSources(automataWithSources, walaTime)
   }
+
+  /**
+    * assumes `node.getIr` is not `null`
+    */
+  def getAutomaton(node: Node): (Json, Method) = {
+    val automaton = stringAppends(node, fieldToAutomaton).toDFA.toJson {
+      sp: StringPart =>
+        getStringPartToUrlPart(node, sp).asJson.toString()
+    }
+    (automaton.toString.parseOption.get, node.getIr.getMethod.toString)
+  }
+
+  def getStringPartToUrlPart(node: Node, sp: StringPart): UrlPart
 
   def hasUrls(node: Node): Boolean
 
@@ -87,40 +99,9 @@ abstract class FixedPointAppendIrRetriever(
     }
   }
 
-  /**
-    * assumes `node.getIr` is not `null`
-    */
-  protected final def getAutomaton(node: Node): (Json, Method) = {
-    val automaton = stringAppends(node, fieldToAutomaton).toDFA.toJson {
-      sp: StringPart =>
-        stringPartToUrlPart(node, sp).asJson.toString()
-    }
-    (automaton.toString.parseOption.get, node.getIr.getMethod.toString)
-  }
-
-  protected def parseUrl(node: Node, string: Seq[StringPart]): Vector[UrlPart] =
-    (string map {
-      stringPartToUrlPart(node, _)
-    })(breakOut)
-
-  protected def stringPartToUrlPart(node: Node, string: StringPart): UrlPart =
-    string match {
-      case StringIdentifier(id)        =>
-        idToStringPart(node, id)
-      case StaticFieldPart(str)     =>
-        UrlString(str)
-      case StringCycle                 =>
-        UrlWithCycle
-      case MissingStringFormatArgument =>
-        MissingArgument
-      case StringFormatPart(s)         =>
-        UrlString(s)
-    }
-
-  protected final def idToStringPart(node: Node, id: Identifier): UrlPart = {
+  protected final def idToStringPart(node: Node, vn: ValueNumber): UrlPart = {
     val ir = node.getIr
     val table = ir.getSymbolTable
-    val vn = valNum(id)
     if (table isConstant vn) {
       val string = if (table isNullConstant vn) "null" else (table getConstantValue vn).toString
       UrlString(string)

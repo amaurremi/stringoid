@@ -67,11 +67,12 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
               }
               (methods, actualUrl)
           }) (breakOut)
+          val ignoreMethod = config.irSource == IrSource.InterProc
           expectedUrls foreach {
             case (method, expectedUrl) =>
               val hasUrl = actualUrls exists {
                 case (methods, url) =>
-                  url == expectedUrl && (methods contains method.toString)
+                  url == expectedUrl && (ignoreMethod || (methods contains method.toString))
               }
               assert(hasUrl, s"(URL '$expectedUrl' should be contained in result)")
               println(s"URL '$expectedUrl' found in $method.")

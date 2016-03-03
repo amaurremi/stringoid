@@ -45,7 +45,7 @@ trait Nodes {
   def createIdentifier(vn: ValueNumber, node: Node): Identifier
 
   sealed trait StringPart
-  case class StringIdentifier(vn: Identifier) extends StringPart
+  case class StringIdentifier(id: Identifier) extends StringPart
   case class StaticFieldPart(string: String) extends StringPart
   case class StringFormatPart(string: String) extends StringPart
   case object MissingStringFormatArgument extends StringPart

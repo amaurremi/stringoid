@@ -3,6 +3,7 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend
 import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.InterProcASBOModule
+import com.ibm.wala.cast.java.ssa.AstJavaInvokeInstruction
 import com.ibm.wala.fixpoint.FixedPointConstants._
 import com.ibm.wala.fixpoint.UnaryOperator
 import com.ibm.wala.ipa.callgraph.CGNode
@@ -82,10 +83,9 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
           case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)                 =>
             new StringFormatAppendOperator(inv, node)
           case inv: SSAAbstractInvokeInstruction                                        =>
-            val retValNum = inv.getDef
             val returnAsbos =
               if (hasStringReturnType(inv))
-                idToAsbo getOrElse (getId(retValNum), Set(createAsbo(retValNum, node)))
+                idToAsbo getOrElse (getId(inv.getDef), Set(createAsbo(inv.getDef, node)))
               else Set.empty[ASBO]
             new ParamSubstitutionAndReturnOperator(
               callGraph.getPossibleTargets(node.node, inv.getCallSite).toSet,
@@ -158,15 +158,19 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
         */
       private[this] def argumentAsbos(instr: SSAAbstractInvokeInstruction, node: Node): Seq[(ASBO, Int)] =
         instr match {
-          case inv: SSAInvokeInstruction =>
-            for {
-              argIndex <- 0 until instr.getNumberOfParameters
-              arg       = instr getUse argIndex
-              asbos    <- (idToAsbo get createIdentifier(arg, node)).toSeq
-              asbo     <- asbos
-            } yield (asbo, argIndex)
-          case _ => throw new UnsupportedOperationException("TODO handle other invoke instruction!")
+          case inv: SSAInvokeInstruction     =>
+            argumentAsbosForInstr(instr.getNumberOfParameters, instr.getUse, node)
+          case inv: AstJavaInvokeInstruction =>
+            argumentAsbosForInstr(instr.getNumberOfParameters, instr.getUse, node)
         }
+
+      private[this] def argumentAsbosForInstr(paramNum: Int, getArg: Int => ValueNumber, node: Node): Seq[(ASBO, Int)] =
+        for {
+          argIndex <- 0 until paramNum
+          arg       = getArg(argIndex)
+          asbos    <- (idToAsbo get createIdentifier(arg, node)).toSeq
+          asbo     <- asbos
+        } yield (asbo, argIndex)
 
       private[this] def hasStringReturnType(inv: SSAAbstractInvokeInstruction): Boolean =
         inv.getDeclaredResultType.toString contains "java/lang/String"
