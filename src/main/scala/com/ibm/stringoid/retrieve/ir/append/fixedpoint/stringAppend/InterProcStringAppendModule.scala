@@ -67,7 +67,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             idToAsbo get getId(getFirstSbAppendDef(instr)) match {
               case Some(asbos) =>
                 new StringBuilderAppendOperator(asbos, getId(getAppendArgument(instr)), node)
-              case None =>
+              case None        =>
                 // todo note that this means that we are appending to a StringBuilder for which we haven't added an ASBO to the idToAsbo map.
                 // todo I think this means that the StringBuilder has been passed as a parameter or is a field. We should handle this case too at some point.
                 IdentityOperator()
@@ -77,7 +77,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
               case Some(asbos) =>
                 val appendArgument = getId(getSbConstructorArgument(inv))
                 new StringBuilderAppendOperator(asbos, appendArgument, node)
-              case None =>
+              case None        =>
                 throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
             }
           case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)                 =>
@@ -108,7 +108,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
         returnAsbos: Set[ASBO]
       ) extends UnaryOperator[AtaReference] {
 
-        def createSubstitutionMap(rhsMap: AsboMap): AsboMap = {
+        private[this] def createSubstitutionMap(rhsMap: AsboMap): AsboMap = {
           val newMap = mutable.Map.empty[ASBO, StringPartAutomaton] ++= rhsMap
           targetNodes foreach {
              node =>
@@ -125,7 +125,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
           newMap
         }
 
-        def addReturnResult(to: AsboMap, rhsMap: AsboMap) =
+        private[this] def addReturnResult(to: AsboMap, rhsMap: AsboMap) =
           for {
             target <- targetNodes
             if Option(target.getIR).isDefined
@@ -134,9 +134,9 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             result  = ret.getResult
             if result > -1
             id      = createIdentifier(result, CallGraphNode(target))
-            asbos  <- idToAsbo get id
-            asbo   <- asbos
-          } to += (asbo -> (rhsMap getOrElse (asbo, Automaton.empty[StringPart])))
+            asbo   <- returnAsbos
+            oldA    = rhsMap getOrElse (asbo, Automaton.empty[StringPart])
+          } to += (asbo -> (oldA | createAutomaton(CallGraphNode(target), id)))
 
         override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {
           val rhsMap = ataRefMapping(rhs.index).asboToAutomaton
@@ -171,9 +171,6 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
           asbos    <- (idToAsbo get createIdentifier(arg, node)).toSeq
           asbo     <- asbos
         } yield (asbo, argIndex)
-
-      private[this] def hasStringReturnType(inv: SSAAbstractInvokeInstruction): Boolean =
-        inv.getDeclaredResultType.toString contains "java/lang/String"
     }
   }
 }

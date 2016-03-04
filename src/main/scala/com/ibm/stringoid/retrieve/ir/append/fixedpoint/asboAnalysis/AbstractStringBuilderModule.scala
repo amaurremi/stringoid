@@ -74,9 +74,9 @@ trait AbstractStringBuilderModule extends Nodes {
 
   protected def createAbstractObjectNumbering(node: Node)(implicit tag: ClassTag[ASBO]): AsboMapping = {
     val abstractObjects = node.getIr.iterateNormalInstructions() collect {
-      case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv) =>
+      case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv)                            =>
         createAsbo(getSbConstructorDef(inv), node)
-      case inv: SSAAbstractInvokeInstruction if isStringFormat(inv) =>
+      case inv: SSAAbstractInvokeInstruction if isStringFormat(inv) || hasStringReturnType(inv) =>
         createAsbo(inv.getDef, node)
     }
 
@@ -110,25 +110,27 @@ trait AbstractStringBuilderModule extends Nodes {
         graph addEdge(sourceN, targetN)
       }
       node.getIr.iterateAllInstructions() foreach {
-        case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv) =>
-          getDefs(inv) foreach addNode // todo unnecessary?
-        case inv: SSAAbstractInvokeInstruction if isSbAppend(inv) =>
+        case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv)     =>
+          getDefs(inv) foreach addNode
+        case inv: SSAAbstractInvokeInstruction if isSbAppend(inv)          =>
           val (firstDef, secondDef) = getSbAppendDefs(inv) // in 1 = 2.append(3), 1 is firstDef and 2 is secondDef
           addEdge(secondDef, firstDef)
-        case inv: SSAAbstractInvokeInstruction if isSbTostring(inv) => // in 1 = 2.toString, 1 is sbDef and 2 is sbUse
+        case inv: SSAAbstractInvokeInstruction if isSbTostring(inv)        => // in 1 = 2.toString, 1 is sbDef and 2 is sbUse
           val sbDef = getSbToStringDef(inv)
           val sbUse = getSbToStringUse(inv)
           addEdge(sbUse, sbDef)
-        case inv: SSAAbstractInvokeInstruction if isStringFormat(inv) =>
+        case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)      =>
           addNode(inv.getDef)
-        case phi: SSAPhiInstruction =>
+        case inv: SSAAbstractInvokeInstruction if hasStringReturnType(inv) =>
+          addNode(inv.getDef)
+        case phi: SSAPhiInstruction                                        =>
           val defNode = phi.getDef
           addNode(defNode)
           getPhiUses(phi) foreach {
             use =>
               addEdge(use, defNode)
           }
-        case _ =>
+        case _                                                             =>
         // do  nothing
       }
       graph
@@ -153,15 +155,19 @@ trait AbstractStringBuilderModule extends Nodes {
 
       def getNodeTransferFunction(id: Identifier): UnaryOperator[BitVectorVariable] = {
         getDef(id) match {
-          case instr if isSbConstructorOrFormatInDefUse(instr) =>
-            val mappedIndex = abstractObjectNumbering getMappedIndex ASBO(id)
-            assert(mappedIndex >= 0)
-            val gen = new BitVector()
-            gen set mappedIndex
-            new BitVectorKillGen(new BitVector(), gen)
-          case _                                               =>
-            BitVectorIdentity.instance
+          case instr if isSbConstructorOrFormatInDefUse(instr)                   =>
+            createOperator(id, instr)
+          case instr: SSAAbstractInvokeInstruction if hasStringReturnType(instr) =>
+            createOperator(id, instr)
         }
+      }
+
+      private[this] def createOperator(id: Identifier, instr: SSAInstruction): UnaryOperator[BitVectorVariable] = {
+        val mappedIndex = abstractObjectNumbering getMappedIndex ASBO(id)
+        assert(mappedIndex >= 0)
+        val gen = new BitVector()
+        gen set mappedIndex
+        new BitVectorKillGen(new BitVector(), gen)
       }
 
       override def getMeetOperator: AbstractMeetOperator[BitVectorVariable] =

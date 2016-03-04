@@ -100,4 +100,7 @@ object StringConcatUtil {
         "new <Source,Ljava/lang/StringBuffer>") exists {
         instr.toString contains _
       })
+
+  def hasStringReturnType(inv: SSAAbstractInvokeInstruction): Boolean =
+    inv.getDeclaredResultType.toString contains "java/lang/String"
 }
