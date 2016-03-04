@@ -11,11 +11,9 @@ import com.ibm.wala.ipa.cfg.{BasicBlockInContext, ExplodedInterproceduralCFG}
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInvokeInstruction, SSAReturnInstruction}
 import com.ibm.wala.types.FieldReference
-import seqset.regular.Automaton
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 
 trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOModule {
 
@@ -41,19 +39,13 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
       * At the beginning [[ataRefMapping]] gets assigned this function, but we need to remember its
       * value to later manually add constants to the result.
       */
-    override lazy val initialMapping: ArrayBuffer[AsboToAutomaton] =
-      callGraph.foldLeft(ArrayBuffer.empty[AsboToAutomaton]) {
-        case (buffer, node) if Option(node.getIR).isDefined =>
-          initialAtaRefMapping(buffer, CallGraphNode(node))
-        case (buffer, _)                                    =>
-          buffer
+    override lazy val initialMapping: AsboMap =
+      callGraph.foldLeft(mutable.Map.empty[ASBO, StringPartAutomaton]) {
+        case (oldMap, node) if Option(node.getIR).isDefined =>
+          oldMap ++= initialAtaForNode(CallGraphNode(node))
+        case (oldMap, _)                                    =>
+          oldMap
       }
-
-    /**
-      * For efficiency we store our AsboToAutomaton in this array. The analysis operates on its indices
-      * that serve as references to the stored AsboToAutomaton objects.
-      */
-    override def ataRefMapping: ArrayBuffer[AsboToAutomaton] = initialMapping
 
     override protected def transferFunctions: StringAppendTransferFunctions = new InterProcStringAppendTransferFunctions
 
@@ -118,8 +110,8 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
                    val paramId = createIdentifier(paramIndex + 1, cgNode)
                    for {
                      paramAsbo    <- idToAsbo getOrElse (paramId, Set(ASBO(paramId)))
-                     oldAutomaton  = rhsMap getOrElse (paramAsbo, Automaton.empty[StringPart])
-                     automaton     = rhsMap getOrElse (asbo, Automaton.empty[StringPart])
+                     oldAutomaton  = rhsMap getOrElse (paramAsbo, StringPartAutomaton())
+                     automaton     = rhsMap getOrElse (asbo, StringPartAutomaton())
                    } newMap += (paramAsbo -> (oldAutomaton | automaton))
                }
           }
@@ -136,7 +128,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             if result > -1
             id      = createIdentifier(result, CallGraphNode(target))
             asbo   <- returnAsbos
-            oldA    = rhsMap getOrElse (asbo, Automaton.empty[StringPart])
+            oldA    = rhsMap getOrElse (asbo, StringPartAutomaton())
           } to += (asbo -> (oldA | createAutomaton(CallGraphNode(target), id)))
 
         override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {

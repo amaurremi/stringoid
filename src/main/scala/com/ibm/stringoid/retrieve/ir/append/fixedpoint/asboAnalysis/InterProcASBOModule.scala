@@ -32,6 +32,6 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
   ) extends AsboFixedPointSolver(node, numbering) {
 
     override def getDef(id: LocalPointerKey): SSAInstruction =
-      node.getDu getDef id.getValueNumber
+      CallGraphNode(id.getNode).getDu getDef id.getValueNumber
   }
 }

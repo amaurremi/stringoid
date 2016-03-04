@@ -40,7 +40,7 @@ abstract class FixedPointAppendIrRetriever(
     * assumes `node.getIr` is not `null`
     */
   def getAutomaton(node: Node): (Json, Method) = {
-    val automaton = stringAppends(node, fieldToAutomaton).toDFA.toJson {
+    val automaton = stringAppends(node, fieldToAutomaton).automaton.toDFA.toJson {
       sp: StringPart =>
         getStringPartToUrlPart(node, sp).asJson.toString()
     }
@@ -64,7 +64,7 @@ abstract class FixedPointAppendIrRetriever(
             val writeVal = instr.getVal
             val table    = ir.getSymbolTable
             if (table isConstant writeVal) {
-              val stringPart = singleAutomaton(StaticFieldPart(String.valueOf(table getConstantValue writeVal)))
+              val stringPart = StringPartAutomaton(StaticFieldPart(String.valueOf(table getConstantValue writeVal)))
               val automaton =
                 if (oldMap2 contains field) oldMap2(field) | stringPart
                 else stringPart
@@ -87,7 +87,7 @@ abstract class FixedPointAppendIrRetriever(
         case instr: SSAFieldAccessInstruction =>
           val strings = for {
             automaton <- (fieldToAutomaton get instr.getDeclaredField).toSeq
-            seq       <- automaton.iterator
+            seq       <- automaton.automaton.iterator
           } yield seq.head
           strings filter {
             case StaticFieldPart(str) => isUrlPrefix(str)

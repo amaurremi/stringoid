@@ -9,8 +9,6 @@ import com.ibm.wala.ssa.SSAAbstractInvokeInstruction
 import com.ibm.wala.ssa.analysis.{ExplodedControlFlowGraph, IExplodedBasicBlock}
 import com.ibm.wala.types.FieldReference
 
-import scala.collection.mutable.ArrayBuffer
-
 trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOModule {
 
   /**
@@ -36,8 +34,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
 
     override type BB = IExplodedBasicBlock
 
-    override lazy val initialMapping: ArrayBuffer[AsboToAutomaton] =
-      initialAtaRefMapping(ArrayBuffer.empty[AsboToAutomaton], node)
+    override lazy val initialMapping: AsboMap = initialAtaForNode(node)
 
     override lazy val cfg = ExceptionPrunedCFG.make(ExplodedControlFlowGraph.make(node.getIr))
 
@@ -70,11 +67,5 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
             IdentityOperator()
         }
     }
-
-    /**
-      * For efficiency we store our AsboToAutomaton in this array. The analysis operates on its indices
-      * that serve as references to the stored AsboToAutomaton objects.
-      */
-    override def ataRefMapping: ArrayBuffer[AsboToAutomaton] = initialMapping
   }
 }

@@ -43,7 +43,7 @@ object FixedPointAppendIrRetrieverImplementations {
     private[this] def getConcatUrls(node: Node): Iterator[Url] = {
       val appendAutomaton = stringAppends(node, fieldToAutomaton)
       // todo wait for automaton-predicate function
-      val urlAutomaton = appendAutomaton filterHeads {
+      val urlAutomaton = appendAutomaton.automaton filterHeads {
         case StringIdentifier(id) =>
           val table = id.getNode.getIR.getSymbolTable
           val vn    = id.getValueNumber
@@ -105,7 +105,7 @@ object FixedPointAppendIrRetrieverImplementations {
       (for {
         vn <- 1 to ir.getSymbolTable.getMaxValueNumber
         stringPart <- urlPrefixes(vn, node)
-        stringTail <- (appendAutomaton tails stringPart).iterator take 100
+        stringTail <- (appendAutomaton.automaton tails stringPart).iterator take 100
       } yield (Url(parseUrl(node, stringPart +: stringTail)), ir.getMethod.toString)) (breakOut)
     }
 
