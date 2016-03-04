@@ -27,7 +27,7 @@ abstract class FixedPointAppendIrRetriever(
       getAutomataWithSources.aws.toList.asJson
 
   protected final def getAutomataWithSources: AutomataWithSources = {
-    val TimeResult(nodes, walaTime) = TimeResult(getNodes)
+    val TimeResult(nodes, walaTime) = TimeResult(getEntryNodes)
     val automataWithSources: Iterator[(Json, Method)] =
       nodes collect {
         case node if hasUrls(node) =>
@@ -55,7 +55,7 @@ abstract class FixedPointAppendIrRetriever(
     * collect all assignments to static fields into map from field to sum-automaton
     */
   lazy val fieldToAutomaton: Map[FieldReference, StringPartAutomaton] =
-    getNodes.foldLeft(Map.empty[FieldReference, StringPartAutomaton]) {
+    getEntryNodes.foldLeft(Map.empty[FieldReference, StringPartAutomaton]) {
       case (oldMap, node) if hasIr(node) =>
         val ir = node.getIr
         ir.iterateNormalInstructions().foldLeft(oldMap) {

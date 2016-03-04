@@ -6,12 +6,6 @@ import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.ir.IrNodesModule.{CgIntraProcIrNodes, ChaIntraProcIrNodes, InterProcIrNodes, IntraProcIrNodes}
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.{InterProcStringAppendModule, IntraProcStringAppendModule}
 import com.ibm.stringoid.util.TimeResult
-import com.ibm.wala.ipa.callgraph.CallGraph
-import com.ibm.wala.ipa.callgraph.impl.PartialCallGraph
-import com.ibm.wala.types.ClassLoaderReference
-import com.typesafe.config.Config
-import com.typesafe.config.impl.ConfigImpl
-import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
 import scala.collection.JavaConversions._
 import scala.collection.breakOut
@@ -23,28 +17,16 @@ object FixedPointAppendIrRetrieverImplementations {
     with InterProcIrNodes
     with InterProcStringAppendModule {
 
-    override lazy val callGraph: CallGraph = {
-      val conf  = if (isApk) configWithApk(config.file) else withMainEntryPoint(configWithSrc(config.file))
-      val graph = FlexibleCallGraphBuilder()(conf).cg
-      if (config.ignoreLibs)
-        PartialCallGraph.make(graph, graph.getEntrypointNodes, graph filterNot {
-          node =>
-            ClassLoaderReference.Primordial == node.getMethod.getDeclaringClass.getReference.getClassLoader
-        })
-      else
-        graph
-    }
-
-    private[this] def withMainEntryPoint(conf: Config): Config =
-      conf withValue ("wala.entry.signature-pattern", ConfigImpl.fromAnyRef(".*main\\(\\[Ljava/lang/String;\\)V", ""))
-
-    override def getNodes: Iterator[CallGraphNode] =
+    override def getEntryNodes: Iterator[CallGraphNode] =
       callGraph.getEntrypointNodes.iterator() map CallGraphNode.apply
+
+    override def getAllNodes: Iterator[CallGraphNode] =
+      callGraph.iterator() map CallGraphNode.apply
 
     override def hasUrls(node: CallGraphNode): Boolean = hasIr(node)
 
     override def getUrlsWithSources: UrlsWithSources = {
-      val TimeResult(nodes, walaTime) = TimeResult(getNodes)
+      val TimeResult(nodes, walaTime) = TimeResult(getEntryNodes)
       val urlsWithSources: Iterator[(Url, Method)] =
         for {
           node    <- nodes
@@ -102,7 +84,7 @@ object FixedPointAppendIrRetrieverImplementations {
     with IntraProcStringAppendModule {
 
     override def getUrlsWithSources: UrlsWithSources = {
-      val TimeResult(nodes, walaTime) = TimeResult(getNodes)
+      val TimeResult(nodes, walaTime) = TimeResult(getEntryNodes)
       val urlsWithSources: Iterator[(Url, Method)] =
         for {
           node <- nodes

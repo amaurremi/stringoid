@@ -41,11 +41,12 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
     }
 
     def run(config: AnalysisConfig) = {
+      val interProc = config.irSource == IrSource.InterProc
       retriever(config) match {
         case ret: FixedPointAppendIrRetriever =>
           val expectedUrls: Iterator[(IMethod, String)] =
             for {
-              node <- ret.getNodes
+              node <- ret.getAllNodes
               if node.isSource
               ir = node.getIr
               assertionCall <- getAssertionInstructions(ir)
@@ -67,12 +68,11 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
               }
               (methods, actualUrl)
           }) (breakOut)
-          val ignoreMethod = config.irSource == IrSource.InterProc
           expectedUrls foreach {
             case (method, expectedUrl) =>
               val hasUrl = actualUrls exists {
                 case (methods, url) =>
-                  url == expectedUrl && (ignoreMethod || (methods contains method.toString))
+                  url == expectedUrl && (interProc || (methods contains method.toString))
               }
               assert(hasUrl, s"(URL '$expectedUrl' should be contained in result)")
               println(s"URL '$expectedUrl' found in $method.")
