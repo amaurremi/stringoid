@@ -63,7 +63,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
   ) {
 
     type BB
-    type AsboMap = scala.collection.mutable.Map[ASBO, StringPartAutomaton]
+    type AsboMap = mutable.Map[ASBO, StringPartAutomaton]
 
     def cfg: NumberedGraph[BB]
 

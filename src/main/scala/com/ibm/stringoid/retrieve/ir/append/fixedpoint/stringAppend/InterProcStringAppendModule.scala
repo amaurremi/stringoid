@@ -63,7 +63,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
         val node = CallGraphNode(bb.getNode)
         def getId(vn: ValueNumber) = createIdentifier(vn, node)
         bb.getLastInstruction match {
-          case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                =>
+          case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                 =>
             idToAsbo get getId(getFirstSbAppendDef(instr)) match {
               case Some(asbos) =>
                 new StringBuilderAppendOperator(asbos, getId(getAppendArgument(instr)), node)
@@ -117,9 +117,10 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
                  case (asbo, paramIndex) =>
                    val paramId = createIdentifier(paramIndex + 1, cgNode)
                    for {
-                     paramAsbo <- idToAsbo getOrElse (paramId, Set(ASBO(paramId)))
-                     automaton <- rhsMap get asbo
-                   } newMap += (paramAsbo -> automaton)
+                     paramAsbo    <- idToAsbo getOrElse (paramId, Set(ASBO(paramId)))
+                     oldAutomaton  = rhsMap getOrElse (paramAsbo, Automaton.empty[StringPart])
+                     automaton     = rhsMap getOrElse (asbo, Automaton.empty[StringPart])
+                   } newMap += (paramAsbo -> (oldAutomaton | automaton))
                }
           }
           newMap
@@ -168,8 +169,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
         for {
           argIndex <- 0 until paramNum
           arg       = getArg(argIndex)
-          asbos    <- (idToAsbo get createIdentifier(arg, node)).toSeq
-          asbo     <- asbos
+          asbo     <- (idToAsbo getOrElse (createIdentifier(arg, node), Set(createAsbo(arg, node)))).toSeq
         } yield (asbo, argIndex)
     }
   }
