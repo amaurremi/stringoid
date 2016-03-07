@@ -77,10 +77,11 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
     type BB
     type AsboMap = mutable.Map[ASBO, StringPartAutomaton]
+    type ImmutableAsboMap = Map[ASBO, StringPartAutomaton]
 
     def cfg: NumberedGraph[BB]
 
-    def initialMapping: AsboMap
+    def initialMapping: ImmutableAsboMap
 
     def result: DataflowSolver[BB, AtaReference] = {
       val framework = new IKilldallFramework[BB, AtaReference] {
@@ -101,26 +102,25 @@ trait StringAppendModule extends AbstractStringBuilderModule {
      */
     val ataRefMapping: ArrayBuffer[AsboToAutomaton] = new ArrayBuffer[AsboToAutomaton]()
 
-    def initialAtaForNode(node: Node): AsboMap = {
+    def initialAtaForNode(node: Node): ImmutableAsboMap = {
       val table = node.getIr.getSymbolTable
-      val asboToAutomaton = mutable.Map.empty[ASBO, StringPartAutomaton]
-      1 to table.getMaxValueNumber foreach {
-        vn =>
+      (1 to table.getMaxValueNumber).foldLeft(Map.empty[ASBO, StringPartAutomaton]) {
+        case (oldMap, vn) =>
           if (table isConstant vn) {
             val automaton = StringPartAutomaton(StringIdentifier(createIdentifier(vn, node)))
-            asboToAutomaton += (createAsbo(vn, node) -> automaton)
+            oldMap + (createAsbo(vn, node) -> automaton)
           } else {
             node.getDu getDef vn match {
               case fdAccess: SSAFieldAccessInstruction =>
-                fieldToAutomaton get fdAccess.getDeclaredField foreach {
-                  automaton =>
-                    asboToAutomaton += (createAsbo(vn, node) -> automaton)
+                (fieldToAutomaton get fdAccess.getDeclaredField).foldLeft(oldMap) {
+                  case (oldOldMap, automaton) =>
+                    oldOldMap + (createAsbo(vn, node) -> automaton)
                 }
-              case _                                   => ()
+              case _                                   =>
+                oldMap
             }
           }
       }
-      asboToAutomaton
     }
 
     // ITransferFunctionProvider's methods force the lattice elements to be mutable
@@ -162,7 +162,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
         override def makeNodeVariable(bb: BB, in: Boolean): AtaReference = {
           val nextIndex = ataRefMapping.size
-          ataRefMapping += AsboToAutomaton(initialMapping, Some(bb))
+          ataRefMapping += AsboToAutomaton(mutable.Map(initialMapping.toSeq: _*), Some(bb))
           if (in)
             AtaRefIn(nextIndex)
           else
@@ -243,11 +243,11 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
       protected trait AbstractAppendOperator extends UnaryOperator[AtaReference] {
 
-        def createLhsMap(rhsMap: AsboMap): AsboMap
+        def createNewMap(rhsMap: AsboMap): AsboMap
 
         override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {
           val rhsMap = ataRefMapping(rhs.index).asboToAutomaton
-          val newMap = createLhsMap(rhsMap)
+          val newMap = createNewMap(rhsMap)
           val lhsMap: AsboMap = ataRefMapping(lhs.index).asboToAutomaton
 
           if (lhsMap == newMap)
@@ -268,7 +268,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
         node: Node
       ) extends AbstractAppendOperator {
 
-        override def createLhsMap(rhsMap: AsboMap): AsboMap = {
+        override def createNewMap(rhsMap: AsboMap): AsboMap = {
           val newMap = mutable.Map.empty[ASBO, StringPartAutomaton] ++= rhsMap
           val (appendAutomaton, toAppend) = getAppendAutomaton(node, appendId, rhsMap)
           newMap ++= toAppend
@@ -291,7 +291,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
         node: Node
       ) extends AbstractAppendOperator with StringFormatSpecifiers {
 
-        override def createLhsMap(rhsMap: AsboMap): AsboMap = {
+        override def createNewMap(rhsMap: AsboMap): AsboMap = {
           val newMap = mutable.Map.empty[ASBO, StringPartAutomaton]
           newMap ++= rhsMap
           val sfArgSeqs: Seq[Seq[StringPart]] = reorderStringFormatArgs
@@ -368,7 +368,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
           val lhsAta = ataRefMapping(lhs.index)
 
-          def addRhsToLhs(l: AsboMap, r: AsboToAutomaton): Unit =
+          def addRhsToLhs(r: AsboToAutomaton, l: AsboMap): Unit =
             r.asboToAutomaton foreach {
               case (asbo, auto1) =>
                 l get asbo match {
@@ -384,7 +384,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
           val newMap = mutable.Map.empty[ASBO, StringPartAutomaton]
           rhs foreach {
             rmapRef =>
-              addRhsToLhs(newMap, ataRefMapping(rmapRef.index))
+              addRhsToLhs(ataRefMapping(rmapRef.index), newMap)
           }
           if (newMap == lhsAta.asboToAutomaton)
             NOT_CHANGED

@@ -4,14 +4,21 @@ public class IfStatement3 {
 
     public static void main(String[] args) {
         StringBuilder sb = new StringBuilder("http://");
-        if (args[0] == null) {
-            sb.append("if3.com/branch1?");
+        sb.append("if3.com?");
+        String query;
+        if (args[1] == null) {
+            query = "A,";
+        } else {
+            query = "B,";
+            sb.append(query);
         }
-        sb.append("key=val");
+        sb.append(query);
 
-        System.out.println(sb.toString());
+        String url = sb.toString();
+        System.out.println(url);
 
-        Assertions.shouldContainHttp("if3.com/branch1?key=val");
-        Assertions.shouldContainHttp("key=val");
+        debug.Assertions.shouldContainHttp("if3.com?A,");
+        debug.Assertions.shouldContainHttp("if3.com?A,B");
+        debug.Assertions.shouldContainHttp("if3.com?B,B");
     }
 }

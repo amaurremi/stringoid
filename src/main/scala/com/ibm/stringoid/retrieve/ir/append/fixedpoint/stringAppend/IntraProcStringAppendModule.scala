@@ -34,7 +34,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
 
     override type BB = IExplodedBasicBlock
 
-    override lazy val initialMapping: AsboMap = initialAtaForNode(node)
+    override lazy val initialMapping: ImmutableAsboMap = initialAtaForNode(node)
 
     override lazy val cfg = ExceptionPrunedCFG.make(ExplodedControlFlowGraph.make(node.getIr))
 

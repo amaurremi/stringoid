@@ -39,10 +39,10 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
       * At the beginning [[ataRefMapping]] gets assigned this function, but we need to remember its
       * value to later manually add constants to the result.
       */
-    override lazy val initialMapping: AsboMap =
-      callGraph.foldLeft(mutable.Map.empty[ASBO, StringPartAutomaton]) {
+    override lazy val initialMapping: ImmutableAsboMap =
+      callGraph.foldLeft(Map.empty[ASBO, StringPartAutomaton]) {
         case (oldMap, node) if Option(node.getIR).isDefined =>
-          oldMap ++= initialAtaForNode(CallGraphNode(node))
+          oldMap ++ initialAtaForNode(CallGraphNode(node))
         case (oldMap, _)                                    =>
           oldMap
       }
