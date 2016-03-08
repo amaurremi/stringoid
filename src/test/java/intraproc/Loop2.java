@@ -9,6 +9,6 @@ public class Loop2 {
             System.out.println(sb2);
         }
 
-//        Assertions.shouldContainHttp("loop2.com");
+        Assertions.shouldContainHttp("loop2.com");
     }
 }

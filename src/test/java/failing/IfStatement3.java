@@ -1,10 +1,10 @@
-package intraproc;
+package failing;
 
 public class IfStatement3 {
 
     public static void main(String[] args) {
-        StringBuilder sb = new StringBuilder("http://");
-        sb.append("if3.com?");
+        StringBuilder sb = new StringBuilder("http://if3.com");
+//        sb.append("if3.com?");
         String query;
         if (args[1] == null) {
             query = "A,";
@@ -17,8 +17,8 @@ public class IfStatement3 {
         String url = sb.toString();
         System.out.println(url);
 
-        debug.Assertions.shouldContainHttp("if3.com?A,");
-        debug.Assertions.shouldContainHttp("if3.com?A,B");
-        debug.Assertions.shouldContainHttp("if3.com?B,B");
+        Assertions.shouldContainHttp("if3.com?A,");
+        Assertions.shouldContainHttp("if3.com?A,B");
+        Assertions.shouldContainHttp("if3.com?B,B");
     }
 }
