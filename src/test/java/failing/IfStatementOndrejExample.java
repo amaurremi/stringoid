@@ -1,6 +1,6 @@
 package failing;
 
-public class IfStatement4 {
+public class IfStatementOndrejExample {
 
     public static void main(String[] args) {
         StringBuilder a = new StringBuilder("http://a.com");
@@ -14,7 +14,7 @@ public class IfStatement4 {
         c.append("/c");
         a.append("/a");
 
-        debug.Assertions.shouldContainHttp("a.com/a");
-        debug.Assertions.shouldContainHttp("a.com/c/a");
+        Assertions.shouldContainHttp("a.com/a");
+        Assertions.shouldContainHttp("a.com/c/a");
     }
 }
