@@ -159,8 +159,8 @@ trait AbstractStringBuilderModule extends Nodes {
             createOperator(id, instr)
           case instr: SSAAbstractInvokeInstruction if hasStringReturnType(instr) =>
             createOperator(id, instr)
-//          case _ => // todo is this wrong? what if this phi depends on another phi?
-//            BitVectorIdentity.instance
+          case _ => // todo is this wrong? what if this phi depends on another phi?
+            BitVectorIdentity.instance
         }
       }
 

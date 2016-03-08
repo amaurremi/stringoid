@@ -368,28 +368,38 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
           val lhsAta = ataRefMapping(lhs.index)
 
-          def addRhsToLhs(r: AsboToAutomaton, l: AsboMap): Unit =
+          def addRhsToLhs(r: AsboToAutomaton, newMap: AsboMap, oldLhs: AsboMap): Unit =
             r.asboToAutomaton foreach {
-              case (asbo, auto1) =>
-                l get asbo match {
-                  case Some(auto2) if (auto1.ids intersect auto2.ids).nonEmpty =>
-                    l
-                  case Some(auto2)                                             =>
-                    l += asbo -> (auto1 | auto2)
-                  case None                                                    =>
-                    l += asbo -> auto1
+              case (asbo, auto) =>
+                oldLhs get asbo match {
+                  case Some(StringPartAutomaton(_, ids)) if (auto.ids intersect ids).isEmpty => // avoiding loops
+                    add(asbo, auto, newMap)
+                  case None                                                                  =>
+                    add(asbo, auto, newMap)
+                  case _                                                                     =>
+                    ()
                 }
             }
 
-          val newMap = mutable.Map.empty[ASBO, StringPartAutomaton]
+          def add(asbo: ASBO, auto1: StringPartAutomaton, l: AsboMap): Unit = {
+            l get asbo match {
+              case Some(auto2) =>
+                l += asbo -> (auto1 | auto2)
+              case None        =>
+                l += asbo -> auto1
+            }
+          }
+
+          val newMap    = mutable.Map.empty[ASBO, StringPartAutomaton]
+          val oldLhsMap = lhsAta.asboToAutomaton
           rhs foreach {
             rmapRef =>
-              addRhsToLhs(ataRefMapping(rmapRef.index), newMap)
+              addRhsToLhs(ataRefMapping(rmapRef.index), newMap, oldLhsMap)
           }
-          if (newMap == lhsAta.asboToAutomaton)
+          if (newMap.isEmpty || newMap == oldLhsMap)
             NOT_CHANGED
           else {
-            lhsAta.asboToAutomaton ++= newMap
+            oldLhsMap ++= newMap
             CHANGED
           }
         }
