@@ -1,4 +1,4 @@
-package failing;
+package debug;
 
 public class Loop {
 
@@ -11,7 +11,7 @@ public class Loop {
 
         System.out.println(sb.toString());
 
-        debug.Assertions.shouldContainHttp("loop.com/path");
-        debug.Assertions.shouldContainHttp("loop.com");
+        Assertions.shouldContainHttp("loop.com/path");
+        Assertions.shouldContainHttp("loop.com");
     }
 }
