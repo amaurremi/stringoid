@@ -47,7 +47,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
           case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                =>
             idToAsbo get getFirstSbAppendDef(instr) match {
               case Some(asbos) =>
-                new StringBuilderAppendOperator(asbos, getAppendArgument(instr), node)
+                new StringBuilderAppendOperator(asbos, getAppendArgument(instr), node, node)
               case None =>
                 // todo note that this means that we are appending to a StringBuilder for which we haven't added an ASBO to the idToAsbo map.
                 // todo I think this means that the StringBuilder has been passed as a parameter or is a field. We should handle this case too at some point.
@@ -57,7 +57,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
             idToAsbo get getSbConstructorDef(inv) match {
               case Some(asbos) =>
                 val appendArgument = getSbConstructorArgument(inv)
-                new StringBuilderAppendOperator(asbos, appendArgument, node)
+                new StringBuilderAppendOperator(asbos, appendArgument, node, node)
               case None =>
                 throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
             }

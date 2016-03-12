@@ -199,6 +199,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
       private[this] def getAppendAutomaton(
         node: Node,
         id: Identifier,
+        idNode: Node,
         rhsMap: AsboMap,
         processedAcc: Set[Identifier]
       ): (StringPartAutomaton, AsboMap) =
@@ -216,7 +217,9 @@ trait StringAppendModule extends AbstractStringBuilderModule {
               else
                 StringPartAutomaton.merge(automata)
               (newValNumAutomaton, mutable.Map.empty[ASBO, StringPartAutomaton])
-            case None =>
+            case None if rhsMap contains createAsbo(valNum(id), idNode) =>
+              (rhsMap(createAsbo(valNum(id), idNode)), mutable.Map.empty[ASBO, StringPartAutomaton])
+            case None        =>
               node.getDu getDef valNum(id) match {
                 case phi: SSAPhiInstruction =>
                   val uses = 0 until phi.getNumberOfUses map phi.getUse filter {
@@ -224,7 +227,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
                   }
                   val (automata, asboMaps) = (uses map {
                     u =>
-                      getAppendAutomaton(node, createIdentifier(u, node), rhsMap, processedAcc + id)
+                      getAppendAutomaton(node, createIdentifier(u, node), idNode, rhsMap, processedAcc + id)
                   }).unzip
                   val mergedAutomaton = StringPartAutomaton.merge(automata)
                   val mergedMap = (asboMaps reduceLeft {
@@ -237,8 +240,8 @@ trait StringAppendModule extends AbstractStringBuilderModule {
           }
         }
 
-      def getAppendAutomaton(node: Node, id: Identifier, rhsMap: AsboMap): (StringPartAutomaton, AsboMap) =
-        getAppendAutomaton(node, id, rhsMap, Set.empty[Identifier])
+      def getAppendAutomaton(node: Node, id: Identifier, idNode: Node, rhsMap: AsboMap): (StringPartAutomaton, AsboMap) =
+        getAppendAutomaton(node, id, idNode, rhsMap, Set.empty[Identifier])
 
 
       protected trait AbstractAppendOperator extends UnaryOperator[AtaReference] {
@@ -265,12 +268,13 @@ trait StringAppendModule extends AbstractStringBuilderModule {
       protected case class StringBuilderAppendOperator(
         asbos: Set[ASBO],
         appendId: Identifier,
+        idNode: Node,
         node: Node
       ) extends AbstractAppendOperator {
 
         override def createNewMap(rhsMap: AsboMap): AsboMap = {
           val newMap = mutable.Map.empty[ASBO, StringPartAutomaton] ++= rhsMap
-          val (appendAutomaton, toAppend) = getAppendAutomaton(node, appendId, rhsMap)
+          val (appendAutomaton, toAppend) = getAppendAutomaton(node, appendId, idNode, rhsMap)
           newMap ++= toAppend
           asbos foreach {
             asbo =>
@@ -305,7 +309,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
                   case (resultAutomaton, stringFormatArg) =>
                     stringFormatArg match {
                       case StringIdentifier(id) =>
-                        val (auto, toAppend) = getAppendAutomaton(node, id, newMap)
+                        val (auto, toAppend) = getAppendAutomaton(node, id, node, newMap)
                         newMap ++= toAppend
                         resultAutomaton +++ auto
                       case other =>

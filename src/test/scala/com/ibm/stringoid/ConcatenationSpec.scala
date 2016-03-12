@@ -16,27 +16,30 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
 
   describe("StringBuilder + String.format analysis") {
 
+    import AnalysisType._
+    import IrSource._
+
     it("reproduces debugging test") {
       val file = Paths.get("src/test/java/debug")
-      val analysisConfig = AnalysisConfig(irSource = IrSource.Cha, ignoreLibs = true, analysis = AnalysisType.Append, file = file, outputUrls = true)
+      val analysisConfig = AnalysisConfig(irSource = Cha, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
       run(analysisConfig)
     }
 
     it("reproduces failing tests") {
       val file = Paths.get("src/test/java/failing")
-      val analysisConfig = AnalysisConfig(irSource = IrSource.Cha, ignoreLibs = true, analysis = AnalysisType.Append, file = file, outputUrls = false)
+      val analysisConfig = AnalysisConfig(irSource = Cha, ignoreLibs = true, analysis = Append, file = file, outputUrls = false)
       run(analysisConfig)
     }
 
     it("computes URLs in CHA IR analysis") {
       val file = Paths.get("src/test/java/intraproc")
-      val analysisConfig = AnalysisConfig(irSource = IrSource.Cha, ignoreLibs = true, analysis = AnalysisType.Append, file = file, outputUrls = true)
+      val analysisConfig = AnalysisConfig(irSource = Cha, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
       run(analysisConfig)
     }
 
     it("computes URLs in inter-procedural analysis") {
       val file = Paths.get("src/test/java/interproc")
-      val analysisConfig = AnalysisConfig(irSource = IrSource.InterProc, ignoreLibs = true, analysis = AnalysisType.Append, file = file, outputUrls = true)
+      val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
       run(analysisConfig)
     }
 
