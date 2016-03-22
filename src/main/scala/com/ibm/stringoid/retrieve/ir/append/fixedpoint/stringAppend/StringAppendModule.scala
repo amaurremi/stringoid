@@ -374,15 +374,17 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
           def addRhsToLhs(r: AsboToAutomaton, newMap: AsboMap, oldLhs: AsboMap): Unit =
             r.asboToAutomaton foreach {
-              case (asbo, auto) =>
-                oldLhs get asbo match {
-                  case Some(StringPartAutomaton(_, ids)) if (auto.ids intersect ids).isEmpty => // avoiding loops
-                    add(asbo, auto, newMap)
-                  case None                                                                  =>
-                    add(asbo, auto, newMap)
-                  case _                                                                     =>
-                    ()
-                }
+              case (asbo, auto) => help(asbo, auto, newMap, oldLhs)
+            }
+
+          def help(asbo: ASBO, auto: StringPartAutomaton, newMap: AsboMap, oldLhs: AsboMap) =
+            oldLhs get asbo match {
+              case Some(StringPartAutomaton(_, ids)) if (auto.ids intersect ids).isEmpty => // avoiding loops
+                add(asbo, auto, newMap)
+              case None                                                                  =>
+                add(asbo, auto, newMap)
+              case _                                                                     =>
+                ()
             }
 
           def add(asbo: ASBO, auto1: StringPartAutomaton, l: AsboMap): Unit = {
