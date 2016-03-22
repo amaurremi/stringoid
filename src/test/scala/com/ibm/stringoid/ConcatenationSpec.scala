@@ -21,7 +21,7 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
 
     it("reproduces debugging test") {
       val file = Paths.get("src/test/java/debug")
-      val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
+      val analysisConfig = AnalysisConfig(irSource = Cha, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
       run(analysisConfig)
     }
 

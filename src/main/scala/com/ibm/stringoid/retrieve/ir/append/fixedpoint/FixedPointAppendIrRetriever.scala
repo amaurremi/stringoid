@@ -64,7 +64,7 @@ abstract class FixedPointAppendIrRetriever(
             val writeVal = instr.getVal
             val table    = ir.getSymbolTable
             if (table isConstant writeVal) {
-              val stringPart = StringPartAutomaton(StaticFieldPart(String.valueOf(table getConstantValue writeVal)))
+              val stringPart = StringPartAutomaton(node.getDu getDef writeVal, StaticFieldPart(String.valueOf(table getConstantValue writeVal)))
               val automaton =
                 if (oldMap2 contains field) oldMap2(field) | stringPart
                 else stringPart
