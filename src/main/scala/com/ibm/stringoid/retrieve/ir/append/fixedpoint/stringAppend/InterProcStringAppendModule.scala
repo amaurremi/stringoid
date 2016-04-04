@@ -122,7 +122,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
         }
 
         /* l = c()   ... c() { ... return result; } */
-        private[this] def addReturnResult(to: AsboMap, rhsMap: AsboMap) =
+        private[this] def addReturnResult(to: AsboMap) =
           for {
             target      <- targetNodes
             if Option(target.getIR).isDefined
@@ -134,16 +134,16 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             resultId     = createIdentifier(result, node)
             resultAsbo  <- idToAsbo getOrElse (resultId, Set(createAsbo(result, node)))
             lAsbo       <- returnAsbos
-            lAuto        = rhsMap getOrElse (lAsbo, StringPartAutomaton())
+            lAuto        = to getOrElse (lAsbo, StringPartAutomaton())
             resultAsboId = createIdentifier(resultAsbo.identifier.getValueNumber, CallGraphNode(resultAsbo.identifier.getNode))
             oldLhs       = to getOrElse (lAsbo, StringPartAutomaton()) // todo replace with createAutomaton
-            resultAuto   = rhsMap getOrElse (resultAsbo, createAutomaton(instruction, node, resultAsboId))
+            resultAuto   = to getOrElse (resultAsbo, createAutomaton(instruction, node, resultAsboId))
           } to += (lAsbo -> (oldLhs | lAuto | resultAuto))
 
         override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {
           val rhsMap = ataRefMapping(rhs.index).asboToAutomaton
           val newMap = createSubstitutionMap(rhsMap)
-          addReturnResult(newMap, rhsMap)
+          addReturnResult(newMap)
           val lhsMap: AsboMap = ataRefMapping(lhs.index).asboToAutomaton
 
           if (lhsMap == newMap)

@@ -9,8 +9,8 @@ public class StringReturn2 {
 
         System.out.println(sb);
 
-        Assertions.shouldContainHttp("string-param-and-return.com");
-        Assertions.shouldContainHttp("string-param-and-return.com/path");
+        debug.Assertions.shouldContainHttp("string-param-and-return.com");
+        debug.Assertions.shouldContainHttp("string-param-and-return.com/path");
     }
 
     static String getDomain() {
