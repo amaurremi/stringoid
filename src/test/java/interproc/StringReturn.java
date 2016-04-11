@@ -12,8 +12,13 @@ public class StringReturn {
         Assertions.shouldContainHttp("string-return.com");
         Assertions.shouldContainHttp("string-return.com/path");
     }
+    // 2 = getDomain
+    // 4 = new SB(2)
+    // 7 = 4.append 8
 
     static String getDomain() {
         return "http://string-return.com";
     }
+    // return 1
 }
+

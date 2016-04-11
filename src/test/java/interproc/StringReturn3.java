@@ -9,7 +9,7 @@ public class StringReturn3 {
 
         System.out.println(sb);
 
-        debug.Assertions.shouldContainHttp("string-return3.com");
+        Assertions.shouldContainHttp("string-return3.com");
     }
 
     static String identity(String s) {

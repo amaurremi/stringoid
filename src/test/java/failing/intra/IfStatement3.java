@@ -1,4 +1,4 @@
-package failing;
+package failing.intra;
 
 public class IfStatement3 {
 
@@ -17,8 +17,8 @@ public class IfStatement3 {
         String url = sb.toString();
         System.out.println(url);
 
-        Assertions.shouldContainHttp("if3.com?A,");
-        Assertions.shouldContainHttp("if3.com?A,B");
-        Assertions.shouldContainHttp("if3.com?B,B");
+        debug.Assertions.shouldContainHttp("if3.com?A,");
+        debug.Assertions.shouldContainHttp("if3.com?A,B");
+        debug.Assertions.shouldContainHttp("if3.com?B,B");
     }
 }

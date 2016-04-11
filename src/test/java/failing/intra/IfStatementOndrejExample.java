@@ -1,4 +1,4 @@
-package failing;
+package failing.intra;
 
 public class IfStatementOndrejExample {
 
@@ -14,7 +14,7 @@ public class IfStatementOndrejExample {
         c.append("/c");
         a.append("/a");
 
-        Assertions.shouldContainHttp("a.com/a");
-        Assertions.shouldContainHttp("a.com/c/a");
+        debug.Assertions.shouldContainHttp("a.com/a");
+        debug.Assertions.shouldContainHttp("a.com/c/a");
     }
 }

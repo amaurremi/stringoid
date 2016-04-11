@@ -1,4 +1,4 @@
-package failing;
+package failing.intra;
 
 public class AliasAnalysis {
     public static void main(String[] args) {

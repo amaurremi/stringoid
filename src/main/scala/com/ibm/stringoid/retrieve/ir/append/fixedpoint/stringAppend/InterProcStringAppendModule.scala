@@ -9,7 +9,7 @@ import com.ibm.wala.fixpoint.UnaryOperator
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.cfg.{BasicBlockInContext, ExplodedInterproceduralCFG}
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
-import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAInvokeInstruction, SSAReturnInstruction}
+import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInvokeInstruction, SSAReturnInstruction}
 import com.ibm.wala.types.FieldReference
 
 import scala.collection.JavaConversions._
@@ -76,31 +76,85 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
           case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)                 =>
             new StringFormatAppendOperator(inv, node)
           case inv: SSAAbstractInvokeInstruction                                        =>
-            val returnAsbos =
-              if (hasStringReturnType(inv))
-                idToAsbo getOrElse (getId(inv.getDef), Set(createAsbo(inv.getDef, node)))
-              else Set.empty[ASBO]
-            new ParamSubstitutionAndReturnOperator(
+            new ParamSubstitutionOperator(
               callGraph.getPossibleTargets(node.node, inv.getCallSite).toSet,
-              argumentAsbos(inv, node),
-              returnAsbos,
-              inv)
+              argumentAsbos(inv, node))
+          case ret: SSAReturnInstruction                                                =>
+            val lhsAsbos = for {
+              callerNode  <- getCallNodes(node)
+              callerInstr <- getCallInstructions(ret, callerNode, node)
+              if ret.returnsPrimitiveType || hasStringReturnType(callerInstr)  // todo test primitive & void
+              callDef      = callerInstr.getDef
+              callId       = createIdentifier(callDef, callerNode)
+              asbo        <- idToAsbo getOrElse (callId, Set(createAsbo(callDef, callerNode)))
+            } yield asbo
+            new ReturnOperator(lhsAsbos, ret, node)
           case _ =>
             IdentityOperator()
+        }
+      }
+
+      private[this] def getCallNodes(node: Node): Iterator[Node] =
+        callGraph getPredNodes node.node map CallGraphNode.apply
+
+      private[this] def getCallInstructions(ret: SSAReturnInstruction, callerNode: Node, calleeNode: Node): Iterator[SSAAbstractInvokeInstruction] = {
+        val node = callerNode.node
+        for {
+          callSiteRef <- node.iterateCallSites()
+          if callSiteRef.getDeclaredTarget == calleeNode.node.getMethod.getReference
+          callSite <- node.getIR getCalls callSiteRef
+        } yield callSite
+      }
+
+      /*
+       * @param assignAsbos    the ASBOs of the left-hand side of the call (the variable to which the result should be assigned);
+       *                       if the function does not return a String, this set should be empty
+       */
+      case class ReturnOperator(
+        lhsAsbos: Iterator[ASBO],
+        retInstr: SSAReturnInstruction,
+        retNode: Node
+      ) extends UnaryOperator[AtaReference] {
+
+        /* l = c()   ... c() { ... return result; } */
+        private[this] def addReturnResult(rhsMap: AsboMap): AsboMap = {
+          val newMap = mutable.Map.empty[ASBO, StringPartAutomaton] ++= rhsMap
+          val result = retInstr.getResult
+          if (result > 0) {
+            val resultId = createIdentifier(result, retNode)
+            for {
+              resultAsbo <- idToAsbo getOrElse(resultId, Set(createAsbo(result, retNode)))
+              lAsbo <- lhsAsbos
+              lAuto = rhsMap getOrElse(lAsbo, StringPartAutomaton())
+              resultAsboId = createIdentifier(resultAsbo.identifier.getValueNumber, CallGraphNode(resultAsbo.identifier.getNode))
+              oldLhs = rhsMap getOrElse(lAsbo, StringPartAutomaton()) // todo replace with createAutomaton
+              resultAuto = rhsMap getOrElse(resultAsbo, createAutomaton(retInstr, retNode, resultAsboId))
+            } newMap += (lAsbo -> (oldLhs | lAuto | resultAuto))
+          }
+          newMap
+        }
+
+        override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {
+          val rhsMap = ataRefMapping(rhs.index).asboToAutomaton
+          val newMap = addReturnResult(rhsMap)
+          val lhsMap: AsboMap = ataRefMapping(lhs.index).asboToAutomaton
+
+          if (lhsMap == newMap)
+            NOT_CHANGED
+          else {
+            lhsMap ++= newMap
+            CHANGED
+          }
         }
       }
 
       /**
         * @param targetNodes        nodes of the possible callee methods
         * @param substitutionAsbos  pairs (asbo, argNum) of String-argument indices (starting at 0) and their corresponding ASBOs
-        * @param returnAsbos        the ASBOs of the left-hand side of the call (the variable to which the result should be assigned);
-        *                           if the function does not return a String, this set should be empty
         */
-      case class ParamSubstitutionAndReturnOperator(
+      case class ParamSubstitutionOperator(
         targetNodes: Set[CGNode],
-        substitutionAsbos: Seq[(ASBO, Int)],
-        returnAsbos: Set[ASBO],
-        instruction: SSAInstruction
+        substitutionAsbos: Seq[(ASBO, Int)]
       ) extends UnaryOperator[AtaReference] {
 
         private[this] def createSubstitutionMap(rhsMap: AsboMap): AsboMap = {
@@ -121,29 +175,9 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
           newMap
         }
 
-        /* l = c()   ... c() { ... return result; } */
-        private[this] def addReturnResult(to: AsboMap) =
-          for {
-            target      <- targetNodes
-            if Option(target.getIR).isDefined
-            instr       <- target.getIR.iterateNormalInstructions() filter { _.isInstanceOf[SSAReturnInstruction] }
-            ret          = instr.asInstanceOf[SSAReturnInstruction]
-            result       = ret.getResult
-            if result > -1
-            node         = CallGraphNode(target)
-            resultId     = createIdentifier(result, node)
-            resultAsbo  <- idToAsbo getOrElse (resultId, Set(createAsbo(result, node)))
-            lAsbo       <- returnAsbos
-            lAuto        = to getOrElse (lAsbo, StringPartAutomaton())
-            resultAsboId = createIdentifier(resultAsbo.identifier.getValueNumber, CallGraphNode(resultAsbo.identifier.getNode))
-            oldLhs       = to getOrElse (lAsbo, StringPartAutomaton()) // todo replace with createAutomaton
-            resultAuto   = to getOrElse (resultAsbo, createAutomaton(instruction, node, resultAsboId))
-          } to += (lAsbo -> (oldLhs | lAuto | resultAuto))
-
         override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {
           val rhsMap = ataRefMapping(rhs.index).asboToAutomaton
           val newMap = createSubstitutionMap(rhsMap)
-          addReturnResult(newMap)
           val lhsMap: AsboMap = ataRefMapping(lhs.index).asboToAutomaton
 
           if (lhsMap == newMap)

@@ -2,6 +2,7 @@ package edu.illinois.wala.ipa.callgraph
 
 import com.ibm.wala.analysis.pointers.HeapGraph
 import com.ibm.wala.analysis.reflection.ReflectionContextInterpreter
+import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter
 import com.ibm.wala.ipa.callgraph.impl.{DefaultContextSelector, Util}
 import com.ibm.wala.ipa.callgraph.propagation.cfa.{DefaultSSAInterpreter, DelegatingSSAContextInterpreter, ZeroXInstanceKeys}
 import com.ibm.wala.ipa.callgraph.{AnalysisCache, CallGraph, ContextSelector}
@@ -18,7 +19,9 @@ trait AbstractCallGraphBuilder {
   implicit val implicitCha: IClassHierarchy
   
   // just helpers
-  lazy val defaultInterpreter = new DefaultSSAInterpreter(_options, _cache)
+  lazy val defaultInterpreter =
+    if (_options.isSourceAnalysis) new AstContextInsensitiveSSAContextInterpreter(_options, _cache)
+    else new DefaultSSAInterpreter(_options, _cache)
   lazy val reflectionInterpreter = new DelegatingSSAContextInterpreter(
     ReflectionContextInterpreter.createReflectionContextInterpreter(_cha, _options, _cache), defaultInterpreter)
   Util.addDefaultSelectors(_options, _cha)

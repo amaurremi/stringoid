@@ -1,4 +1,4 @@
-package failing;
+package interproc;
 
 public class Recursion {
 
@@ -9,7 +9,7 @@ public class Recursion {
 
         System.out.println(sb);
 
-        interproc.Assertions.shouldContainHttp("recursion.com");
+        Assertions.shouldContainHttp("recursion.com");
     }
 
     static String getDomain(int i) {

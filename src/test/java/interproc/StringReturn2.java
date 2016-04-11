@@ -1,4 +1,4 @@
-package debug;
+package interproc;
 
 public class StringReturn2 {
 
@@ -9,12 +9,12 @@ public class StringReturn2 {
 
         System.out.println(sb);
 
-        debug.Assertions.shouldContainHttp("string-param-and-return.com");
-        debug.Assertions.shouldContainHttp("string-param-and-return.com/path");
+        Assertions.shouldContainHttp("string-return-2.com");
+        Assertions.shouldContainHttp("string-return-2.com/path");
     }
 
     static String getDomain() {
-        StringBuilder sb = new StringBuilder("http://string-param-and-return.com");
+        StringBuilder sb = new StringBuilder("http://string-return-2.com");
         return sb.toString();
 //        return "http://string-param-and-return.com";
     }
