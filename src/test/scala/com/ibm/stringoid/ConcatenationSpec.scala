@@ -19,33 +19,38 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
     import AnalysisType._
     import IrSource._
 
-    /* debugging */
-    it("reproduces debugging test") {
-      val file = Paths.get("src/test/java/debug")
-      val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
-      run(analysisConfig)
+    it("runs a benchmark") {
+      val ret = retriever(AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = Paths.get("dynamic-data/apps/mobi.ifunny-2447.apk"), outputUrls = true))
+      println(ret.getResult)
     }
 
-    /* failing */
-    it("reproduces failing tests") {
-      val file = Paths.get("src/test/java/failing")
-      val analysisConfig = AnalysisConfig(irSource = Cha, ignoreLibs = true, analysis = Append, file = file, outputUrls = false)
-      run(analysisConfig)
-    }
+//    /* debugging */
+//    it("reproduces debugging test") {
+//      val file = Paths.get("src/test/java/debug")
+//      val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
+//      run(analysisConfig)
+//    }
 
-    /* INTRA procedural*/
-    it("computes URLs in CHA IR analysis") {
-      val file = Paths.get("src/test/java/intraproc")
-      val analysisConfig = AnalysisConfig(irSource = Cha, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
-      run(analysisConfig)
-    }
+//    /* failing */
+//    it("reproduces failing tests") {
+//      val file = Paths.get("src/test/java/failing")
+//      val analysisConfig = AnalysisConfig(irSource = Cha, ignoreLibs = true, analysis = Append, file = file, outputUrls = false)
+//      run(analysisConfig)
+//    }
 
-    /* INTER procedural */
-    it("computes URLs in inter-procedural analysis") {
-      val file = Paths.get("src/test/java/interproc")
-      val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
-      run(analysisConfig)
-    }
+//    /* INTRA procedural*/
+//    it("computes URLs in CHA IR analysis") {
+//      val file = Paths.get("src/test/java/intraproc")
+//      val analysisConfig = AnalysisConfig(irSource = Cha, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
+//      run(analysisConfig)
+//    }
+
+//    /* INTER procedural */
+//    it("computes URLs in inter-procedural analysis") {
+//      val file = Paths.get("src/test/java/interproc")
+//      val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
+//      run(analysisConfig)
+//    }
 
     def run(config: AnalysisConfig) = {
       val interProc = config.irSource == IrSource.InterProc
