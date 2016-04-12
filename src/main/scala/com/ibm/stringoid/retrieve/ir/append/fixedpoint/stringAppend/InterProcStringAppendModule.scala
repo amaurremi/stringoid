@@ -20,7 +20,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
   /**
     * assumes `node.getIr` is not `null`
     */
-  def stringAppends(node: Node, fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
+  def stringAppends(fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
     val solver = new InterProcStringAppendSolver(identifierToAsbo, fieldToAutomaton)
     stringAppendsForSolver(solver)
   }

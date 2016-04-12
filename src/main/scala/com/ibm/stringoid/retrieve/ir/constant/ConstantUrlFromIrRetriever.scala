@@ -14,7 +14,7 @@ import com.ibm.stringoid.util.TimeResult
 final class ConstantUrlFromIrRetriever(override val config: AnalysisConfig) extends ChaIntraProcIrNodes {
 
   override def getUrlsWithSources: UrlsWithSources = {
-    val TimeResult(nodes, walaTime) = TimeResult(getEntryNodes)
+    val TimeResult(nodes, walaTime) = TimeResult(getAllNodes)
     val urlMethodPairs: Iterator[(Url, Method)] = nodes flatMap {
       node =>
         getConstantUrlStrings(node.getIr) map {

@@ -27,8 +27,6 @@ trait IrUrlRetriever extends UrlRetriever with Nodes {
 
   protected implicit def config: AnalysisConfig
 
-  def getEntryNodes: Iterator[Node]
-
   def getAllNodes: Iterator[Node]
 
   protected lazy val isApk = config.file.toString.toLowerCase endsWith ".apk"

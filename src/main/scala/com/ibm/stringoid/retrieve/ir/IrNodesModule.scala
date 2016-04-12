@@ -39,12 +39,6 @@ object IrNodesModule {
 
   trait CgIntraProcIrNodes extends IntraProcIrNodes with CgNodeRetriever {
 
-    override def getEntryNodes: Iterator[IrNode] =
-      callGraph.getEntrypointNodes.iterator() map {
-        node =>
-          IrNode(node.getIR)
-      }
-
     override def getAllNodes: Iterator[IrNode] =
       callGraph.iterator() map {
         node =>
@@ -67,7 +61,5 @@ object IrNodesModule {
         ir <- getIr(cache, m, processed)
       } yield IrNode(ir)
     }
-
-    override def getEntryNodes = getAllNodes
   }
 }

@@ -7,7 +7,6 @@ import com.ibm.stringoid.retrieve.UrlCheck.isUrlPrefix
 import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.StringAppendModule
 import com.ibm.stringoid.retrieve.ir.{IrUrlRetriever, ValueNumber}
-import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ssa._
 import com.ibm.wala.types.FieldReference
 import com.ibm.wala.util.debug.UnimplementedError
@@ -26,28 +25,7 @@ abstract class FixedPointAppendIrRetriever(
     else
       getAutomataWithSources.aws.toList.asJson
 
-  protected final def getAutomataWithSources: AutomataWithSources = {
-    val TimeResult(nodes, walaTime) = TimeResult(getEntryNodes)
-    val automataWithSources: Iterator[(Json, Method)] =
-      nodes collect {
-        case node if hasUrls(node) =>
-          getAutomaton(node)
-      }
-    AutomataWithSources(automataWithSources, walaTime)
-  }
-
-  /**
-    * assumes `node.getIr` is not `null`
-    */
-  def getAutomaton(node: Node): (Json, Method) = {
-    val automaton = stringAppends(node, fieldToAutomaton).automaton.toDFA.toJson {
-      sp: StringPart =>
-        getStringPartToUrlPart(node, sp).asJson.toString()
-    }
-    (automaton.toString.parseOption.get, node.getIr.getMethod.toString)
-  }
-
-  def getStringPartToUrlPart(node: Node, sp: StringPart): UrlPart
+  protected def getAutomataWithSources: AutomataWithSources
 
   def hasUrls(node: Node): Boolean
 
@@ -55,7 +33,7 @@ abstract class FixedPointAppendIrRetriever(
     * collect all assignments to static fields into map from field to sum-automaton
     */
   lazy val fieldToAutomaton: Map[FieldReference, StringPartAutomaton] =
-    getEntryNodes.foldLeft(Map.empty[FieldReference, StringPartAutomaton]) {
+    getAllNodes.foldLeft(Map.empty[FieldReference, StringPartAutomaton]) {
       case (oldMap, node) if hasIr(node) =>
         val ir = node.getIr
         ir.iterateNormalInstructions().foldLeft(oldMap) {

@@ -1,5 +1,7 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
+import argonaut.Argonaut._
+import argonaut._
 import com.ibm.stringoid._
 import com.ibm.stringoid.retrieve.UrlCheck._
 import com.ibm.stringoid.retrieve.UrlPartDefs._
@@ -17,31 +19,39 @@ object FixedPointAppendIrRetrieverImplementations {
     with InterProcIrNodes
     with InterProcStringAppendModule {
 
-    override def getEntryNodes: Iterator[CallGraphNode] =
-      callGraph.getEntrypointNodes.iterator() map CallGraphNode.apply
-
     override def getAllNodes: Iterator[CallGraphNode] =
       callGraph.iterator() map CallGraphNode.apply
 
     override def hasUrls(node: CallGraphNode): Boolean = hasIr(node)
 
     override def getUrlsWithSources: UrlsWithSources = {
-      val TimeResult(nodes, walaTime) = TimeResult(getEntryNodes)
       val urlsWithSources: Iterator[(Url, Method)] =
-        for {
-          node    <- nodes
-          urlPart <- getConcatUrls(node)
-        } yield (urlPart, node.getIr.getMethod.toString)
+        getConcatUrls map  { (_, "interproc") }
       val urlWithSourcesMap = urlsWithSources.foldLeft(Map.empty[Url, Set[Method]]) {
         case (prevMap, (url, method)) =>
           val prevMethods = prevMap getOrElse(url, Set.empty[Method])
           prevMap updated(url, prevMethods + method)
       }
-      UrlsWithSources(urlWithSourcesMap, walaTime)
+      UrlsWithSources(urlWithSourcesMap, -1) // todo cg time
     }
 
-    private[this] def getConcatUrls(node: Node): Iterator[Url] = {
-      val appendAutomaton = stringAppends(node, fieldToAutomaton)
+    override protected def getAutomataWithSources: AutomataWithSources = {
+      AutomataWithSources(Iterator(getAutomaton), -1)
+    }
+
+    /**
+      * assumes `node.getIr` is not `null`
+      */
+    def getAutomaton: (Json, Method) = {
+      val automaton = stringAppends(fieldToAutomaton).automaton.toDFA.toJson {
+        sp: StringPart =>
+          stringPartToUrlPart(sp).asJson.toString()
+      }
+      (automaton.toString.parseOption.get, "interproc")
+    }
+
+    private[this] def getConcatUrls: Iterator[Url] = {
+      val appendAutomaton = stringAppends(fieldToAutomaton)
       // todo wait for automaton-predicate function
       val urlAutomaton = appendAutomaton.automaton filterHeads {
         case StringIdentifier(id) =>
@@ -74,8 +84,6 @@ object FixedPointAppendIrRetrieverImplementations {
         case StringFormatPart(s)         =>
           UrlString(s)
       }
-
-    def getStringPartToUrlPart(node: Node, sp: StringPart) = stringPartToUrlPart(sp)
   }
 
   abstract class IntraProcFixedPointAppendIrRetriever(config: AnalysisConfig)
@@ -84,7 +92,7 @@ object FixedPointAppendIrRetrieverImplementations {
     with IntraProcStringAppendModule {
 
     override def getUrlsWithSources: UrlsWithSources = {
-      val TimeResult(nodes, walaTime) = TimeResult(getEntryNodes)
+      val TimeResult(nodes, walaTime) = TimeResult(getAllNodes)
       val urlsWithSources: Iterator[(Url, Method)] =
         for {
           node <- nodes
@@ -97,6 +105,27 @@ object FixedPointAppendIrRetrieverImplementations {
           prevMap updated(url, prevMethods + method)
       }
       UrlsWithSources(urlWithSourcesMap, walaTime)
+    }
+
+    override protected final def getAutomataWithSources: AutomataWithSources = {
+      val TimeResult(nodes, walaTime) = TimeResult(getAllNodes)
+      val automataWithSources: Iterator[(Json, Method)] =
+        nodes collect {
+          case node if hasUrls(node) =>
+            getAutomaton(node)
+        }
+      AutomataWithSources(automataWithSources, walaTime)
+    }
+
+    /**
+      * assumes `node.getIr` is not `null`
+      */
+    def getAutomaton(node: Node): (Json, Method) = {
+      val automaton = stringAppends(node, fieldToAutomaton).automaton.toDFA.toJson {
+        sp: StringPart =>
+          getStringPartToUrlPart(node, sp).asJson.toString()
+      }
+      (automaton.toString.parseOption.get, node.getIr.getMethod.toString)
     }
 
     private[this] def getConcatUrls(node: Node): Iterable[(Url, Method)] = {

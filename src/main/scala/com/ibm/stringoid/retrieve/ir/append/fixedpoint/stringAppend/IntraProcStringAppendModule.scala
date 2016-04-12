@@ -14,7 +14,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
   /**
     * Get the string concatenation results.
     */
-  override def stringAppends(node: Node, fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
+  def stringAppends(node: Node, fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
     val idToAsbo: Map[ValueNumber, Set[ASBO]] = idToAsboForNode(node)
     val solver: IntraProcStringAppendSolver = getAppendSolver(node, idToAsbo, fieldToAutomaton)
     stringAppendsForSolver(solver)

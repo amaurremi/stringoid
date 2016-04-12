@@ -45,11 +45,6 @@ trait StringAppendModule extends AbstractStringBuilderModule {
       automata.foldLeft(apply()) { _ | _ }
   }
 
-  protected def stringAppends(
-   node: Node,
-   fieldToAutomaton: Map[FieldReference, StringPartAutomaton]
-  ): StringPartAutomaton
-
   def stringAppendsForSolver(solver: StringAppendFixedPointSolver): StringPartAutomaton = {
     val result  = solver.result
     val mapping = solver.ataRefMapping
