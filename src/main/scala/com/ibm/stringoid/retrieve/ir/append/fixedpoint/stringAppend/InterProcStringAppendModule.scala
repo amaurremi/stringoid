@@ -13,7 +13,7 @@ import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInvokeInstruction, SSA
 import com.ibm.wala.types.FieldReference
 
 import scala.collection.JavaConversions._
-import scala.collection.mutable
+import scala.collection.breakOut
 
 trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOModule {
 
@@ -39,7 +39,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
       * At the beginning [[ataRefMapping]] gets assigned this function, but we need to remember its
       * value to later manually add constants to the result.
       */
-    override lazy val initialMapping: ImmutableAsboMap =
+    override lazy val initialMapping: AsboMap =
       callGraph.foldLeft(Map.empty[ASBO, StringPartAutomaton]) {
         case (oldMap, node) if Option(node.getIR).isDefined =>
           oldMap ++ initialAtaForNode(CallGraphNode(node))
@@ -118,31 +118,29 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
 
         /* l = c()   ... c() { ... return result; } */
         private[this] def addReturnResult(rhsMap: AsboMap): AsboMap = {
-          val newMap = mutable.Map.empty[ASBO, StringPartAutomaton] ++= rhsMap
           val result = retInstr.getResult
           if (result > 0) {
             val resultId = createIdentifier(result, retNode)
-            for {
+            val newMap = (for {
               resultAsbo <- idToAsbo getOrElse(resultId, Set(createAsbo(result, retNode)))
               lAsbo <- lhsAsbos
               lAuto = rhsMap getOrElse(lAsbo, StringPartAutomaton())
               resultAsboId = createIdentifier(resultAsbo.identifier.vn, CallGraphNode(resultAsbo.identifier.node))
               oldLhs = rhsMap getOrElse(lAsbo, StringPartAutomaton()) // todo replace with createAutomaton
               resultAuto = rhsMap getOrElse(resultAsbo, createAutomaton(retInstr, retNode, resultAsboId))
-            } newMap += (lAsbo -> (oldLhs | lAuto | resultAuto))
-          }
-          newMap
+            } yield lAsbo -> (oldLhs | lAuto | resultAuto))(breakOut)
+            rhsMap ++ newMap
+          } else rhsMap
         }
 
         override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {
           val rhsMap = ataRefMapping(rhs.index).asboToAutomaton
           val newMap = addReturnResult(rhsMap)
-          val lhsMap: AsboMap = ataRefMapping(lhs.index).asboToAutomaton
 
-          if (lhsMap == newMap)
+          if (ataRefMapping(lhs.index).asboToAutomaton == newMap)
             NOT_CHANGED
           else {
-            lhsMap ++= newMap
+            updateLhs(lhs, newMap)
             CHANGED
           }
         }
@@ -158,32 +156,26 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
       ) extends UnaryOperator[AtaReference] {
 
         private[this] def createSubstitutionMap(rhsMap: AsboMap): AsboMap = {
-          val newMap = mutable.Map.empty[ASBO, StringPartAutomaton] ++= rhsMap
-          targetNodes foreach {
-             node =>
-               val cgNode = CallGraphNode(node)
-               substitutionAsbos foreach {
-                 case (asbo, paramIndex) =>
-                   val paramId = createIdentifier(paramIndex + 1, cgNode)
-                   for {
-                     paramAsbo    <- idToAsbo getOrElse (paramId, Set(ASBO(paramId)))
-                     oldAutomaton  = rhsMap getOrElse (paramAsbo, StringPartAutomaton())
-                     automaton     = rhsMap getOrElse (asbo, StringPartAutomaton())
-                   } newMap += (paramAsbo -> (oldAutomaton | automaton))
-               }
-          }
-          newMap
+          val newPairs: AsboMap = (for {
+            node <- targetNodes
+            cgNode = CallGraphNode(node)
+            (asbo, paramIndex) <- substitutionAsbos
+            paramId = createIdentifier(paramIndex + 1, cgNode)
+            paramAsbo    <- idToAsbo getOrElse (paramId, Set(ASBO(paramId)))
+            oldAutomaton  = rhsMap getOrElse (paramAsbo, StringPartAutomaton())
+            automaton     = rhsMap getOrElse (asbo, StringPartAutomaton())
+          } yield paramAsbo -> (oldAutomaton | automaton))(breakOut)
+          rhsMap ++ newPairs
         }
 
         override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {
           val rhsMap = ataRefMapping(rhs.index).asboToAutomaton
           val newMap = createSubstitutionMap(rhsMap)
-          val lhsMap: AsboMap = ataRefMapping(lhs.index).asboToAutomaton
 
-          if (lhsMap == newMap)
+          if (ataRefMapping(lhs.index).asboToAutomaton == newMap)
             NOT_CHANGED
           else {
-            lhsMap ++= newMap
+            updateLhs(lhs, newMap)
             CHANGED
           }
         }
