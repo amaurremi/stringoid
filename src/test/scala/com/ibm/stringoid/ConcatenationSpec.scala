@@ -19,10 +19,10 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
     import AnalysisType._
     import IrSource._
 
-    it("runs a benchmark") {
-      val ret = retriever(AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = Paths.get("dynamic-data/apps/mobi.ifunny-2447.apk"), outputUrls = true))
-      println(ret.getResult)
-    }
+//    it("runs a benchmark") {
+//      val ret = retriever(AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = Paths.get("dynamic-data/apps/mobi.ifunny-2447.apk"), outputUrls = true))
+//      println(ret.getResult)
+//    }
 
 //    /* debugging */
 //    it("reproduces debugging test") {

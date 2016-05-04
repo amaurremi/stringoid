@@ -154,7 +154,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
         override def makeNodeVariable(bb: BB, in: Boolean): AtaReference = {
           val nextIndex = ataRefMapping.size
-          ataRefMapping += AsboToAutomaton(mutable.Map(initialMapping.toSeq: _*), Some(bb))
+          ataRefMapping += AsboToAutomaton(mutable.Map(initialMapping.toSeq: _*), Some(bb)) // todo this might be inefficient
           if (in)
             AtaRefIn(nextIndex)
           else
