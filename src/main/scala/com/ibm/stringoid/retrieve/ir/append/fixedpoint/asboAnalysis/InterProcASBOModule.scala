@@ -2,7 +2,6 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis
 
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.CgNodes
 import com.ibm.wala.ipa.callgraph.CallGraph
-import com.ibm.wala.ipa.callgraph.propagation.LocalPointerKey
 import com.ibm.wala.ssa.SSAInstruction
 
 import scala.collection.JavaConversions._
@@ -31,7 +30,7 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
     numbering: AsboMapping
   ) extends AsboFixedPointSolver(node, numbering) {
 
-    override def getDef(id: LocalPointerKey): SSAInstruction =
-      CallGraphNode(id.getNode).getDu getDef id.getValueNumber
+    override def getDef(id: CgIdentifier): SSAInstruction =
+      CallGraphNode(id.node).getDu getDef id.vn
   }
 }

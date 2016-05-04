@@ -3,7 +3,6 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope
 import com.ibm.wala.ipa.callgraph.CGNode
-import com.ibm.wala.ipa.callgraph.propagation.LocalPointerKey
 import com.ibm.wala.ssa.{DefUse, IR}
 
 trait Nodes {
@@ -65,11 +64,16 @@ trait IrNodes extends Nodes {
 
 trait CgNodes extends Nodes {
 
-  override type Identifier = LocalPointerKey
+  override type Identifier = CgIdentifier
 
-  override def valNum(id: Identifier): ValueNumber = id.getValueNumber
+  case class CgIdentifier(node: CGNode, vn: ValueNumber) {
+
+    override def hashCode() = node.getGraphNodeId * 23 + vn
+  }
+
+  override def valNum(id: Identifier): ValueNumber = id.vn
 
   override type Node = CallGraphNode
 
-  final override def createIdentifier(vn: ValueNumber, node: CallGraphNode) = new LocalPointerKey(node.node, vn)
+  final override def createIdentifier(vn: ValueNumber, node: CallGraphNode) = CgIdentifier(node.node, vn)
 }

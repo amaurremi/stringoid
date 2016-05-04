@@ -55,8 +55,8 @@ object FixedPointAppendIrRetrieverImplementations {
       // todo wait for automaton-predicate function
       val urlAutomaton = appendAutomaton.automaton filterHeads {
         case StringIdentifier(id) =>
-          val table = id.getNode.getIR.getSymbolTable
-          val vn    = id.getValueNumber
+          val table = id.node.getIR.getSymbolTable
+          val vn    = id.vn
           table.isStringConstant(vn) && isUrlPrefix(table getStringValue vn)
         case StaticFieldPart(string) =>
           isUrlPrefix(string)
@@ -74,7 +74,7 @@ object FixedPointAppendIrRetrieverImplementations {
     protected def stringPartToUrlPart(string: StringPart): UrlPart =
       string match {
         case StringIdentifier(id)        =>
-          idToStringPart(CallGraphNode(id.getNode), id.getValueNumber)
+          idToStringPart(CallGraphNode(id.node), id.vn)
         case StaticFieldPart(str)     =>
           UrlString(str)
         case StringCycle                 =>

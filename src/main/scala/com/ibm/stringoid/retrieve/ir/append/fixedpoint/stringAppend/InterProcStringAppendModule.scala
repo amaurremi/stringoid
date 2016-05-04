@@ -59,7 +59,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             idToAsbo get getId(getFirstSbAppendDef(instr)) match {
               case Some(asbos) =>
                 val id = getId(getAppendArgument(instr))
-                new StringBuilderAppendOperator(asbos, id, CallGraphNode(id.getNode), node, instr)
+                new StringBuilderAppendOperator(asbos, id, CallGraphNode(id.node), node, instr)
               case None        =>
                 // todo note that this means that we are appending to a StringBuilder for which we haven't added an ASBO to the idToAsbo map.
                 // todo I think this means that the StringBuilder has been passed as a parameter or is a field. We should handle this case too at some point.
@@ -69,7 +69,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             idToAsbo get getId(getSbConstructorDef(inv)) match {
               case Some(asbos) =>
                 val appendArgument = getId(getSbConstructorArgument(inv))
-                new StringBuilderAppendOperator(asbos, appendArgument, CallGraphNode(appendArgument.getNode), node, inv)
+                new StringBuilderAppendOperator(asbos, appendArgument, CallGraphNode(appendArgument.node), node, inv)
               case None        =>
                 throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
             }
@@ -126,7 +126,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
               resultAsbo <- idToAsbo getOrElse(resultId, Set(createAsbo(result, retNode)))
               lAsbo <- lhsAsbos
               lAuto = rhsMap getOrElse(lAsbo, StringPartAutomaton())
-              resultAsboId = createIdentifier(resultAsbo.identifier.getValueNumber, CallGraphNode(resultAsbo.identifier.getNode))
+              resultAsboId = createIdentifier(resultAsbo.identifier.vn, CallGraphNode(resultAsbo.identifier.node))
               oldLhs = rhsMap getOrElse(lAsbo, StringPartAutomaton()) // todo replace with createAutomaton
               resultAuto = rhsMap getOrElse(resultAsbo, createAutomaton(retInstr, retNode, resultAsboId))
             } newMap += (lAsbo -> (oldLhs | lAuto | resultAuto))
