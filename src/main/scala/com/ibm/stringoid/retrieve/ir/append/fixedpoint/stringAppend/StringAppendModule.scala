@@ -361,18 +361,16 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
         override def evaluate(lhs: AtaReference, rhs: Array[AtaReference]): Byte = {
 
-          val lhsAta = ataRefMapping(lhs.index)
-
-          def addRhsToLhs(r: AsboToAutomaton, newMap: AsboMap, oldLhs: AsboMap): AsboMap =
-            r.asboToAutomaton.foldLeft(newMap) {
+          def addRhsToLhs(rhsMap: AsboMap, newMap: AsboMap, oldLhs: AsboMap): AsboMap =
+            rhsMap.foldLeft(newMap) {
               case (m, (asbo, auto)) =>
                 oldLhs get asbo match {
                   case Some(StringPartAutomaton(_, instructions)) if (auto.instructions -- instructions).nonEmpty => // avoiding loops
-                    add(asbo, auto, newMap)
+                    add(asbo, auto, m)
                   case None                                                                  =>
-                    add(asbo, auto, newMap)
+                    add(asbo, auto, m)
                   case _                                                                     =>
-                    newMap
+                    m
                 }
             }
 
@@ -385,11 +383,13 @@ trait StringAppendModule extends AbstractStringBuilderModule {
             }
           }
 
+          val lhsAta = ataRefMapping(lhs.index)
           val oldLhsMap = lhsAta.asboToAutomaton
           val newMap = rhs.foldLeft(Map.empty[ASBO, StringPartAutomaton]) {
             case (m, rmapRef) =>
-              addRhsToLhs(ataRefMapping(rmapRef.index), m, oldLhsMap)
+              addRhsToLhs(ataRefMapping(rmapRef.index).asboToAutomaton, m, oldLhsMap)
           }
+
           if (newMap.isEmpty || newMap == oldLhsMap)
             NOT_CHANGED
           else {
