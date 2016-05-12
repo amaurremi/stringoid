@@ -43,7 +43,7 @@ object Main extends StringoidAnalysis {
    * Write the output of the URL retrieval to specified file
    */
   def write(result: AnalysisResult, apkPath: Path, outDir: Path, spaces: Boolean = true): Unit = {
-    val logName = "%s_%s.json".format(apkPath.getFileName.toString, result.config.analysis)
+    val logName = "%s_%s_%s.json".format(apkPath.getFileName.toString, result.config.analysis, result.config.irSource)
     Files.createDirectories(outDir)
     val logPath = Paths.get(outDir.toString, logName)
     val json = if (spaces) result.asJson.spaces2 else result.asJson.nospaces
