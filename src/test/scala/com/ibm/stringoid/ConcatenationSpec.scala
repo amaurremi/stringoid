@@ -15,10 +15,8 @@ import scala.collection.{Set, breakOut}
 class ConcatenationSpec extends FunSpec with StringoidAnalysis {
 
   describe("Concatenations") {
-
     import AnalysisType._
     import IrSource._
-
 //    it("runs a benchmark") {
 //      val ret = retriever(AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = Paths.get("dynamic-data/apps/mobi.ifunny-2447.apk"), outputUrls = true))
 //      println(ret.getResult)

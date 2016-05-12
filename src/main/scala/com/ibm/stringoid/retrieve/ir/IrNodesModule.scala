@@ -22,6 +22,7 @@ object IrNodesModule {
     lazy val callGraph: CallGraph = {
       val conf  = if (isApk) configWithApk(config.file) else withMainEntryPoint(configWithSrc(config.file))
       val graph = FlexibleCallGraphBuilder()(conf).cg
+      println(System.nanoTime() + ": call graph created")
       if (config.ignoreLibs)
         PartialCallGraph.make(graph, graph.getEntrypointNodes, graph filterNot {
           node =>

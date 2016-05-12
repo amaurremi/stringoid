@@ -5,9 +5,9 @@ import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAPhiIns
 
 object StringConcatUtil {
 
-  private val SB_CONSTRUCTOR_PATTERNS = List("java/lang/StringBuilder, <init>(", "java/lang/StringBuffer, <init>(")
-  private val SB_APPEND_PATTERNS = List("java/lang/StringBuilder, append(", "java/lang/StringBuffer, append(")
-  private val SB_TOSTRING_PATTERNS = List("java/lang/StringBuilder, toString()Ljava/lang/String;", "java/lang/StringBuffer, toString()Ljava/lang/String;")
+  private val SB_CONSTRUCTOR_PATTERNS = Set("java/lang/StringBuilder, <init>(", "java/lang/StringBuffer, <init>(")
+  private val SB_APPEND_PATTERNS = Set("java/lang/StringBuilder, append(", "java/lang/StringBuffer, append(")
+  private val SB_TOSTRING_PATTERNS = Set("java/lang/StringBuilder, toString()Ljava/lang/String;", "java/lang/StringBuffer, toString()Ljava/lang/String;")
   private val STRING_FORMAT_PATTERN = "java/lang/String, format("
 
   val INVOKE_INSTR_MSG = "String concatenation SSA conversion handles only invoke and phi instructions"
@@ -29,7 +29,7 @@ object StringConcatUtil {
     hasPattern(instr, SB_TOSTRING_PATTERNS)
 
   def isStringFormat(instr: SSAAbstractInvokeInstruction) =
-    hasPattern(instr, List(STRING_FORMAT_PATTERN))
+    hasPattern(instr, Set(STRING_FORMAT_PATTERN))
 
   /**
    * Does this instruction correspond to a StringBuilder.append() that takes exactly one argument?
@@ -39,7 +39,7 @@ object StringConcatUtil {
     instr.getNumberOfParameters == 2 && // one for 'this', one for argument
       hasPattern(instr, SB_APPEND_PATTERNS)
 
-  private[this] def hasPattern(instr: SSAAbstractInvokeInstruction, substrings: List[String]): Boolean =
+  private[this] def hasPattern(instr: SSAAbstractInvokeInstruction, substrings: Set[String]): Boolean =
     substrings exists {
       instr.toString() contains _
     }
@@ -91,7 +91,7 @@ object StringConcatUtil {
    */
   def isSbConstructorOrFormatInDefUse(instr: SSAInstruction): Boolean =
     Option(instr).isDefined && (
-      List("Ljava/lang/String, format(",
+      Set("Ljava/lang/String, format(",
         "new <Application,Ljava/lang/StringBuilder>",
         "new <Application,Ljava/lang/StringBuffer>",
         "new <Primordial,Ljava/lang/StringBuilder>",

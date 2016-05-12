@@ -42,7 +42,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
       StringPartAutomaton(Automaton.empty[StringPart], Set.empty[SSAInstruction])
 
     def merge(automata: Iterable[StringPartAutomaton]) =
-      automata.foldLeft(apply()) { _ | _ }
+      automata.reduceLeft { _ | _ }
   }
 
   def stringAppendsForSolver(solver: StringAppendFixedPointSolver): StringPartAutomaton = {
@@ -79,7 +79,10 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
         override def getFlowGraph = cfg
 
-        override def getTransferFunctionProvider = transferFunctions
+        override def getTransferFunctionProvider = {
+          println(System.nanoTime + ": requested transfer functions")
+          transferFunctions
+        }
       }
 
       val solver = getSolver(framework)
@@ -361,39 +364,39 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
         override def evaluate(lhs: AtaReference, rhs: Array[AtaReference]): Byte = {
 
-          def addRhsToLhs(rhsMap: AsboMap, newMap: AsboMap, oldLhs: AsboMap): AsboMap =
-            rhsMap.foldLeft(newMap) {
-              case (m, (asbo, auto)) =>
-                oldLhs get asbo match {
-                  case Some(StringPartAutomaton(_, instructions)) if (auto.instructions -- instructions).nonEmpty => // avoiding loops
-                    add(asbo, auto, m)
-                  case None                                                                  =>
-                    add(asbo, auto, m)
-                  case _                                                                     =>
-                    m
-                }
-            }
-
-          def add(asbo: ASBO, auto1: StringPartAutomaton, l: AsboMap): AsboMap = {
+          def add(asbo: ASBO, auto1: StringPartAutomaton, l: AsboMap): StringPartAutomaton =
             l get asbo match {
               case Some(auto2) =>
-                l + (asbo -> (auto1 | auto2))
+                auto1 | auto2
               case None        =>
-                l + (asbo -> auto1)
+                auto1
             }
-          }
 
           val lhsAta = ataRefMapping(lhs.index)
           val oldLhsMap = lhsAta.asboToAutomaton
-          val newMap = rhs.foldLeft(Map.empty[ASBO, StringPartAutomaton]) {
-            case (m, rmapRef) =>
-              addRhsToLhs(ataRefMapping(rmapRef.index).asboToAutomaton, m, oldLhsMap)
+          var newMap = oldLhsMap
+          for {
+            rmapRef      <- rhs
+            rmap          = ataRefMapping(rmapRef.index).asboToAutomaton
+            (asbo, rAuto) <- rmap
+            if !(newMap contains asbo) || !(newMap(asbo) eq rAuto)
+          } {
+            oldLhsMap get asbo match {
+              case Some(StringPartAutomaton(_, instructions)) if (rAuto.instructions -- instructions).nonEmpty => // avoiding loops
+                val automaton = add(asbo, rAuto, newMap)
+                newMap = newMap.updated(asbo, automaton)
+              case None                                                                  =>
+                val automaton = add(asbo, rAuto, newMap)
+                newMap = newMap.updated(asbo, add(asbo, rAuto, newMap))
+              case _                                                                     =>
+                ()
+            }
           }
 
           if (newMap.isEmpty || newMap == oldLhsMap)
             NOT_CHANGED
           else {
-            lhsAta.asboToAutomaton = oldLhsMap ++ newMap
+            lhsAta.asboToAutomaton = newMap
             CHANGED
           }
         }

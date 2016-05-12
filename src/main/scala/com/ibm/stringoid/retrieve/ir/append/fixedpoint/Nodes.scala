@@ -11,7 +11,9 @@ trait Nodes {
 
   def valNum(id: Identifier): ValueNumber
 
-  case class ASBO(identifier: Identifier)
+  case class ASBO(identifier: Identifier) {
+    override val hashCode = identifier.hashCode
+  }
 
   type Node <: NodeTrait
 
@@ -68,7 +70,7 @@ trait CgNodes extends Nodes {
 
   case class CgIdentifier(node: CGNode, vn: ValueNumber) {
 
-    override def hashCode() = node.getGraphNodeId * 23 + vn
+    override val hashCode = node.getGraphNodeId * 23 + vn
   }
 
   override def valNum(id: Identifier): ValueNumber = id.vn

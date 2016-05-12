@@ -143,10 +143,12 @@ object FixedPointAppendIrRetrieverImplementations {
         stringPartToUrlPart(node, _)
       })(breakOut)
 
-    override def hasUrls(node: Node): Boolean =
-      1 to node.getIr.getSymbolTable.getMaxValueNumber exists {
+    override def hasUrls(node: Node): Boolean = {
+      val ir = node.getIr
+      Option(ir).isDefined && (1 to ir.getSymbolTable.getMaxValueNumber exists {
         urlPrefixes(_, node).nonEmpty
-      }
+      })
+    }
 
     protected def stringPartToUrlPart(node: Node, string: StringPart): UrlPart =
       string match {

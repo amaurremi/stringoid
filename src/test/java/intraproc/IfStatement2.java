@@ -17,3 +17,10 @@ public class IfStatement2 {
         Assertions.shouldContainHttp("if2.com/key=val");
     }
 }
+
+// 2 = new SB(4)
+// if (...)
+//    10 = 2.append(11)
+// else
+//    13 = 2.append(14)
+// 16 = 2.append(17)

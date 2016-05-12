@@ -32,15 +32,15 @@ abstract class FixedPointAppendIrRetriever(
   /**
     * collect all assignments to static fields into map from field to sum-automaton
     */
-  lazy val fieldToAutomaton: Map[FieldReference, StringPartAutomaton] =
-    getAllNodes.foldLeft(Map.empty[FieldReference, StringPartAutomaton]) {
+  lazy val fieldToAutomaton: Map[FieldReference, StringPartAutomaton] = {
+    val result = getAllNodes.foldLeft(Map.empty[FieldReference, StringPartAutomaton]) {
       case (oldMap, node) if hasIr(node) =>
         val ir = node.getIr
         ir.iterateNormalInstructions().foldLeft(oldMap) {
           case (oldMap2, instr: SSAPutInstruction) =>
-            val field    = instr.getDeclaredField
+            val field = instr.getDeclaredField
             val writeVal = instr.getVal
-            val table    = ir.getSymbolTable
+            val table = ir.getSymbolTable
             if (table isConstant writeVal) {
               val stringPart = StringPartAutomaton(node.getDu getDef writeVal, StaticFieldPart(String.valueOf(table getConstantValue writeVal)))
               val automaton =
@@ -48,12 +48,15 @@ abstract class FixedPointAppendIrRetriever(
                 else stringPart
               oldMap2 + (field -> automaton)
             } else oldMap2
-          case (oldMap2, _)                        =>
+          case (oldMap2, _) =>
             oldMap2
         }
-      case (oldMap, _)                    =>
+      case (oldMap, _) =>
         oldMap
     }
+    println(System.nanoTime() + ": field-to-automaton created")
+    result
+  }
 
   protected def urlPrefixes(vn: ValueNumber, node: Node): Seq[StringPart] = {
     val table = node.getIr.getSymbolTable
