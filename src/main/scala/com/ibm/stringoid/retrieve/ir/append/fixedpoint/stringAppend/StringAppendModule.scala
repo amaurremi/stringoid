@@ -372,6 +372,24 @@ trait StringAppendModule extends AbstractStringBuilderModule {
                 auto1
             }
 
+          def getNewMap(
+            oldLhsMap: AsboMap,
+            newMap: AsboMap,
+            asbo: ASBO,
+            rAuto: StringPartAutomaton
+          ): AsboMap = {
+            oldLhsMap get asbo match {
+              case Some(StringPartAutomaton(_, instructions)) if (rAuto.instructions -- instructions).nonEmpty => // avoiding loops
+                val automaton = add(asbo, rAuto, newMap)
+                newMap.updated(asbo, automaton)
+              case None =>
+                val automaton = add(asbo, rAuto, newMap)
+                newMap.updated(asbo, add(asbo, rAuto, newMap))
+              case _ =>
+                newMap
+            }
+          }
+
           val lhsAta = ataRefMapping(lhs.index)
           val oldLhsMap = lhsAta.asboToAutomaton
           var newMap = oldLhsMap
@@ -379,16 +397,13 @@ trait StringAppendModule extends AbstractStringBuilderModule {
             rmapRef      <- rhs
             rmap          = ataRefMapping(rmapRef.index).asboToAutomaton
             (asbo, rAuto) <- rmap
-            if !(newMap contains asbo) || !(newMap(asbo) eq rAuto)
           } {
-            oldLhsMap get asbo match {
-              case Some(StringPartAutomaton(_, instructions)) if (rAuto.instructions -- instructions).nonEmpty => // avoiding loops
-                val automaton = add(asbo, rAuto, newMap)
-                newMap = newMap.updated(asbo, automaton)
-              case None                                                                  =>
-                val automaton = add(asbo, rAuto, newMap)
-                newMap = newMap.updated(asbo, add(asbo, rAuto, newMap))
-              case _                                                                     =>
+            newMap get asbo match {
+              case None                              =>
+                newMap = getNewMap(oldLhsMap, newMap, asbo, rAuto)
+              case Some(newAuto) if newAuto ne rAuto =>
+                newMap = getNewMap(oldLhsMap, newMap, asbo, rAuto)
+              case _                                 =>
                 ()
             }
           }
