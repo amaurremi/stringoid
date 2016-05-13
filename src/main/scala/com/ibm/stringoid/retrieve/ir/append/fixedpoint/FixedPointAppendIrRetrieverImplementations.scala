@@ -32,7 +32,7 @@ object FixedPointAppendIrRetrieverImplementations {
           val prevMethods = prevMap getOrElse(url, Set.empty[Method])
           prevMap updated(url, prevMethods + method)
       }
-      UrlsWithSources(urlWithSourcesMap, -1) // todo cg time
+      UrlsWithSources(urlWithSourcesMap, -1)
     }
 
     override protected def getAutomataWithSources: AutomataWithSources = {
@@ -43,10 +43,10 @@ object FixedPointAppendIrRetrieverImplementations {
       * assumes `node.getIr` is not `null`
       */
     def getAutomaton: (Json, Method) = {
-      val automaton = TimeResult("convert to DFA and JSON", stringAppends(fieldToAutomaton).automaton.toDFA.toJson {
+      val automaton = stringAppends(fieldToAutomaton).automaton.toDFA.toJson {
         sp: StringPart =>
           stringPartToUrlPart(sp).asJson.toString()
-      })
+      }
       (automaton.toString.parseOption.get, "interproc")
     }
 
