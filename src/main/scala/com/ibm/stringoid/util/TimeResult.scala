@@ -1,5 +1,7 @@
 package com.ibm.stringoid.util
 
+import java.util.Date
+
 case class TimeResult[R] private(result: R, time: Double)
 
 object TimeResult {
@@ -28,7 +30,7 @@ object TimeResult {
   }
 
   def apply[R](process: String, block: => R): R = {
-    printColoured(num, process + "...")
+    printColoured(num, process + "... " + new Date(System.currentTimeMillis()))
     num = num + 1
     val timeResult = TimeResult(block)
     num = num - 1
