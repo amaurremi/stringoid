@@ -20,7 +20,7 @@ object TimeResult {
     num = num + 1
     val timeResult = TimeResult(block)
     num = num - 1
-    println("    " * num + "elapsed time: " + timeResult.time.toInt + " s (" + process + ")")
+    println("    " * num + "elapsed time: " + timeResult.time.toLong + " s (" + process + ")")
     timeResult.result
   }
 }

@@ -56,7 +56,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
 
       override def getNodeTransferFunction(bb: BB): UnaryOperator[AtaReference] = {
         instrCount = instrCount + 1
-        if (instrCount % 1000 == 0) println("processed instruction #" + instrCount + System.nanoTime() / 1000000000.0)
+        if (instrCount % 1000 == 0) println(System.nanoTime().toInt / 1000000000.0 + ": processed instruction #" + instrCount)
         val node = CallGraphNode(bb.getNode)
         def getId(vn: ValueNumber) = createIdentifier(vn, node)
         bb.getLastInstruction match {
