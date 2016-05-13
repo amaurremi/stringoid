@@ -1,5 +1,8 @@
 package com.ibm.stringoid
 
+import java.nio.file.Paths
+
+import com.ibm.stringoid.AnalysisTypeObject.AnalysisType
 import com.ibm.stringoid.IrSourceObject.IrSource
 import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.FixedPointAppendIrRetriever
@@ -11,39 +14,50 @@ import scala.collection.{Set, breakOut}
 
 class ConcatenationSpec extends FunSpec with StringoidAnalysis {
 
+  private[this] val doRunTests = true
+
+  import AnalysisType._
+  import IrSource._
+
   describe("Concatenations") {
-//    it("runs a benchmark") {
-//      val ret = retriever(AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = Paths.get("dynamic-data/apps/mobi.ifunny-2447.apk"), outputUrls = true))
-//      println(ret.getResult)
-//    }
 
-    /* debugging */
-//    it("reproduces debugging test") {
-//      val file = Paths.get("src/test/java/debug")
-//      val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
-//      run(analysisConfig)
-//    }
+    if (doRunTests) {
 
-//    /* failing */
-//    it("reproduces failing tests") {
-//      val file = Paths.get("src/test/java/failing")
-//      val analysisConfig = AnalysisConfig(irSource = Cha, ignoreLibs = true, analysis = Append, file = file, outputUrls = false)
-//      run(analysisConfig)
-//    }
+      it("runs a benchmark") {
+        val ret = retriever(AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = Paths.get("dynamic-data/apps/mobi.ifunny-2447.apk"), outputUrls = true))
+        println(ret.getResult)
+      }
 
-    /* INTRA procedural*/
-//    it("computes URLs in CHA IR analysis") {
-//      val file = Paths.get("src/test/java/intraproc")
-//      val analysisConfig = AnalysisConfig(irSource = Cha, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
-//      run(analysisConfig)
-//    }
+      /* debugging */
+      it("reproduces debugging test") {
+        val file = Paths.get("src/test/java/debug")
+        val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
+        run(analysisConfig)
+      }
 
-    /* INTER procedural */
-//    it("computes URLs in inter-procedural analysis") {
-//      val file = Paths.get("src/test/java/interproc")
-//      val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
-//      run(analysisConfig)
-//    }
+      /* failing */
+      it("reproduces failing tests") {
+        val file = Paths.get("src/test/java/failing")
+        val analysisConfig = AnalysisConfig(irSource = Cha, ignoreLibs = true, analysis = Append, file = file, outputUrls = false)
+        run(analysisConfig)
+      }
+
+      /* INTRA procedural*/
+      it("computes URLs in CHA IR analysis") {
+        val file = Paths.get("src/test/java/intraproc")
+        val analysisConfig = AnalysisConfig(irSource = Cha, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
+        run(analysisConfig)
+      }
+
+      /* INTER procedural */
+      it("computes URLs in inter-procedural analysis") {
+        val file = Paths.get("src/test/java/interproc")
+        val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
+        run(analysisConfig)
+      }
+    } else {
+      println("No tests run: test running option disabled")
+    }
 
     def run(config: AnalysisConfig) = {
       val interProc = config.irSource == IrSource.InterProc

@@ -42,7 +42,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
     def apply(): StringPartAutomaton =
       StringPartAutomaton(Automaton.empty[StringPart], Set.empty[SSAInstruction])
 
-    def merge(automata: Iterable[StringPartAutomaton]) =
+    def merge(automata: Iterator[StringPartAutomaton]) =
       automata.reduceLeft { _ | _ }
   }
 
@@ -53,14 +53,11 @@ trait StringAppendModule extends AbstractStringBuilderModule {
       result.getOut(_).index
     })(breakOut)
     // merging concatenations
-    val concats = TimeResult("merging-concatenations", ataRefs.foldLeft(StringPartAutomaton()) {
+    TimeResult("merging-concatenations", ataRefs.foldLeft(StringPartAutomaton()) {
       (automaton, ref) =>
-        val automata = mapping(ref).asboToAutomaton.values
+        val automata = mapping(ref).asboToAutomaton.valuesIterator
         automaton | StringPartAutomaton.merge(automata)
     })
-    // adding constants
-    val automata = solver.initialMapping.values
-    concats | StringPartAutomaton.merge(automata)
   }
 
   abstract class StringAppendFixedPointSolver(
@@ -206,7 +203,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
             idToAsbo get id match {
               case Some(asbos) =>
                 val automata = for {
-                  asbo <- asbos
+                  asbo <- asbos.iterator
                   automaton <- rhsMap get asbo
                 } yield automaton
                 val newValNumAutomaton =
@@ -225,7 +222,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
                       u =>
                         getAppendAutomaton(node, createIdentifier(u, node), instruction, idNode, rhsMap, processedAcc + id)
                     }).unzip
-                    val mergedAutomaton = StringPartAutomaton.merge(automata)
+                    val mergedAutomaton = StringPartAutomaton.merge(automata.iterator)
                     val mergedMap = (asboMaps reduceLeft {
                       _ ++ _
                     }) + (createAsbo(phi.getDef, node) -> mergedAutomaton)
