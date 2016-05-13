@@ -1,8 +1,10 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend
 
+import com.ibm.stringoid.retrieve.UrlCheck._
 import com.ibm.stringoid.retrieve.ir._
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.IntraProcASBOModule
+import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.fixpoint.UnaryOperator
 import com.ibm.wala.ipa.cfg.ExceptionPrunedCFG
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction
@@ -17,7 +19,22 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
   def stringAppends(node: Node, fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
     val idToAsbo: Map[ValueNumber, Set[ASBO]] = idToAsboForNode(node)
     val solver: IntraProcStringAppendSolver = getAppendSolver(node, idToAsbo, fieldToAutomaton)
-    stringAppendsForSolver(solver)
+    val automata = stringAppendsForSolver(solver)
+    val filteredAutomata: Iterator[StringPartAutomaton] = TimeResult("filter URL automata", automata map {
+      auto =>
+        StringPartAutomaton(auto.automaton.filterHeads {
+          case StringIdentifier(vn)     =>
+            val table = node.getIr.getSymbolTable
+            (table isStringConstant vn) && isUrlPrefix(table getStringValue vn)
+          case StaticFieldPart(string)  =>
+            isUrlPrefix(string)
+          case StringFormatPart(string) =>
+            isUrlPrefix(string)
+          case _                        => false
+        })
+    })
+    TimeResult("merging filtered automata", StringPartAutomaton.merge(filteredAutomata))
+
   }
 
   def getAppendSolver(

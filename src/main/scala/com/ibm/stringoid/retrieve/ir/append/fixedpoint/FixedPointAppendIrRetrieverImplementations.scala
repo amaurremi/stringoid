@@ -3,7 +3,6 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 import argonaut.Argonaut._
 import argonaut._
 import com.ibm.stringoid._
-import com.ibm.stringoid.retrieve.UrlCheck._
 import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.ir.IrNodesModule.{CgIntraProcIrNodes, ChaIntraProcIrNodes, InterProcIrNodes, IntraProcIrNodes}
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.{InterProcStringAppendModule, IntraProcStringAppendModule}
@@ -51,19 +50,7 @@ object FixedPointAppendIrRetrieverImplementations {
     }
 
     private[this] def getConcatUrls: Iterator[Url] = {
-      val appendAutomaton = stringAppends(fieldToAutomaton)
-      val urlAutomaton = appendAutomaton.automaton filterHeads {
-        case StringIdentifier(id) =>
-          val table = id.node.getIR.getSymbolTable
-          val vn    = id.vn
-          table.isStringConstant(vn) && isUrlPrefix(table getStringValue vn)
-        case StaticFieldPart(string) =>
-          isUrlPrefix(string)
-        case StringFormatPart(string) =>
-          isUrlPrefix(string)
-        case _ => false
-      }
-      urlAutomaton.iterator map {
+      stringAppends(fieldToAutomaton).automaton.iterator map {
         stringParts =>
           val urlParts = stringParts map stringPartToUrlPart
           Url(urlParts.toVector)

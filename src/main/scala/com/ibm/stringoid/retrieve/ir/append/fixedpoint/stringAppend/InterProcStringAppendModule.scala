@@ -1,5 +1,6 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend
 
+import com.ibm.stringoid.retrieve.UrlCheck._
 import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.InterProcASBOModule
@@ -20,7 +21,22 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
 
   def stringAppends(fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
     val solver = new InterProcStringAppendSolver(identifierToAsbo, fieldToAutomaton)
-    stringAppendsForSolver(solver)
+    val automata = stringAppendsForSolver(solver)
+    val filteredAutomata: Iterator[StringPartAutomaton] = TimeResult("filter URL automata", automata map {
+      auto =>
+        StringPartAutomaton(auto.automaton.filterHeads {
+          case StringIdentifier(id)     =>
+            val table = id.node.getIR.getSymbolTable
+            val vn    = id.vn
+            (table isStringConstant vn) && isUrlPrefix(table getStringValue vn)
+          case StaticFieldPart(string)  =>
+            isUrlPrefix(string)
+          case StringFormatPart(string) =>
+            isUrlPrefix(string)
+          case _                        => false
+        })
+    })
+    TimeResult("merging filtered automata", StringPartAutomaton.merge(filteredAutomata))
   }
 
   class InterProcStringAppendSolver(

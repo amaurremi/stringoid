@@ -23,7 +23,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
   protected val EDGE_FUNCTIONS_NOT_SUPPORTED_MESSAGE: String =
     "No edge transfer functions for StringAppend fixed-point solver."
 
-  case class StringPartAutomaton(automaton: Automaton[StringPart], instructions: Set[SSAInstruction]) {
+  case class StringPartAutomaton(automaton: Automaton[StringPart], instructions: Set[Int]) {
 
     def |(other: StringPartAutomaton) =
       StringPartAutomaton(automaton | other.automaton, instructions ++ other.instructions)
@@ -31,33 +31,35 @@ trait StringAppendModule extends AbstractStringBuilderModule {
     def +++(other: StringPartAutomaton) =
       StringPartAutomaton(automaton +++ other.automaton, instructions ++ other.instructions)
 
-    def addInstr(instruction: SSAInstruction) = this.copy(instructions = instructions + instruction)
+    def addInstr(instruction: SSAInstruction) = this.copy(instructions = instructions + instruction.iindex)
   }
 
   object StringPartAutomaton {
 
     def apply(instruction: SSAInstruction, sps: StringPart*): StringPartAutomaton =
-      StringPartAutomaton(Automaton.empty[StringPart] + sps, Option(instruction).toSet)
+      StringPartAutomaton(Automaton.empty[StringPart] + sps, (Option(instruction) map { _.iindex }).toSet)
 
     def apply(): StringPartAutomaton =
-      StringPartAutomaton(Automaton.empty[StringPart], Set.empty[SSAInstruction])
+      StringPartAutomaton(Automaton.empty[StringPart], Set.empty[Int])
+
+    def apply(automaton: Automaton[StringPart]): StringPartAutomaton =
+      StringPartAutomaton(automaton, Set.empty[Int])
 
     def merge(automata: Iterator[StringPartAutomaton]) =
       automata.reduceLeft { _ | _ }
   }
 
-  def stringAppendsForSolver(solver: StringAppendFixedPointSolver): StringPartAutomaton = {
-    val result  = TimeResult("string-append-solver", solver.result)
+  def stringAppendsForSolver(solver: StringAppendFixedPointSolver): Iterator[StringPartAutomaton] = {
+    val result  = TimeResult("string-append solver", solver.result)
     val mapping = solver.ataRefMapping
     val ataRefs: Set[Int] = (solver.cfg map {
       result.getOut(_).index
     })(breakOut)
-    // merging concatenations
-    TimeResult("merging-concatenations", ataRefs.foldLeft(StringPartAutomaton()) {
-      (automaton, ref) =>
-        val automata = mapping(ref).asboToAutomaton.valuesIterator
-        automaton | StringPartAutomaton.merge(automata)
-    })
+    TimeResult("creating sequence of all automata",
+      ataRefs.iterator flatMap {
+        mapping(_).asboToAutomaton.valuesIterator
+      }
+    )
   }
 
   abstract class StringAppendFixedPointSolver(
