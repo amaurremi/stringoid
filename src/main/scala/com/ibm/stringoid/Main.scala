@@ -22,9 +22,8 @@ object Main extends StringoidAnalysis {
       import options._
       files foreach {
         file =>
-          TimeResult.printTime("processing " + file.toString) {
-              write(AnalysisResult.fromConfig(config.copy(file = file)), file, outDir, spaces = false)
-            }
+          TimeResult("running stringoid on "+ file.getFileName,
+              write(AnalysisResult.fromConfig(config.copy(file = file)), file, outDir, spaces = false))
           }
       }
 

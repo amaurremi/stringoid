@@ -7,6 +7,7 @@ import com.ibm.stringoid.retrieve.UrlCheck.isUrlPrefix
 import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.StringAppendModule
 import com.ibm.stringoid.retrieve.ir.{IrUrlRetriever, ValueNumber}
+import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ssa._
 import com.ibm.wala.types.FieldReference
 import com.ibm.wala.util.debug.UnimplementedError
@@ -32,8 +33,8 @@ abstract class FixedPointAppendIrRetriever(
   /**
     * collect all assignments to static fields into map from field to sum-automaton
     */
-  lazy val fieldToAutomaton: Map[FieldReference, StringPartAutomaton] = {
-    val result = getAllNodes.foldLeft(Map.empty[FieldReference, StringPartAutomaton]) {
+  lazy val fieldToAutomaton: Map[FieldReference, StringPartAutomaton] =
+    TimeResult("field-to-automaton", getAllNodes.foldLeft(Map.empty[FieldReference, StringPartAutomaton]) {
       case (oldMap, node) if hasIr(node) =>
         val ir = node.getIr
         ir.iterateNormalInstructions().foldLeft(oldMap) {
@@ -53,10 +54,7 @@ abstract class FixedPointAppendIrRetriever(
         }
       case (oldMap, _) =>
         oldMap
-    }
-    println(System.nanoTime() + ": field-to-automaton created")
-    result
-  }
+    })
 
   protected def urlPrefixes(vn: ValueNumber, node: Node): Seq[StringPart] = {
     val table = node.getIr.getSymbolTable

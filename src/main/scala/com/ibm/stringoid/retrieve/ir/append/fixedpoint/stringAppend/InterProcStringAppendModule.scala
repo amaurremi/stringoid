@@ -3,6 +3,7 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend
 import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.InterProcASBOModule
+import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.cast.java.ssa.AstJavaInvokeInstruction
 import com.ibm.wala.fixpoint.FixedPointConstants._
 import com.ibm.wala.fixpoint.UnaryOperator
@@ -40,18 +41,22 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
       * value to later manually add constants to the result.
       */
     override lazy val initialMapping: AsboMap =
-      callGraph.foldLeft(Map.empty[ASBO, StringPartAutomaton]) {
+      TimeResult("initial mapping", callGraph.foldLeft(Map.empty[ASBO, StringPartAutomaton]) {
         case (oldMap, node) if Option(node.getIR).isDefined =>
           oldMap ++ initialAtaForNode(CallGraphNode(node))
         case (oldMap, _)                                    =>
           oldMap
-      }
+      })
 
     override protected def transferFunctions: StringAppendTransferFunctions = new InterProcStringAppendTransferFunctions
 
     class InterProcStringAppendTransferFunctions extends StringAppendTransferFunctions(idToAsbo) {
 
+      private[this] var instrCount = 0
+
       override def getNodeTransferFunction(bb: BB): UnaryOperator[AtaReference] = {
+        instrCount = instrCount + 1
+        if (instrCount % 1000 == 0) println("processed instruction #" + instrCount + System.nanoTime() / 1000000000.0)
         val node = CallGraphNode(bb.getNode)
         def getId(vn: ValueNumber) = createIdentifier(vn, node)
         bb.getLastInstruction match {

@@ -1,6 +1,7 @@
 package com.ibm.stringoid.retrieve.ir
 
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.{CgNodes, IrNodes}
+import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ipa.callgraph.impl.PartialCallGraph
 import com.ibm.wala.ipa.callgraph.{AnalysisCache, CallGraph}
@@ -21,8 +22,7 @@ object IrNodesModule {
 
     lazy val callGraph: CallGraph = {
       val conf  = if (isApk) configWithApk(config.file) else withMainEntryPoint(configWithSrc(config.file))
-      val graph = FlexibleCallGraphBuilder()(conf).cg
-      println(System.nanoTime() + ": call graph created")
+      val graph = TimeResult("call graph", FlexibleCallGraphBuilder()(conf).cg)
       if (config.ignoreLibs)
         PartialCallGraph.make(graph, graph.getEntrypointNodes, graph filterNot {
           node =>

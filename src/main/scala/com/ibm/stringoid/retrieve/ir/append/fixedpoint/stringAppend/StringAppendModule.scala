@@ -3,6 +3,7 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend
 import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.AbstractStringBuilderModule
+import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{IVariable, UnaryOperator}
 import com.ibm.wala.ssa._
@@ -46,17 +47,17 @@ trait StringAppendModule extends AbstractStringBuilderModule {
   }
 
   def stringAppendsForSolver(solver: StringAppendFixedPointSolver): StringPartAutomaton = {
-    val result  = solver.result
+    val result  = TimeResult("string-append-solver", solver.result)
     val mapping = solver.ataRefMapping
     val ataRefs: Set[Int] = (solver.cfg map {
       result.getOut(_).index
     })(breakOut)
     // merging concatenations
-    val concats = ataRefs.foldLeft(StringPartAutomaton()) {
+    val concats = TimeResult("merging-concatenations", ataRefs.foldLeft(StringPartAutomaton()) {
       (automaton, ref) =>
         val automata = mapping(ref).asboToAutomaton.values
         automaton | StringPartAutomaton.merge(automata)
-    }
+    })
     // adding constants
     val automata = solver.initialMapping.values
     concats | StringPartAutomaton.merge(automata)
@@ -79,10 +80,7 @@ trait StringAppendModule extends AbstractStringBuilderModule {
 
         override def getFlowGraph = cfg
 
-        override def getTransferFunctionProvider = {
-          println(System.nanoTime + ": requested transfer functions")
-          transferFunctions
-        }
+        override def getTransferFunctionProvider = transferFunctions
       }
 
       val solver = getSolver(framework)
