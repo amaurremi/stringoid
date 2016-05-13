@@ -4,6 +4,10 @@ case class TimeResult[R] private(result: R, time: Double)
 
 object TimeResult {
 
+  val ANSI_PURPLE = "\u001B[35m"
+  val ANSI_GREEN = "\u001B[32m"
+  val ANSI_RESET = "\u001B[0m"
+
   private[TimeResult] var num = 0
 
   def apply[R](block: => R): TimeResult[R] = {
@@ -16,11 +20,14 @@ object TimeResult {
   }
 
   def apply[R](process: String, block: => R): R = {
-    println("    " * num + process + "...")
+    printColoured(num, process + "...", start = true)
     num = num + 1
     val timeResult = TimeResult(block)
     num = num - 1
-    println("    " * num + "elapsed time: " + timeResult.time.toLong + " s (" + process + ")")
+    printColoured(num, "elapsed time: " + timeResult.time.toLong + " s (" + process + ")", start = false)
     timeResult.result
   }
+
+  def printColoured(num: Int, msg: String, start: Boolean) =
+    println(if (start) ANSI_PURPLE else ANSI_GREEN + "    " * num + msg + ANSI_RESET)
 }

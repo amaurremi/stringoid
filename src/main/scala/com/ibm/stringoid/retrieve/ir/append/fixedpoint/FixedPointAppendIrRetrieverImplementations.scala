@@ -43,16 +43,15 @@ object FixedPointAppendIrRetrieverImplementations {
       * assumes `node.getIr` is not `null`
       */
     def getAutomaton: (Json, Method) = {
-      val automaton = stringAppends(fieldToAutomaton).automaton.toDFA.toJson {
+      val automaton = TimeResult("convert to DFA and JSON", stringAppends(fieldToAutomaton).automaton.toDFA.toJson {
         sp: StringPart =>
           stringPartToUrlPart(sp).asJson.toString()
-      }
+      })
       (automaton.toString.parseOption.get, "interproc")
     }
 
     private[this] def getConcatUrls: Iterator[Url] = {
       val appendAutomaton = stringAppends(fieldToAutomaton)
-      // todo wait for automaton-predicate function
       val urlAutomaton = appendAutomaton.automaton filterHeads {
         case StringIdentifier(id) =>
           val table = id.node.getIR.getSymbolTable
