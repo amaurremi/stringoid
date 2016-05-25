@@ -1,5 +1,7 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend
 
+import java.util
+
 import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.AbstractStringBuilderModule
@@ -22,6 +24,19 @@ trait StringAppendModule extends AbstractStringBuilderModule {
     "Value-number-to-ASBO map should contain the value number for this string builder."
   protected val EDGE_FUNCTIONS_NOT_SUPPORTED_MESSAGE: String =
     "No edge transfer functions for StringAppend fixed-point solver."
+
+  val processedRetInstructions = new util.IdentityHashMap[SSAInstruction, Int] withDefaultValue 0
+  val processedCallInstructions = new util.IdentityHashMap[SSAInstruction, Int] withDefaultValue 0
+  val processedAppendInstructions = new util.IdentityHashMap[SSAInstruction, Int] withDefaultValue 0
+  val processedIdInstructions = new util.IdentityHashMap[SSAInstruction, Int] withDefaultValue 0
+
+  var processedMeetInstructions = 0
+  var instrCount = 0
+
+  def updateProcessedInstructions(map: scala.collection.mutable.Map[SSAInstruction, Int], instr: SSAInstruction) = {
+    map(instr) = map(instr) + 1
+    instrCount = instrCount + 1
+  }
 
   case class StringPartAutomaton(automaton: Automaton[StringPart], instructions: Set[Int]) {
 
@@ -271,6 +286,8 @@ trait StringAppendModule extends AbstractStringBuilderModule {
       ) extends AbstractAppendOperator {
 
         override def createNewMap(rhsMap: AsboMap): AsboMap = {
+          updateProcessedInstructions(processedAppendInstructions, instruction)
+
           val (appendAutomaton, toAppend) = getAppendAutomaton(node, appendId, instruction, idNode, rhsMap)
           asbos.foldLeft(rhsMap ++ toAppend) {
             case (m, asbo) =>
@@ -357,9 +374,12 @@ trait StringAppendModule extends AbstractStringBuilderModule {
         }
       }
 
+      override def getMeetOperator: AbstractMeetOperator[AtaReference] = StringMeetOperator()
+
       case class StringMeetOperator() extends AbstractMeetOperator[AtaReference] {
 
         override def evaluate(lhs: AtaReference, rhs: Array[AtaReference]): Byte = {
+          processedMeetInstructions = processedMeetInstructions + 1
 
           def add(asbo: ASBO, auto1: StringPartAutomaton, l: AsboMap): StringPartAutomaton =
             l get asbo match {
@@ -414,11 +434,11 @@ trait StringAppendModule extends AbstractStringBuilderModule {
         }
       }
 
-      override def getMeetOperator: AbstractMeetOperator[AtaReference] = StringMeetOperator()
-
-      protected case class IdentityOperator() extends UnaryOperator[AtaReference] {
+      protected case class IdentityOperator(instr: SSAInstruction) extends UnaryOperator[AtaReference] {
 
         override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {
+          updateProcessedInstructions(processedIdInstructions, instr)
+
           val lhsMap = ataRefMapping(lhs.index).asboToAutomaton
           val rhsMap = ataRefMapping(rhs.index).asboToAutomaton
 

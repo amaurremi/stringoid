@@ -11,7 +11,7 @@ import com.ibm.wala.fixpoint.UnaryOperator
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.cfg.{BasicBlockInContext, ExplodedInterproceduralCFG}
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
-import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInvokeInstruction, SSAReturnInstruction}
+import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAInvokeInstruction, SSAReturnInstruction}
 import com.ibm.wala.types.FieldReference
 
 import scala.collection.JavaConversions._
@@ -65,11 +65,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
 
     class InterProcStringAppendTransferFunctions extends StringAppendTransferFunctions(idToAsbo) {
 
-      private[this] var instrCount = 0
-
       override def getNodeTransferFunction(bb: BB): UnaryOperator[AtaReference] = {
-        instrCount = instrCount + 1
-        if (instrCount % 1000 == 0) TimeResult.print(System.nanoTime() / 1000000000.0 + ": processed instr #" + instrCount)
         val node = CallGraphNode(bb.getNode)
         def getId(vn: ValueNumber) = createIdentifier(vn, node)
         bb.getLastInstruction match {
@@ -81,7 +77,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
               case None        =>
                 // todo note that this means that we are appending to a StringBuilder for which we haven't added an ASBO to the idToAsbo map.
                 // todo I think this means that the StringBuilder has been passed as a parameter or is a field. We should handle this case too at some point.
-                IdentityOperator()
+                IdentityOperator(instr)
             }
           case inv: SSAAbstractInvokeInstruction if isSbConstructorWithStringParam(inv) =>
             idToAsbo get getId(getSbConstructorDef(inv)) match {
@@ -95,6 +91,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             new StringFormatAppendOperator(inv, node)
           case inv: SSAAbstractInvokeInstruction                                        =>
             new ParamSubstitutionOperator(
+              inv,
               callGraph.getPossibleTargets(node.node, inv.getCallSite).toSet,
               argumentAsbos(inv, node))
           case ret: SSAReturnInstruction                                                =>
@@ -107,8 +104,8 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
               asbo        <- idToAsbo getOrElse (callId, Set(createAsbo(callDef, callerNode)))
             } yield asbo
             new ReturnOperator(lhsAsbos, ret, node)
-          case _ =>
-            IdentityOperator()
+          case instr =>
+            IdentityOperator(instr)
         }
       }
 
@@ -152,6 +149,8 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
         }
 
         override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {
+          updateProcessedInstructions(processedRetInstructions, retInstr)
+
           val rhsMap = ataRefMapping(rhs.index).asboToAutomaton
           val newMap = addReturnResult(rhsMap)
 
@@ -169,6 +168,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
         * @param substitutionAsbos  pairs (asbo, argNum) of String-argument indices (starting at 0) and their corresponding ASBOs
         */
       case class ParamSubstitutionOperator(
+        callInstr: SSAInstruction,
         targetNodes: Set[CGNode],
         substitutionAsbos: Seq[(ASBO, Int)]
       ) extends UnaryOperator[AtaReference] {
@@ -187,6 +187,8 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
         }
 
         override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {
+          updateProcessedInstructions(processedCallInstructions, callInstr)
+
           val rhsMap = ataRefMapping(rhs.index).asboToAutomaton
           val newMap = createSubstitutionMap(rhsMap)
 

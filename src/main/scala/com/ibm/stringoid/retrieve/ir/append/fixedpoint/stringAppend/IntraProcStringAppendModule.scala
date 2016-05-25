@@ -68,7 +68,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
               case None =>
                 // todo note that this means that we are appending to a StringBuilder for which we haven't added an ASBO to the idToAsbo map.
                 // todo I think this means that the StringBuilder has been passed as a parameter or is a field. We should handle this case too at some point.
-                IdentityOperator()
+                IdentityOperator(instr)
             }
           case inv: SSAAbstractInvokeInstruction if isSbConstructorWithStringParam(inv) =>
             idToAsbo get getSbConstructorDef(inv) match {
@@ -80,8 +80,8 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
             }
           case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)                 =>
             new StringFormatAppendOperator(inv, node)
-          case _                                                                =>
-            IdentityOperator()
+          case instr                                                                    =>
+            IdentityOperator(instr)
         }
     }
   }
