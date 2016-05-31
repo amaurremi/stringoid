@@ -33,7 +33,7 @@ abstract class FixedPointAppendIrRetriever(
   /**
     * collect all assignments to static fields into map from field to sum-automaton
     */
-  lazy val fieldToAutomaton: Map[FieldReference, StringPartAutomaton] =
+  override lazy val fieldToAutomaton: Map[FieldReference, StringPartAutomaton] =
     TimeResult("field-to-automaton", getAllNodes.foldLeft(Map.empty[FieldReference, StringPartAutomaton]) {
       case (oldMap, node) if hasIr(node) =>
         val ir = node.getIr

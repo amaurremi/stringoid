@@ -1,4 +1,4 @@
-package intraproc;
+package debug;
 
 public class ConstantUrl {
 

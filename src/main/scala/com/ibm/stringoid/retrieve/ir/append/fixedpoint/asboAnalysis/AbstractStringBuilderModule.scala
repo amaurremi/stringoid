@@ -2,10 +2,11 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis
 
 import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
-import com.ibm.stringoid.retrieve.ir.append.fixedpoint.Nodes
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.StringAppendTypes
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{BitVectorVariable, UnaryOperator}
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAPhiInstruction}
+import com.ibm.wala.types.FieldReference
 import com.ibm.wala.util.collections.ObjectArrayMapping
 import com.ibm.wala.util.graph.Graph
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph
@@ -30,7 +31,7 @@ import scala.reflect.ClassTag
  * An abstract string builder object (ASBO) is the representation of one such string builder object that can be mapped
  * to by many value numbers.
  */
-trait AbstractStringBuilderModule extends Nodes {
+trait AbstractStringBuilderModule extends StringAppendTypes {
 
   type AsboMapping = OrdinalSetMapping[ASBO]
 
@@ -38,6 +39,8 @@ trait AbstractStringBuilderModule extends Nodes {
 
   protected final def asboSolver(node: Node): AsboFixedPointSolver =
     getSolver(node, createAbstractObjectNumbering(node))
+
+  def fieldToAutomaton: Map[FieldReference, StringPartAutomaton]
 
   /**
     * If the method deals with StringBuilders, returns Some result

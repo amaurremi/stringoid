@@ -12,13 +12,12 @@ import com.ibm.wala.ssa._
 import com.ibm.wala.types.FieldReference
 import com.ibm.wala.util.graph.NumberedGraph
 import com.ibm.wala.util.graph.impl.NodeWithNumber
-import seqset.regular.Automaton
 
 import scala.collection.JavaConversions._
 import scala.collection.breakOut
 import scala.collection.mutable.ArrayBuffer
 
-trait StringAppendModule extends AbstractStringBuilderModule {
+trait StringAppendModule extends StringAppendTypes with AbstractStringBuilderModule {
 
   protected val MISSING_STRING_BUILDER_MESSAGE: String =
     "Value-number-to-ASBO map should contain the value number for this string builder."
@@ -36,32 +35,6 @@ trait StringAppendModule extends AbstractStringBuilderModule {
   def updateProcessedInstructions(map: scala.collection.mutable.Map[SSAInstruction, Int], instr: SSAInstruction) = {
     map(instr) = map(instr) + 1
     instrCount = instrCount + 1
-  }
-
-  case class StringPartAutomaton(automaton: Automaton[StringPart], instructions: Set[Int]) {
-
-    def |(other: StringPartAutomaton) =
-      StringPartAutomaton(automaton | other.automaton, instructions ++ other.instructions)
-
-    def +++(other: StringPartAutomaton) =
-      StringPartAutomaton(automaton +++ other.automaton, instructions ++ other.instructions)
-
-    def addInstr(instruction: SSAInstruction) = this.copy(instructions = instructions + instruction.iindex)
-  }
-
-  object StringPartAutomaton {
-
-    def apply(instruction: SSAInstruction, sps: StringPart*): StringPartAutomaton =
-      StringPartAutomaton(Automaton.empty[StringPart] + sps, (Option(instruction) map { _.iindex }).toSet)
-
-    def apply(): StringPartAutomaton =
-      StringPartAutomaton(Automaton.empty[StringPart], Set.empty[Int])
-
-    def apply(automaton: Automaton[StringPart]): StringPartAutomaton =
-      StringPartAutomaton(automaton, Set.empty[Int])
-
-    def merge(automata: Iterator[StringPartAutomaton]) =
-      automata.reduceLeft { _ | _ }
   }
 
   def stringAppendsForSolver(solver: StringAppendFixedPointSolver): Iterator[StringPartAutomaton] = {

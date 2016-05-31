@@ -5,18 +5,27 @@ import argonaut._
 import com.ibm.stringoid._
 import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.ir.IrNodesModule.{CgIntraProcIrNodes, ChaIntraProcIrNodes, InterProcIrNodes, IntraProcIrNodes}
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded.ExplodedStringAppendModule
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.{InterProcStringAppendModule, IntraProcStringAppendModule}
 import com.ibm.stringoid.util.TimeResult
+import com.ibm.wala.types.FieldReference
 
 import scala.collection.JavaConversions._
 import scala.collection.breakOut
 
 object FixedPointAppendIrRetrieverImplementations {
 
-  final class InterProcFixedPointAppendIrRetriever(config: AnalysisConfig)
+  final class ExplodedInterProcFixedPointAppendIrRetriever(config: AnalysisConfig)
+    extends InterProcFixedPointAppendIrRetriever(config) with ExplodedStringAppendModule
+
+  final class WalaInterProcFixedPointAppendIrRetriever(config: AnalysisConfig)
+    extends InterProcFixedPointAppendIrRetriever(config) with InterProcStringAppendModule
+
+  sealed abstract class InterProcFixedPointAppendIrRetriever(config: AnalysisConfig)
     extends FixedPointAppendIrRetriever(config)
-    with InterProcIrNodes
-    with InterProcStringAppendModule {
+    with InterProcIrNodes {
+
+    def stringAppends(fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton
 
     override def getAllNodes: Iterator[CallGraphNode] =
       callGraph.iterator() map CallGraphNode.apply
@@ -117,11 +126,11 @@ object FixedPointAppendIrRetrieverImplementations {
     private[this] def getConcatUrls(node: Node): Iterable[(Url, Method)] = {
       val appendAutomaton = stringAppends(node, fieldToAutomaton)
       val ir = node.getIr
-      (for {
+      for {
         vn <- 1 to ir.getSymbolTable.getMaxValueNumber
         stringPart <- urlPrefixes(vn, node)
         stringTail <- (appendAutomaton.automaton tails stringPart).iterator take 100
-      } yield (Url(parseUrl(node, stringPart +: stringTail)), ir.getMethod.toString)) (breakOut)
+      } yield (Url(parseUrl(node, stringPart +: stringTail)), ir.getMethod.toString)
     }
 
     private[this] def parseUrl(node: Node, string: Seq[StringPart]): Vector[UrlPart] =

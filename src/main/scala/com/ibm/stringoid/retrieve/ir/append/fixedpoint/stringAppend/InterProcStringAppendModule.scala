@@ -5,13 +5,12 @@ import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.InterProcASBOModule
 import com.ibm.stringoid.util.TimeResult
-import com.ibm.wala.cast.java.ssa.AstJavaInvokeInstruction
 import com.ibm.wala.fixpoint.FixedPointConstants._
 import com.ibm.wala.fixpoint.UnaryOperator
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.cfg.{BasicBlockInContext, ExplodedInterproceduralCFG}
+import com.ibm.wala.ssa._
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
-import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAInvokeInstruction, SSAReturnInstruction}
 import com.ibm.wala.types.FieldReference
 
 import scala.collection.JavaConversions._
@@ -93,7 +92,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             new ParamSubstitutionOperator(
               inv,
               callGraph.getPossibleTargets(node.node, inv.getCallSite).toSet,
-              argumentAsbos(inv, node))
+              argumentAsbos(idToAsbo, inv, node))
           case ret: SSAReturnInstruction                                                =>
             val lhsAsbos = for {
               callerNode  <- getCallNodes(node)
@@ -111,15 +110,6 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
 
       private[this] def getCallNodes(node: Node): Iterator[Node] =
         callGraph getPredNodes node.node map CallGraphNode.apply
-
-      private[this] def getCallInstructions(ret: SSAReturnInstruction, callerNode: Node, calleeNode: Node): Iterator[SSAAbstractInvokeInstruction] = {
-        val node = callerNode.node
-        for {
-          callSiteRef <- node.iterateCallSites()
-          if callSiteRef.getDeclaredTarget == calleeNode.node.getMethod.getReference
-          callSite <- node.getIR getCalls callSiteRef
-        } yield callSite
-      }
 
       /*
        * @param assignAsbos    the ASBOs of the left-hand side of the call (the variable to which the result should be assigned);
@@ -200,24 +190,6 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
           }
         }
       }
-
-      /**
-        * Do the arguments passed into a call have ASBOS? If yes, get them, together with the argument index
-        */
-      private[this] def argumentAsbos(instr: SSAAbstractInvokeInstruction, node: Node): Seq[(ASBO, Int)] =
-        instr match {
-          case inv: SSAInvokeInstruction     =>
-            argumentAsbosForInstr(instr.getNumberOfParameters, instr.getUse, node)
-          case inv: AstJavaInvokeInstruction =>
-            argumentAsbosForInstr(instr.getNumberOfParameters, instr.getUse, node)
-        }
-
-      private[this] def argumentAsbosForInstr(paramNum: Int, getArg: Int => ValueNumber, node: Node): Seq[(ASBO, Int)] =
-        for {
-          argIndex <- 0 until paramNum
-          arg       = getArg(argIndex)
-          asbo     <- (idToAsbo getOrElse (createIdentifier(arg, node), Set(createAsbo(arg, node)))).toSeq
-        } yield (asbo, argIndex)
     }
   }
 }
