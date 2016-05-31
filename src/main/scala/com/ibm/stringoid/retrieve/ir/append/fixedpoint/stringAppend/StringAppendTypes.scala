@@ -28,6 +28,9 @@ trait StringAppendTypes extends Nodes {
     def apply(automaton: Automaton[StringPart]): StringPartAutomaton =
       StringPartAutomaton(automaton, Set.empty[Int])
 
+    def apply(stringPart: StringPart): StringPartAutomaton =
+      StringPartAutomaton(Automaton.empty[StringPart] + Seq(stringPart))
+
     def merge(automata: Iterator[StringPartAutomaton]): StringPartAutomaton =
       if (automata.isEmpty) StringPartAutomaton()
       else automata.reduceLeft { _ | _ }

@@ -10,6 +10,7 @@ import com.ibm.wala.ipa.cfg.{BasicBlockInContext, ExplodedInterproceduralCFG}
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAFieldAccessInstruction, SSAInstruction, SSAReturnInstruction}
 import com.ibm.wala.types.FieldReference
+import seqset.regular.Automaton
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
@@ -23,6 +24,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule {
   private[this] val result = mutable.Map.empty[ExplodedNode, StringPartAutomaton] withDefaultValue StringPartAutomaton()
 
   def stringAppends(fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
+    // concatenation URLs
     val filteredAutomata: Iterator[StringPartAutomaton] = TimeResult("filter URL automata", getResult map {
       auto =>
         StringPartAutomaton(auto.automaton.filterHeads {
@@ -37,12 +39,28 @@ trait ExplodedStringAppendModule extends InterProcASBOModule {
           case _                        => false
         })
     })
-    TimeResult("merging filtered automata", StringPartAutomaton.merge(filteredAutomata))
+    // constant URLs
+    val constants = TimeResult("constant URLs", getConstantUrls)
+    TimeResult("merging filtered automata", StringPartAutomaton.merge(filteredAutomata ++ constants))
+  }
+
+  private[this] def getConstantUrls: Iterator[StringPartAutomaton] = {
+    for {
+      node <- callGraph.iterator()
+      table = node.getIR.getSymbolTable
+      vn   <- 1 to table.getMaxValueNumber
+      if table isStringConstant vn
+      string = table getStringValue vn
+      if isUrlPrefix(string)
+      spart  = StringIdentifier(createIdentifier(vn, CallGraphNode(node)))
+    } yield StringPartAutomaton(spart)
   }
 
   // todo include constants, arguments, default value
-  private[this] val idToAsbo: Map[CgIdentifier, Set[ASBO]] = identifierToAsbo withDefault {
-    id => Set(createAsbo(id.vn, CallGraphNode(id.node)))
+  private[this] val idToAsbo: Map[CgIdentifier, Set[ASBO]] = {
+    identifierToAsbo withDefault {
+      id => Set(createAsbo(id.vn, CallGraphNode(id.node)))
+    }
   }
 
   private[this] val worklist = new mutable.Queue[ExplodedNode] // todo heap?
@@ -58,8 +76,11 @@ trait ExplodedStringAppendModule extends InterProcASBOModule {
     }
 
   private[this] def appendResult(bb: BB, succ: BB, asbo: ASBO, newAutomaton: StringPartAutomaton): Unit = {
-    val succNode = (succ, asbo)
-    val newResult = result((bb, asbo)) +++ newAutomaton
+    val succNode  = (succ, asbo)
+    val oldResult = result((bb, asbo))
+    val newResult =
+      if (oldResult.automaton == Automaton.empty[StringPartAutomaton]) newAutomaton
+      else oldResult +++ newAutomaton
     updateResultAndWorklist(succNode, newResult)
   }
 
@@ -82,20 +103,12 @@ trait ExplodedStringAppendModule extends InterProcASBOModule {
       bb.getLastInstruction match {
         // append from StringBuilder.append() invocation
         case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                     =>
-          idToAsbo get getId(getFirstSbAppendDef(instr)) match {
-            case Some(asbos) =>
-              append(instr, asbos, getFirstSbAppendDef(instr), bb, asbo)
-            case None        =>
-              ()
-          }
+          val asbos = idToAsbo(getId(getFirstSbAppendDef(instr)))
+          append(instr, asbos, getAppendArgument(instr), bb, asbo)
         // append from StringBuilder constructor invocation
         case instr: SSAAbstractInvokeInstruction if isSbConstructorWithStringParam(instr) =>
-          idToAsbo get getId(getSbConstructorDef(instr)) match {
-            case Some(asbos) =>
-              append(instr, asbos, getSbConstructorArgument(instr), bb, asbo)
-            case None        =>
-              ()
-          }
+          val asbos = idToAsbo(getId(getSbConstructorDef(instr)))
+          append(instr, asbos, getSbConstructorArgument(instr), bb, asbo)
         // String.format
         case instr: SSAAbstractInvokeInstruction if isStringFormat(instr)                 =>
           ???
@@ -150,7 +163,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule {
   private[this] def append(
     instr: SSAAbstractInvokeInstruction,
     asbos: Set[ASBO],
-    sbVn: ValueNumber,
+    argVn: ValueNumber,
     bb: BB,
     factAsbo: ASBO
   ): Unit = {
@@ -159,7 +172,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule {
     def getId(vn: ValueNumber) = createIdentifier(vn, node)
     for {
       sb   <- asbos
-      arg  <- idToAsbo(getId(sbVn))
+      arg  <- idToAsbo(getId(argVn))
       if (sb == factAsbo) || (arg == factAsbo)
       succ <- successors
     } appendResult(bb, succ, sb, createAutomaton(instr, node, arg.identifier))
