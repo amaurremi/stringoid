@@ -1,4 +1,4 @@
-package debug;
+package intraproc;
 
 public class IfStatement {
 
