@@ -17,10 +17,19 @@ import scala.collection.mutable
 
 trait ExplodedStringAppendModule extends InterProcASBOModule {
 
-  type BB = BasicBlockInContext[IExplodedBasicBlock]
+  case class BB(bb: BasicBlockInContext[IExplodedBasicBlock]) {
+    override def toString = "BB " + bb.getLastInstruction.toString
+    def getNode = bb.getNode
+    def instruction = bb.getLastInstruction
+    def getSuccNodes = cfg getSuccNodes bb map BB.apply
+    def getCallTargets = cfg getCallTargets bb
+    def getCallSites(callee: CGNode) = cfg getCallSites (bb, callee) map BB.apply
+    def getReturnSites = cfg getReturnSites bb map BB.apply
+  }
 
   type ExplodedNode = (BB, ASBO)
 
+  // todo have two maps as Ondřej suggestsed
   private[this] val result = mutable.Map.empty[ExplodedNode, StringPartAutomaton] withDefaultValue StringPartAutomaton()
 
   def stringAppends(fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
@@ -95,53 +104,59 @@ trait ExplodedStringAppendModule extends InterProcASBOModule {
     initializeWorklist()
 
     while (worklist.nonEmpty) {
-      val (bb, asbo) = worklist.dequeue()
+      val (bb, factAsbo) = worklist.dequeue()
       val node       = CallGraphNode(bb.getNode)
 
       def getId(vn: ValueNumber) = createIdentifier(vn, node)
 
-      bb.getLastInstruction match {
+      bb.instruction match {
         // append from StringBuilder.append() invocation
         case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                     =>
           val asbos = idToAsbo(getId(getFirstSbAppendDef(instr)))
-          append(instr, asbos, getAppendArgument(instr), bb, asbo)
+          append(instr, asbos, getAppendArgument(instr), bb, factAsbo)
         // append from StringBuilder constructor invocation
         case instr: SSAAbstractInvokeInstruction if isSbConstructorWithStringParam(instr) =>
           val asbos = idToAsbo(getId(getSbConstructorDef(instr)))
-          append(instr, asbos, getSbConstructorArgument(instr), bb, asbo)
+          append(instr, asbos, getSbConstructorArgument(instr), bb, factAsbo)
         // String.format
         case instr: SSAAbstractInvokeInstruction if isStringFormat(instr)                 =>
           ???
-        // inter-procedural call-to-start edge: parameter substitution in call
+        // inter-procedural call-to-start and call-to-return edges:
+        // parameter substitution in call + propagate facts down to return node
         case instr: SSAAbstractInvokeInstruction                                           =>
+          // call-to-start
           val substitutionAsbos = argumentAsbos(idToAsbo, instr, node)
           for {
-            succ: CGNode           <- cfg getCallTargets bb
+            succ: CGNode       <- bb.getCallTargets
             (asbo, paramIndex) <- substitutionAsbos
+            if asbo == factAsbo // do I need to propagate anything else inter-procedurally?
             paramId             = createIdentifier(paramIndex + 1, CallGraphNode(succ))
             paramAsbo          <- idToAsbo getOrElse (paramId, Set(ASBO(paramId))) // todo add params to ID-to-ASBO by default
             oldAutomaton        = result getOrElse ((bb, paramAsbo), StringPartAutomaton())
             automaton           = result getOrElse ((bb, asbo), StringPartAutomaton())
-            targetBB            = cfg getEntry succ
+            targetBB            = BB(cfg getEntry succ)
           } updateResultAndWorklist((targetBB, paramAsbo), oldAutomaton | automaton)
+          // call-to-return
+          propagateIdentity(bb.getReturnSites, bb, factAsbo)
         // inter-procedural end-to-return edge: return value assignment
         case instr: SSAReturnInstruction                                                   =>
           val retDef = instr.getResult
           if (retDef > 0) {
             val retCgNode = bb.getNode
+            val retNode   = CallGraphNode(retCgNode)
+            val resultId  = createIdentifier(retDef, retNode)
             for {
+              // return stuff
+              resultAsbo   <- idToAsbo getOrElse (resultId, Set(createAsbo(retDef, retNode)))
+              if resultAsbo == factAsbo
               // call stuff
-              callSite: BB <- cfg getCallSites(bb, retCgNode)
-              callerInstr   = callSite.getLastInstruction.asInstanceOf[SSAAbstractInvokeInstruction]
+              callSite: BB <- bb getCallSites retCgNode
+              callerInstr   = callSite.instruction.asInstanceOf[SSAAbstractInvokeInstruction]
               if instr.returnsPrimitiveType || hasStringReturnType(callerInstr) // todo add primitive types?
               callDef       = callerInstr.getDef
               callerNode    = CallGraphNode(callSite.getNode)
               callId        = createIdentifier(callDef, callerNode)
               callAsbo     <- idToAsbo getOrElse(callId, Set(createAsbo(callDef, callerNode)))
-              // return stuff
-              retNode       = CallGraphNode(retCgNode)
-              resultId      = createIdentifier(retDef, retNode)
-              resultAsbo   <- idToAsbo getOrElse (resultId, Set(createAsbo(retDef, retNode)))
             } {
               val callExplNode = (callSite, callAsbo)
               val prevResult   = result(callExplNode)
@@ -150,16 +165,23 @@ trait ExplodedStringAppendModule extends InterProcASBOModule {
             }
           }
         case _                                                                           =>
-          cfg getSuccNodes bb foreach {
-            succ =>
-              val succNode = (succ, asbo)
-              updateResultAndWorklist(succNode, result(succNode) | result((bb, asbo))) // todo handle loops
-          }
+          propagateIdentity(bb.getSuccNodes, bb, factAsbo)
       }
     }
     result.valuesIterator
   }
 
+  private[this] def propagateIdentity(succNodes: Iterator[BB], bb: BB, factAsbo: ASBO): Unit =
+    succNodes foreach {
+      succ =>
+        val succNode = (succ, factAsbo)
+        updateResultAndWorklist(succNode, result(succNode) | result((bb, factAsbo))) // todo handle loops
+    }
+
+  /**
+    * @param asbos  ASBOs of the stringbuilders to which we're appending
+    * @param argVn  value number of the argument that's being appended
+    */
   private[this] def append(
     instr: SSAAbstractInvokeInstruction,
     asbos: Set[ASBO],
@@ -167,15 +189,25 @@ trait ExplodedStringAppendModule extends InterProcASBOModule {
     bb: BB,
     factAsbo: ASBO
   ): Unit = {
-    val successors = cfg getSuccNodes bb
+    val successors = bb.getSuccNodes
     val node = CallGraphNode(bb.getNode)
     def getId(vn: ValueNumber) = createIdentifier(vn, node)
     for {
-      sb   <- asbos
-      arg  <- idToAsbo(getId(argVn))
-      if (sb == factAsbo) || (arg == factAsbo)
-      succ <- successors
-    } appendResult(bb, succ, sb, createAutomaton(instr, node, arg.identifier))
+      sb  <- asbos
+      arg <- idToAsbo(getId(argVn))
+    } {
+      successors foreach {
+        succ =>
+          if ((sb == factAsbo) || (arg == factAsbo)) {
+            val argAuto = result getOrElse((bb, arg), createAutomaton(instr, node, arg.identifier))
+            appendResult(bb, succ, sb, argAuto)
+          } else
+            updateResultAndWorklist((succ, factAsbo), result(bb, factAsbo))
+          // if the fact is `arg`, we also need to propagate information for it
+          if (arg == factAsbo)
+            updateResultAndWorklist((succ, factAsbo), result(bb, factAsbo))
+      }
+    }
   }
 
   // todo is this right?
@@ -187,7 +219,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule {
           val asbos = idToAsbo(createIdentifier(sbDef, CallGraphNode(bb.getNode)))
           asbos foreach {
             asbo =>
-              worklist enqueue ((bb, asbo))
+              worklist enqueue ((BB(bb), asbo))
           }
         }
 

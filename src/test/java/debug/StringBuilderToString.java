@@ -1,4 +1,4 @@
-package intraproc;
+package debug;
 
 public class StringBuilderToString {
 
@@ -12,3 +12,13 @@ public class StringBuilderToString {
         Assertions.shouldContainHttp("string-builder-to-string.com/path");
     }
 }
+
+// 2 = new SB
+// 2 = SB(4)
+// 6 = new SB
+// 8 = 2.toString
+// 6 = SB(8)
+// 11 = 6.append(12)
+
+// 4 -> "http://..."
+// 12 -> "path"
