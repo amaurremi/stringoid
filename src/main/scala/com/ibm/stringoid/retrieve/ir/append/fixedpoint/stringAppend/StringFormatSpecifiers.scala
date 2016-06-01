@@ -50,6 +50,11 @@ trait StringFormatSpecifiers extends StringAppendTypes {
         store getUse 2
     }
 
+  def getStringFormatArgs(instr: SSAAbstractInvokeInstruction, node: Node): Iterator[ValueNumber] = {
+    val formatArrayValNum = getStringFormatArray(instr)
+    getArrayValNums(node, formatArrayValNum)
+  }
+
   /**
     * Produce sequence of [[StringPart]]s for String.format arguments in the right concatenation order,
     * in the form of an automaton.

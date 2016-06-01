@@ -121,7 +121,40 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
           append(instr, asbos, getSbConstructorArgument(instr), bb, factAsbo)
         // String.format
         case instr: SSAAbstractInvokeInstruction if isStringFormat(instr)                 =>
-          ???
+          val argValnums = getStringFormatArgs(instr, node) map {
+            vn =>
+              idToAsbo(createIdentifier(vn, node))
+          }
+          val factInArgs = argValnums contains factAsbo
+          val sfAsbo     = createAsbo(instr.getDef, node)
+          if (factInArgs || sfAsbo == factAsbo) {
+            val sfArgSeqs: Seq[Seq[StringPart]] = reorderStringFormatArgs(instr, node)
+            val automaton = sfArgSeqs.foldLeft(StringPartAutomaton()) {
+              case (prevAuto, sfArgs) =>
+                val newAuto = sfArgs.tail.foldLeft(StringPartAutomaton(instr, sfArgs.head)) {
+                  case (resultAutomaton, stringFormatArg) =>
+                    stringFormatArg match {
+                      case StringIdentifier(id) =>
+                        val automata = idToAsbo(id) map {
+                          asbo =>
+                            result getOrElse ((bb, asbo), StringPartAutomaton(StringIdentifier(id)))
+                        }
+                        resultAutomaton +++ StringPartAutomaton.merge(automata.toIterator)
+                      case other =>
+                        val appendAutomaton = StringPartAutomaton(instr, other)
+                        resultAutomaton +++ appendAutomaton
+                    }
+                }
+                prevAuto | newAuto
+            }
+            bb.getSuccNodes foreach {
+              succ =>
+                updateResultAndWorklist((succ, sfAsbo), automaton)
+            }
+          } else
+            propagateIdentity(bb.getSuccNodes, bb, factAsbo)
+          if (factInArgs)
+            propagateIdentity(bb.getSuccNodes, bb, factAsbo)
         // inter-procedural call-to-start and call-to-return edges:
         // parameter substitution in call + propagate facts down to return node
         case instr: SSAAbstractInvokeInstruction                                           =>
