@@ -223,24 +223,23 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     bb: BB,
     factAsbo: ASBO
   ): Unit = {
-    val successors = bb.getSuccNodes
     val node = CallGraphNode(bb.getNode)
     def getId(vn: ValueNumber) = createIdentifier(vn, node)
     for {
-      sb  <- asbos
-      arg <- idToAsbo(getId(argVn))
+      succ <- bb.getSuccNodes.toIterable
+      sb   <- asbos
+      args  = idToAsbo(getId(argVn))
     } {
-      successors foreach {
-        succ =>
-          if ((sb == factAsbo) || (arg == factAsbo)) {
-            val argAuto = result getOrElse ((bb, arg), createAutomaton(instr, node, arg.identifier))
-            appendResult(bb, succ, sb, argAuto)
-          } else
-            updateResultAndWorklist((succ, factAsbo), result(bb, factAsbo))
-          // if the fact is `arg`, we also need to propagate information for it
-          if (arg == factAsbo)
-            updateResultAndWorklist((succ, factAsbo), result(bb, factAsbo))
+      if ((sb == factAsbo) || (args contains factAsbo)) {
+        val argAutos = args map {
+          a =>
+            result getOrElse ((bb, a), createAutomaton(instr, node, a.identifier))
+        }
+        val argAuto = StringPartAutomaton.merge(argAutos.toIterator)
+        appendResult(bb, succ, sb, argAuto)
       }
+      if (sb != factAsbo)
+        updateResultAndWorklist((succ, factAsbo), result(bb, factAsbo))
     }
   }
 
