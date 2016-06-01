@@ -1,4 +1,4 @@
-package intraproc;
+package debug;
 
 public class IfStatement {
 
@@ -13,10 +13,22 @@ public class IfStatement {
         }
         sb.append(query);
 
-        String url = sb.toString();
-        System.out.println(url);
+        System.out.println(sb.toString());
 
         Assertions.shouldContainHttp("if.com?key1=param1");
         Assertions.shouldContainHttp("if.com?key2=param2");
     }
 }
+
+// 2 = new SB
+// 2 = SB(4)
+// conditional branch
+//     10 = 2.append(11)
+// conditional branch
+// 19 = 2.append(14)
+
+
+// 4 = "http://"
+// 11 = "if.com"
+// 13 = "key1=param1"
+// 18 = "key2=param2"

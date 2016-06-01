@@ -73,11 +73,18 @@ trait AbstractStringBuilderModule extends StringAppendTypes {
   }
 
   protected def createAbstractObjectNumbering(node: Node)(implicit tag: ClassTag[ASBO]): AsboMapping = {
-    val abstractObjects = node.getIr.iterateNormalInstructions() collect {
+    val abstractObjects = node.getIr.iterateAllInstructions() flatMap {
       case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv)                            =>
-        createAsbo(getSbConstructorDef(inv), node)
+        Iterator(createAsbo(getSbConstructorDef(inv), node))
       case inv: SSAAbstractInvokeInstruction if isStringFormat(inv) || hasStringReturnType(inv) =>
-        createAsbo(inv.getDef, node)
+        Iterator(createAsbo(inv.getDef, node))
+      case phi: SSAPhiInstruction                                                               =>
+        0 until phi.getNumberOfUses map {
+          use =>
+            createAsbo(phi getUse use, node)
+        }
+      case _                                                                                    =>
+        Iterator.empty
     }
 
     new ObjectArrayMapping[ASBO](abstractObjects.toArray[ASBO])
@@ -151,18 +158,26 @@ trait AbstractStringBuilderModule extends StringAppendTypes {
 
     def getDef(id: Identifier): SSAInstruction
 
+    def getUses(id: Identifier): Iterator[SSAInstruction]
+
     class StringBuilderTransferFunctions extends ITransferFunctionProvider[Identifier, BitVectorVariable] {
 
       def getNodeTransferFunction(id: Identifier): UnaryOperator[BitVectorVariable] = {
         getDef(id) match {
-          case instr if isSbConstructorOrFormatInDefUse(instr)                   =>
+          case instr if isSbConstructorOrFormatInDefUse(instr) =>
             createOperator(id, instr)
-//          case instr: SSAAbstractInvokeInstruction if hasStringReturnType(instr) =>
-//            createOperator(id, instr)
-          case _ => // todo is this wrong? what if this phi depends on another phi?
+          case instr if pointsToPhi(id) && !(isPhiDef(id)) =>
+            createOperator(id, instr)
+          case _                                               => // todo is this wrong? what if this phi depends on another phi?
             BitVectorIdentity.instance
         }
       }
+
+      private[this] def pointsToPhi(id: Identifier): Boolean =
+        getUses(id) exists { _.isInstanceOf[SSAPhiInstruction] }
+
+      private[this] def isPhiDef(id: Identifier): Boolean =
+        getDef(id).isInstanceOf[SSAPhiInstruction]
 
       private[this] def createOperator(id: Identifier, instr: SSAInstruction): UnaryOperator[BitVectorVariable] = {
         val mappedIndex = abstractObjectNumbering getMappedIndex ASBO(id)

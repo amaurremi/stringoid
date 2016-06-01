@@ -106,7 +106,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
 
     while (worklist.nonEmpty) {
       val (bb, factAsbo) = worklist.dequeue()
-      val node       = CallGraphNode(bb.getNode)
+      val node           = CallGraphNode(bb.getNode)
 
       def getId(vn: ValueNumber) = createIdentifier(vn, node)
 
@@ -233,7 +233,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
       successors foreach {
         succ =>
           if ((sb == factAsbo) || (arg == factAsbo)) {
-            val argAuto = result getOrElse((bb, arg), createAutomaton(instr, node, arg.identifier))
+            val argAuto = result getOrElse ((bb, arg), createAutomaton(instr, node, arg.identifier))
             appendResult(bb, succ, sb, argAuto)
           } else
             updateResultAndWorklist((succ, factAsbo), result(bb, factAsbo))

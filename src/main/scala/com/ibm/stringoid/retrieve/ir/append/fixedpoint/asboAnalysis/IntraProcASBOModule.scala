@@ -4,6 +4,8 @@ import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.IrNodes
 import com.ibm.wala.ssa.SSAInstruction
 
+import scala.collection.JavaConversions._
+
 trait IntraProcASBOModule extends AbstractStringBuilderModule with IrNodes {
 
   override final def getSolver(node: Node, numbering: AsboMapping) =
@@ -15,5 +17,7 @@ trait IntraProcASBOModule extends AbstractStringBuilderModule with IrNodes {
   ) extends AsboFixedPointSolver(node, numbering) {
 
     override def getDef(id: ValueNumber): SSAInstruction = node.getDu getDef id
+
+    override def getUses(id: Identifier): Iterator[SSAInstruction] = node.getDu getUses id
   }
 }

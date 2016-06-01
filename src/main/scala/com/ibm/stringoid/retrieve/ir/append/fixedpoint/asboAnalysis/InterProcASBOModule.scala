@@ -76,5 +76,8 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with StringAppendT
 
     override def getDef(id: CgIdentifier): SSAInstruction =
       CallGraphNode(id.node).getDu getDef id.vn
+
+    override def getUses(id: Identifier): Iterator[SSAInstruction] =
+      CallGraphNode(id.node).getDu getUses id.vn
   }
 }
