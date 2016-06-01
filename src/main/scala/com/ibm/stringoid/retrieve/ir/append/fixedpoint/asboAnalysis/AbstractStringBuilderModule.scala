@@ -6,7 +6,6 @@ import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.StringAppend
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{BitVectorVariable, UnaryOperator}
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAPhiInstruction}
-import com.ibm.wala.types.FieldReference
 import com.ibm.wala.util.collections.ObjectArrayMapping
 import com.ibm.wala.util.graph.Graph
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph
@@ -39,8 +38,6 @@ trait AbstractStringBuilderModule extends StringAppendTypes {
 
   protected final def asboSolver(node: Node): AsboFixedPointSolver =
     getSolver(node, createAbstractObjectNumbering(node))
-
-  def fieldToAutomaton: Map[FieldReference, StringPartAutomaton]
 
   /**
     * If the method deals with StringBuilders, returns Some result

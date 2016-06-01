@@ -4,6 +4,7 @@ import com.ibm.stringoid.retrieve.UrlCheck._
 import com.ibm.stringoid.retrieve.ir._
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.InterProcASBOModule
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.StringFormatSpecifiers
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.cfg.{BasicBlockInContext, ExplodedInterproceduralCFG}
@@ -15,7 +16,7 @@ import seqset.regular.Automaton
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
-trait ExplodedStringAppendModule extends InterProcASBOModule {
+trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSpecifiers {
 
   case class BB(bb: BasicBlockInContext[IExplodedBasicBlock]) {
     override def toString = "BB " + bb.getLastInstruction.toString

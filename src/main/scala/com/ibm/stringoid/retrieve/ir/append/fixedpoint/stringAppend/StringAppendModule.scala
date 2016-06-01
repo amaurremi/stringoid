@@ -3,7 +3,6 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend
 import java.util
 
 import com.ibm.stringoid.retrieve.ir.ValueNumber
-import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.AbstractStringBuilderModule
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.dataflow.graph._
@@ -17,7 +16,7 @@ import scala.collection.JavaConversions._
 import scala.collection.breakOut
 import scala.collection.mutable.ArrayBuffer
 
-trait StringAppendModule extends StringAppendTypes with AbstractStringBuilderModule {
+trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuilderModule {
 
   protected val MISSING_STRING_BUILDER_MESSAGE: String =
     "Value-number-to-ASBO map should contain the value number for this string builder."
@@ -162,14 +161,6 @@ trait StringAppendModule extends StringAppendTypes with AbstractStringBuilderMod
         mapping.asboToAutomaton = mapping.asboToAutomaton ++ addToLhsMap
       }
 
-      def createAutomaton(instruction: SSAInstruction, node: Node, id: Identifier): StringPartAutomaton =
-        node.getDu getDef valNum(id) match {
-          case instr: SSAFieldAccessInstruction if fieldToAutomaton contains instr.getDeclaredField =>
-            fieldToAutomaton(instr.getDeclaredField)
-          case _                                                                                    =>
-            StringPartAutomaton(instruction, StringIdentifier(id))
-        }
-
       /**
         * Resolve the union of all automata to which this value number could map.
         * 1. For each ASBO, checks if value number is in `rhsMap`, and
@@ -278,10 +269,10 @@ trait StringAppendModule extends StringAppendTypes with AbstractStringBuilderMod
       protected case class StringFormatAppendOperator(
         instr: SSAAbstractInvokeInstruction,
         node: Node
-      ) extends AbstractAppendOperator with StringFormatSpecifiers {
+      ) extends AbstractAppendOperator {
 
         override def createNewMap(rhsMap: AsboMap): AsboMap = {
-          val sfArgSeqs: Seq[Seq[StringPart]] = reorderStringFormatArgs
+          val sfArgSeqs: Seq[Seq[StringPart]] = reorderStringFormatArgs(instr, node)
           if (sfArgSeqs.isEmpty)
             rhsMap
           else {
@@ -305,45 +296,6 @@ trait StringAppendModule extends StringAppendTypes with AbstractStringBuilderMod
                 updNewMap + (createAsbo(instr.getDef, node) -> automaton)
             }
           }
-        }
-
-        private[this] def getArrayValNums(arrayDef: ValueNumber): Iterator[ValueNumber] =
-          node.getDu getUses arrayDef collect {
-            case store: SSAArrayStoreInstruction =>
-              store getUse 2
-          }
-
-        /**
-          * Produce sequence of [[StringPart]]s for String.format arguments in the right concatenation order,
-          * in the form of an automaton.
-          * This method does not substitute the value numbers with the corresponding automata or [[ASBO]]s.
-          */
-        def reorderStringFormatArgs: Vector[Vector[StringPart]] = {
-          val firstArg = getFirstStringFormatArg(instr)
-          val formatArrayValNum = getStringFormatArray(instr)
-          val table = node.getIr.getSymbolTable
-          if (table isStringConstant firstArg) {
-            val argValNums = getArrayValNums(formatArrayValNum)
-            val (formattedParts, specifierNum) = parse(table getStringValue firstArg)
-            formattedParts.foldLeft(Vector.empty[Vector[StringPart]]) {
-              case (parts, FormattedStringPart(string)) =>
-                val stringPart = StaticFieldPart(string)
-                if (parts.isEmpty) Vector(Vector(stringPart))
-                else parts map {
-                  _ :+ stringPart
-                }
-              case (parts, Specifier(count)) =>
-                val newVariables =
-                  if (argValNums.hasNext)
-                    createAutomaton(instr, node, createIdentifier(argValNums.next(), node)).automaton.iterator.toVector
-                  else Vector(Seq(MissingStringFormatArgument))
-                if (parts.isEmpty) newVariables map { _.toVector }
-                else for {
-                  v <- newVariables
-                  p <- parts
-                } yield p ++ v
-            }
-          } else Vector.empty[Vector[StringPart]]
         }
       }
 

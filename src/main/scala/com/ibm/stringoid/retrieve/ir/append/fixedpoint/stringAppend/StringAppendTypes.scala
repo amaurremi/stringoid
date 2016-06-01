@@ -1,10 +1,21 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend
 
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.Nodes
-import com.ibm.wala.ssa.SSAInstruction
+import com.ibm.wala.ssa.{SSAFieldAccessInstruction, SSAInstruction}
+import com.ibm.wala.types.FieldReference
 import seqset.regular.Automaton
 
 trait StringAppendTypes extends Nodes {
+
+  def fieldToAutomaton: Map[FieldReference, StringPartAutomaton]
+
+  def createAutomaton(instruction: SSAInstruction, node: Node, id: Identifier): StringPartAutomaton =
+    node.getDu getDef valNum(id) match {
+      case instr: SSAFieldAccessInstruction if fieldToAutomaton contains instr.getDeclaredField =>
+        fieldToAutomaton(instr.getDeclaredField)
+      case _                                                                                    =>
+        StringPartAutomaton(instruction, StringIdentifier(id))
+    }
 
   case class StringPartAutomaton(automaton: Automaton[StringPart], instructions: Set[Int]) {
 
