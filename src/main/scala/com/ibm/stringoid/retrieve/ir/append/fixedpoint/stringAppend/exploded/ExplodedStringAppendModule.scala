@@ -73,7 +73,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     }
   }
 
-  private[this] val worklist = new mutable.Queue[ExplodedNode] // todo heap?
+  private[this] val worklist = new mutable.Queue[ExplodedNode] // todo heap? in any case, how can we order the statements?
 
   private[this] val cfg = ExplodedInterproceduralCFG.make(callGraph)
 
@@ -111,11 +111,11 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
       def getId(vn: ValueNumber) = createIdentifier(vn, node)
 
       bb.instruction match {
-        // append from StringBuilder.append() invocation
+        // StringBuilder.append(str)
         case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                     =>
           val asbos = idToAsbo(getId(getFirstSbAppendDef(instr)))
           append(instr, asbos, getAppendArgument(instr), bb, factAsbo)
-        // append from StringBuilder constructor invocation
+        // new StringBuilder(str)
         case instr: SSAAbstractInvokeInstruction if isSbConstructorWithStringParam(instr) =>
           val asbos = idToAsbo(getId(getSbConstructorDef(instr)))
           append(instr, asbos, getSbConstructorArgument(instr), bb, factAsbo)
@@ -209,7 +209,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     succNodes foreach {
       succ =>
         val succNode = (succ, factAsbo)
-        updateResultAndWorklist(succNode, result(succNode) | result((bb, factAsbo))) // todo handle loops
+        updateResultAndWorklist(succNode, result(succNode) | result((bb, factAsbo)))
     }
 
   /**

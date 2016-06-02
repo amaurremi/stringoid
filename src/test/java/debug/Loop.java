@@ -1,4 +1,4 @@
-package intraproc;
+package debug;
 
 public class Loop {
 
@@ -15,3 +15,16 @@ public class Loop {
         Assertions.shouldContainHttp("loop.com");
     }
 }
+
+// 2 = new SB
+// SB(4)
+// 8 = arrayload
+// 6 = binaryop(eq)
+// conditional branch
+//     10 = 2.append(11)
+// goto 6->2
+// 15 = 2.append(16)
+
+// 4 = "http://"
+// 11 = "loop.com"
+// 16 = "/path"
