@@ -14,6 +14,8 @@ import seqset.regular.Automaton
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
+// todo remove instructions from StringPartAutomaton!
+
 trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSpecifiers with CFG {
 
   // todo have two maps as Ondřej suggestsed
@@ -159,11 +161,11 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
           for {
             succ: CGNode       <- cfg getCallTargets bb
             (asbo, paramIndex) <- substitutionAsbos
-            if asbo == factAsbo // do I need to propagate anything else inter-procedurally?
+            if asbo == factAsbo // todo do I need to propagate anything else inter-procedurally?
             paramId             = createIdentifier(paramIndex + 1, CallGraphNode(succ))
             paramAsbo          <- idToAsbo getOrElse (paramId, Set(ASBO(paramId))) // todo add params to ID-to-ASBO by default
             oldAutomaton        = result getOrElse ((bb, paramAsbo), StringPartAutomaton())
-            automaton           = result getOrElse ((bb, asbo), StringPartAutomaton())
+            automaton           = result getOrElse ((bb, asbo), createAutomaton(instr, node, asbo.identifier))
             targetBB            = cfg getEntry succ
           } updateResultAndWorklist((targetBB, paramAsbo), oldAutomaton | automaton)
           // call-to-return
@@ -239,5 +241,47 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
       if (sb != factAsbo)
         updateResultAndWorklist((succ, factAsbo), result(bb, factAsbo))
     }
+  }
+
+  private[this] def getConstantArgs(bb: BB, instr: SSAAbstractInvokeInstruction): Seq[ValueNumber] = {
+    val table = bb.getNode.getIR.getSymbolTable
+    0 until instr.getNumberOfParameters flatMap {
+      arg =>
+        val vn = instr getUse arg
+        if (table isConstant vn) Seq(vn)
+        else Seq.empty[ValueNumber]
+    }
+  }
+
+  // todo is this right?
+  private[this] def initializeWorklist(cfg: AcyclicCfg, idToAsbo: Map[Identifier, Set[ASBO]]): Worklist = {
+
+    val worklist = mutable.Queue.empty[ExplodedNode]
+
+    cfg.nodesIterator foreach {
+      bb =>
+
+        def addToWl(sbDef: ValueNumber): Unit = {
+          val asbos = idToAsbo(createIdentifier(sbDef, CallGraphNode(bb.getNode)))
+          asbos foreach {
+            asbo =>
+              worklist enqueue ((bb, asbo))
+          }
+        }
+
+        bb.getLastInstruction match {
+          case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                     =>
+            addToWl(getFirstSbAppendDef(instr))
+          case instr: SSAAbstractInvokeInstruction if isSbConstructorWithStringParam(instr) =>
+            addToWl(getSbConstructorDef(instr))
+          case instr: SSAAbstractInvokeInstruction if isStringFormat(instr)                 =>
+            addToWl(instr.getDef)
+          case instr: SSAAbstractInvokeInstruction if getConstantArgs(bb, instr).nonEmpty   =>
+            getConstantArgs(bb, instr) foreach addToWl
+          case _                                                                            =>
+            ()
+        }
+    }
+    worklist
   }
 }

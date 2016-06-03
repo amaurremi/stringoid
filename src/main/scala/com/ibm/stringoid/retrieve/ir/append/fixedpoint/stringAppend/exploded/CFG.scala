@@ -1,7 +1,5 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded
 
-import com.ibm.stringoid.retrieve.ir._
-import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.InterProcASBOModule
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ipa.callgraph.pruned.PrunedCallGraph
@@ -59,7 +57,7 @@ trait CFG extends InterProcASBOModule {
       }
 
       // CFG with acyclic inter-procedural and possibly cyclic intra-procedural edges
-      val acyclicInterprocCFG: ExplodedInterproceduralCFG = ExplodedInterproceduralCFG.make(acyclicCallGraph)
+      val acyclicInterprocCFG: ExplodedInterproceduralCFG = TimeResult("inter-procedurally acyclic CFG", ExplodedInterproceduralCFG.make(acyclicCallGraph))
 
       for {
         cgNode   <- acyclicCallGraph
@@ -107,35 +105,5 @@ trait CFG extends InterProcASBOModule {
     def getReturnSites(bb: BB): Iterator[BB] = acyclicInterProcCFG getReturnSites bb
 
     def nodesIterator: Iterator[BB] = graph.iterator()
-  }
-
-  // todo is this right?
-  def initializeWorklist(cfg: AcyclicCfg, idToAsbo: Map[Identifier, Set[ASBO]]): Worklist = {
-
-    val worklist = mutable.Queue.empty[ExplodedNode]
-
-    cfg.nodesIterator foreach {
-      bb =>
-
-        def addToWl(sbDef: ValueNumber): Unit = {
-          val asbos = idToAsbo(createIdentifier(sbDef, CallGraphNode(bb.getNode)))
-          asbos foreach {
-            asbo =>
-              worklist enqueue ((bb, asbo))
-          }
-        }
-
-        bb.getLastInstruction match {
-          case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                     =>
-            addToWl(getFirstSbAppendDef(instr))
-          case instr: SSAAbstractInvokeInstruction if isSbConstructorWithStringParam(instr) =>
-            addToWl(getSbConstructorDef(instr))
-          case instr: SSAAbstractInvokeInstruction if isStringFormat(instr)                 =>
-            addToWl(instr.getDef)
-          case _                                                                            =>
-            ()
-        }
-    }
-    worklist
   }
 }
