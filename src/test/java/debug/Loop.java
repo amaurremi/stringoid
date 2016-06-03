@@ -11,7 +11,7 @@ public class Loop {
 
         System.out.println(sb.toString());
 
-        Assertions.shouldContainHttp("loop.com/path");
+//        Assertions.shouldContainHttp("loop.com/path");
         Assertions.shouldContainHttp("loop.com");
     }
 }

@@ -7,8 +7,6 @@ import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.InterProcASB
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.StringFormatSpecifiers
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ipa.callgraph.CGNode
-import com.ibm.wala.ipa.cfg.{BasicBlockInContext, ExplodedInterproceduralCFG}
-import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAFieldAccessInstruction, SSAInstruction, SSAReturnInstruction}
 import com.ibm.wala.types.FieldReference
 import seqset.regular.Automaton
@@ -16,19 +14,7 @@ import seqset.regular.Automaton
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
-trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSpecifiers {
-
-  case class BB(bb: BasicBlockInContext[IExplodedBasicBlock]) {
-    override def toString = "BB " + bb.getLastInstruction.toString
-    def getNode = bb.getNode
-    def instruction = bb.getLastInstruction
-    def getSuccNodes = cfg getSuccNodes bb map BB.apply
-    def getCallTargets = cfg getCallTargets bb
-    def getCallSites(callee: CGNode) = cfg getCallSites (bb, callee) map BB.apply
-    def getReturnSites = cfg getReturnSites bb map BB.apply
-  }
-
-  type ExplodedNode = (BB, ASBO)
+trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSpecifiers with CFG {
 
   // todo have two maps as Ondřej suggestsed
   private[this] val result = mutable.Map.empty[ExplodedNode, StringPartAutomaton] withDefaultValue StringPartAutomaton()
@@ -73,10 +59,6 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     }
   }
 
-  private[this] val worklist = new mutable.Queue[ExplodedNode] // todo heap? in any case, how can we order the statements?
-
-  private[this] val cfg = ExplodedInterproceduralCFG.make(callGraph)
-
   private[this] def createAutomaton(instruction: SSAInstruction, node: Node, id: Identifier): StringPartAutomaton =
     node.getDu getDef valNum(id) match {
       case instr: SSAFieldAccessInstruction if fieldToAutomaton contains instr.getDeclaredField =>
@@ -85,7 +67,14 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
         StringPartAutomaton(instruction, StringIdentifier(id))
     }
 
-  private[this] def appendResult(bb: BB, succ: BB, asbo: ASBO, newAutomaton: StringPartAutomaton): Unit = {
+  private[this] def appendResult(
+    bb: BB,
+    succ: BB,
+    asbo: ASBO,
+    newAutomaton: StringPartAutomaton
+  )(
+    implicit worklist: Worklist
+  ): Unit = {
     val succNode  = (succ, asbo)
     val oldResult = result((bb, asbo))
     val newResult =
@@ -94,7 +83,12 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     updateResultAndWorklist(succNode, newResult)
   }
 
-  private[this] def updateResultAndWorklist(node: ExplodedNode, automaton: StringPartAutomaton): Unit = {
+  private[this] def updateResultAndWorklist(
+    node: ExplodedNode,
+    automaton: StringPartAutomaton
+  )(
+    implicit worklist: Worklist
+  ): Unit = {
     val oldResult = result(node)
     result += (node -> automaton)
     if (oldResult != automaton) worklist enqueue node
@@ -102,7 +96,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
 
   private[this] def getResult: Iterator[StringPartAutomaton] = {
 
-    initializeWorklist()
+    implicit val worklist = initializeWorklist(idToAsbo)
 
     while (worklist.nonEmpty) {
       val (bb, factAsbo) = worklist.dequeue()
@@ -168,7 +162,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
             paramAsbo          <- idToAsbo getOrElse (paramId, Set(ASBO(paramId))) // todo add params to ID-to-ASBO by default
             oldAutomaton        = result getOrElse ((bb, paramAsbo), StringPartAutomaton())
             automaton           = result getOrElse ((bb, asbo), StringPartAutomaton())
-            targetBB            = BB(cfg getEntry succ)
+            targetBB            = getEntry(succ)
           } updateResultAndWorklist((targetBB, paramAsbo), oldAutomaton | automaton)
           // call-to-return
           propagateIdentity(bb.getReturnSites, bb, factAsbo)
@@ -205,7 +199,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     result.valuesIterator
   }
 
-  private[this] def propagateIdentity(succNodes: Iterator[BB], bb: BB, factAsbo: ASBO): Unit =
+  private[this] def propagateIdentity(succNodes: Iterator[BB], bb: BB, factAsbo: ASBO)(implicit worklist: Worklist): Unit =
     succNodes foreach {
       succ =>
         val succNode = (succ, factAsbo)
@@ -222,6 +216,8 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     argVn: ValueNumber,
     bb: BB,
     factAsbo: ASBO
+  )(
+    implicit worklist: Worklist
   ): Unit = {
     val node = CallGraphNode(bb.getNode)
     def getId(vn: ValueNumber) = createIdentifier(vn, node)
@@ -240,32 +236,6 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
       }
       if (sb != factAsbo)
         updateResultAndWorklist((succ, factAsbo), result(bb, factAsbo))
-    }
-  }
-
-  // todo is this right?
-  private[this] def initializeWorklist() = {
-    cfg foreach {
-      bb =>
-
-        def addToWl(sbDef: ValueNumber): Unit = {
-          val asbos = idToAsbo(createIdentifier(sbDef, CallGraphNode(bb.getNode)))
-          asbos foreach {
-            asbo =>
-              worklist enqueue ((BB(bb), asbo))
-          }
-        }
-
-        bb.getLastInstruction match {
-          case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                     =>
-            addToWl(getFirstSbAppendDef(instr))
-          case instr: SSAAbstractInvokeInstruction if isSbConstructorWithStringParam(instr) =>
-            addToWl(getSbConstructorDef(instr))
-          case instr: SSAAbstractInvokeInstruction if isStringFormat(instr)                 =>
-            addToWl(instr.getDef)
-          case _                                                                            =>
-            ()
-        }
     }
   }
 }
