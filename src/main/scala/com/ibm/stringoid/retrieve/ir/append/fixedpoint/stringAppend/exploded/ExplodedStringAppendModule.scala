@@ -182,15 +182,15 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
               resultAsbo   <- idToAsbo getOrElse (resultId, Set(createAsbo(retDef, retNode)))
               if resultAsbo == factAsbo
               // call stuff
-              callSite: BB <- cfg getCallSites (bb, retCgNode)
-              callerInstr   = callSite.getLastInstruction.asInstanceOf[SSAAbstractInvokeInstruction]
-              if instr.returnsPrimitiveType || hasStringReturnType(callerInstr) // todo add primitive types?
-              callDef       = callerInstr.getDef
-              callerNode    = CallGraphNode(callSite.getNode)
-              callId        = createIdentifier(callDef, callerNode)
-              callAsbo     <- idToAsbo getOrElse(callId, Set(createAsbo(callDef, callerNode)))
+              callNode     <- cfg getPredNodes bb
+              callCgNode    = CallGraphNode(callNode.getNode)
+              callInstr    <- getCallInstructions(instr, callCgNode, retNode)
+              if instr.returnsPrimitiveType || hasStringReturnType(callInstr) // todo add primitive types?
+              callDef       = callInstr.getDef
+              callId        = createIdentifier(callDef, callCgNode)
+              callAsbo     <- idToAsbo getOrElse(callId, Set(createAsbo(callDef, callCgNode)))
             } {
-              val callExplNode = (callSite, callAsbo)
+              val callExplNode = (callNode, callAsbo)
               val prevResult   = result(callExplNode)
               val retResult    = result((bb, resultAsbo))
               updateResultAndWorklist(callExplNode, prevResult | retResult)
@@ -253,6 +253,15 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     }
   }
 
+  private[this] def getConstantReturnValue(bb: BB, instr: SSAReturnInstruction): Option[ValueNumber] = {
+    if (!instr.returnsVoid()) {
+      val table = bb.getNode.getIR.getSymbolTable
+      val result = instr.getResult
+      if (table isConstant result) Some(result)
+      else None
+    } else None
+  }
+
   // todo is this right?
   private[this] def initializeWorklist(cfg: AcyclicCfg, idToAsbo: Map[Identifier, Set[ASBO]]): Worklist = {
 
@@ -278,6 +287,8 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
             addToWl(instr.getDef)
           case instr: SSAAbstractInvokeInstruction if getConstantArgs(bb, instr).nonEmpty   =>
             getConstantArgs(bb, instr) foreach addToWl
+          case instr: SSAReturnInstruction                                                  =>
+            getConstantReturnValue(bb, instr) foreach addToWl
           case _                                                                            =>
             ()
         }

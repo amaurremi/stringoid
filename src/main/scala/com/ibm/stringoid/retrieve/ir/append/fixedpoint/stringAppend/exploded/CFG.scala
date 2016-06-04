@@ -96,9 +96,9 @@ trait CFG extends InterProcASBOModule {
 
     def getSuccNodes(bb: BB): Iterator[BB] = graph getSuccNodes bb
 
-    def getCallTargets(bb: BB) = acyclicInterProcCFG getCallTargets bb
+    def getPredNodes(bb: BB): Iterator[BB] = graph getPredNodes bb
 
-    def getCallSites(bb: BB, callee: CGNode) = acyclicInterProcCFG getCallSites (bb, callee)
+    def getCallTargets(bb: BB) = acyclicInterProcCFG getCallTargets bb
 
     def getEntry(node: CGNode): BB = acyclicInterProcCFG getEntry node
 
