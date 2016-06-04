@@ -182,17 +182,18 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
               resultAsbo   <- idToAsbo getOrElse (resultId, Set(createAsbo(retDef, retNode)))
               if resultAsbo == factAsbo
               // call stuff
-              callNode     <- cfg getPredNodes bb
-              callCgNode    = CallGraphNode(callNode.getNode)
-              callInstr    <- getCallInstructions(instr, callCgNode, retNode)
+              callBlock    <- cfg getCallBlocks bb
+              callInstr     = callBlock.getLastInstruction.asInstanceOf[SSAAbstractInvokeInstruction]
               if instr.returnsPrimitiveType || hasStringReturnType(callInstr) // todo add primitive types?
+              callCgNode    = callBlock.getNode
+              callNode      = CallGraphNode(callCgNode)
               callDef       = callInstr.getDef
-              callId        = createIdentifier(callDef, callCgNode)
-              callAsbo     <- idToAsbo getOrElse(callId, Set(createAsbo(callDef, callCgNode)))
+              callId        = createIdentifier(callDef, callNode)
+              callAsbo     <- idToAsbo getOrElse(callId, Set(createAsbo(callDef, callNode)))
             } {
-              val callExplNode = (callNode, callAsbo)
+              val callExplNode = (callBlock, callAsbo)
               val prevResult   = result(callExplNode)
-              val retResult    = result((bb, resultAsbo))
+              val retResult    = result getOrElse ((bb, resultAsbo), createAutomaton(instr, retNode, resultAsbo.identifier))
               updateResultAndWorklist(callExplNode, prevResult | retResult)
             }
           }
