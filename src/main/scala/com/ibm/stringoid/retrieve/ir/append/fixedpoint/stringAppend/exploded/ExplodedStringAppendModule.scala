@@ -286,7 +286,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
             addToWl(getSbConstructorDef(instr))
           case instr: SSAAbstractInvokeInstruction if isStringFormat(instr)                 =>
             addToWl(instr.getDef)
-          case instr: SSAAbstractInvokeInstruction if getConstantArgs(bb, instr).nonEmpty   =>
+          case instr: SSAAbstractInvokeInstruction if getConstantArgs(bb, instr).nonEmpty   => // todo not into lib functions
             getConstantArgs(bb, instr) foreach addToWl
           case instr: SSAReturnInstruction                                                  =>
             getConstantReturnValue(bb, instr) foreach addToWl
