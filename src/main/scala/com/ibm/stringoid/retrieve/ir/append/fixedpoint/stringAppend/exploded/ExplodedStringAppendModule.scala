@@ -298,19 +298,20 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     } else None
   }
 
-  // todo is this right?
   private[this] def initializeWorklist(cfg: AcyclicCfg, idToAsbo: Map[Identifier, Set[ASBO]]): WorkList = {
 
     val worklist = new WorkList(cfg)
 
-    // remember which instructions define which value numbers: map pairs (node, iindex) to value numbers
+    // remember which instructions define which (constant) value numbers: map pairs (node, iindex) to value numbers
     val instrToVn = callGraph.foldLeft(Map.empty[(CGNode, Int), ValueNumber]) {
       case (oldMap, node) =>
         val table = node.getIR.getSymbolTable
         (1 to table.getMaxValueNumber).foldLeft(oldMap) {
           case (oldMap2, vn) if table isConstant vn =>
-            val instr = node.getDU getDef vn
-            oldMap2 + ((node, instr.iindex) -> vn)
+            (node.getDU getUses vn).foldLeft(oldMap2) {
+              case (oldMap3, useInstr) =>
+                oldMap3 + ((node, useInstr.iindex) -> vn)
+            }
           case (oldMap2, _)                         =>
             oldMap2
         }
@@ -319,15 +320,18 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     cfg.nodesIterator foreach {
       bb =>
         val node = bb.getNode
-        instrToVn get (node, bb.getLastInstruction.iindex) match {
-          case Some(vn) =>
-            // add to work list
-            idToAsbo(createIdentifier(vn, CallGraphNode(node))) foreach {
-              asbo =>
-                worklist insert ((bb, asbo))
-            }
-          case None     =>
-            ()
+        val instr = bb.getLastInstruction
+        if (Option(instr).isDefined) {
+          instrToVn get(node, instr.iindex) match {
+            case Some(vn) =>
+              // add to work list
+              idToAsbo(createIdentifier(vn, CallGraphNode(node))) foreach {
+                asbo =>
+                  worklist insert ((bb, asbo))
+              }
+            case None     =>
+              ()
+          }
         }
     }
 

@@ -1,5 +1,7 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded
 
+import java.util
+
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.InterProcASBOModule
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.cfg.ControlFlowGraph
@@ -28,16 +30,21 @@ trait CFG extends InterProcASBOModule {
     private val intraCfgCache = mutable.Map[Int, ControlFlowGraph[SSAInstruction, IExplodedBasicBlock]]()
 
     private lazy val acyclicCallGraph: CallGraph = {
-      val pruned = new PrunedCallGraph(callGraph, callGraph.iterator.toSet.asJava)
-      val backEdges = pruned.getEntrypointNodes flatMap {
-        entry =>
-          Acyclic.computeBackEdges(callGraph, entry)
+      val backEdges: Map[CGNode, Set[CGNode]] = callGraph.getEntrypointNodes.foldLeft(Map.empty[CGNode, Set[CGNode]]) {
+        case (oldMap, entry) =>
+          Acyclic.computeBackEdges(callGraph, entry).foldLeft(oldMap) {
+            case (oldMap2, backEdge) =>
+              val src = callGraph getNode backEdge.getX
+              val dst = callGraph getNode backEdge.getY
+              val dsts = oldMap2 getOrElse (src, Set.empty[CGNode])
+              oldMap2 + (src -> (dsts + dst))
+          }
       }
-      backEdges foreach {
-        edge =>
-          pruned.removeEdge(pruned getNode edge.getX, pruned getNode edge.getY)
-      }
-      pruned
+      val backEdgesJava: util.Map[CGNode, util.Set[CGNode]] = (backEdges map {
+        case (src, dsts) =>
+          src -> dsts.asJava
+      }).asJava
+      new PrunedCallGraph(callGraph, callGraph.iterator.toSet.asJava, backEdgesJava)
     }
 
     /**

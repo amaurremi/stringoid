@@ -15,7 +15,7 @@ libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "0.5.2",
   "com.ibm.wala" % "com.ibm.wala.cast" % "1.3.9-SNAPSHOT",
   "com.ibm.wala" % "com.ibm.wala.cast.java" % "1.3.9-SNAPSHOT",
-  "com.ibm.wala" % "com.ibm.wala.core" % "1.3.9-SNAPSHOT",
+  "com.ibm.wala" % "com.ibm.wala.core" % "1.3.10-SNAPSHOT",
   "com.ibm.wala" % "com.ibm.wala.dalvik" % "1.3.9-SNAPSHOT",
   "com.ibm.wala" % "com.ibm.wala.ide.jdt" % "1.3.9-SNAPSHOT",
   "com.ibm.wala" % "com.ibm.wala.shrike" % "1.3.9-SNAPSHOT",
