@@ -18,8 +18,16 @@ import scala.collection.mutable
 
 trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSpecifiers with WorkListModule {
 
-  // todo have two maps as Ondřej suggestsed
-  private[this] val result = mutable.Map.empty[ExplodedNode, StringPartAutomaton] withDefaultValue StringPartAutomaton()
+  /**
+    * Analysis result that maps exploded nodes to automata. This maps tracks only mutable ASBOs, i.e.
+    * ASBOs corresponding to StringBuilders and StringBuffers.
+    */
+  private[this] val resultMutable = mutable.Map.empty[ExplodedNode, StringPartAutomaton] withDefaultValue StringPartAutomaton()
+
+  /**
+    * Analysis result that maps immutable ASBOs to automata.
+    */
+  private[this] val resultImmutable = mutable.Map.empty[ASBO, StringPartAutomaton] withDefaultValue StringPartAutomaton()
 
   def stringAppends(fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
     // concatenation URLs
@@ -54,7 +62,6 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     } yield StringPartAutomaton(spart)
   }
 
-  // todo include constants, arguments, default value
   private[this] val idToAsbo: Map[CgIdentifier, Set[ASBO]] = {
     identifierToAsbo withDefault {
       id => Set(createAsbo(id.vn, CallGraphNode(id.node)))
@@ -78,22 +85,45 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     implicit worklist: WorkList
   ): Unit = {
     val succNode  = (succ, asbo)
-    val oldResult = result((bb, asbo))
+    val oldResult = resultMutable((bb, asbo))
     val newResult =
       if (oldResult.automaton == Automaton.empty[StringPartAutomaton]) newAutomaton
       else oldResult +++ newAutomaton
-    updateResultAndWorklist(succNode, newResult)
+    updateResultAndWorkListMutable(succNode, newResult)
   }
 
-  private[this] def updateResultAndWorklist(
+  private[this] def updateResultAndWorkListMutable(
     node: ExplodedNode,
     automaton: StringPartAutomaton
   )(
     implicit worklist: WorkList
   ): Unit = {
-    val oldResult = result(node)
-    result += (node -> automaton)
+    val oldResult = resultMutable(node)
+    resultMutable += (node -> automaton)
     if (oldResult != automaton) worklist insert node
+  }
+
+  private[this] def updateResultAndWorkListImmutable(
+    node: ExplodedNode,
+    automaton: StringPartAutomaton
+  )(
+    implicit worklist: WorkList
+  ): Unit = {
+    if (!(resultImmutable contains node._2)) {
+      resultImmutable += (node._2 -> automaton)
+      worklist insert node
+    }
+  }
+
+  private[this] def resultGetOrElse(
+    bb: BB,
+    asbo: ASBO,
+    default: StringPartAutomaton = StringPartAutomaton()
+  ): StringPartAutomaton = {
+    val immutAuto = resultImmutable get asbo
+    if (immutAuto.isEmpty) {
+      resultMutable getOrElse ((bb, asbo), default)
+    } else immutAuto.get
   }
 
   private[this] lazy val cfg = AcyclicCfg()
@@ -135,7 +165,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
                       case StringIdentifier(id) =>
                         val automata = idToAsbo(id) map {
                           asbo =>
-                            result getOrElse ((bb, asbo), StringPartAutomaton(StringIdentifier(id)))
+                            resultGetOrElse(bb, asbo, StringPartAutomaton(StringIdentifier(id)))
                         }
                         resultAutomaton +++ StringPartAutomaton.merge(automata.toIterator)
                       case other =>
@@ -147,7 +177,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
             }
             cfg getSuccNodes bb foreach {
               succ =>
-                updateResultAndWorklist((succ, sfAsbo), automaton)
+                updateResultAndWorkListMutable((succ, sfAsbo), automaton)
             }
           } else
             propagateIdentity(cfg getSuccNodes bb, bb, factAsbo)
@@ -164,10 +194,10 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
             if asbo == factAsbo // todo do I need to propagate anything else inter-procedurally?
             paramId             = createIdentifier(paramIndex + 1, CallGraphNode(succ))
             paramAsbo          <- idToAsbo getOrElse (paramId, Set(ASBO(paramId))) // todo add params to ID-to-ASBO by default
-            oldAutomaton        = result getOrElse ((bb, paramAsbo), StringPartAutomaton())
-            automaton           = result getOrElse ((bb, asbo), createAutomaton(instr, node, asbo.identifier))
+            oldAutomaton        = resultGetOrElse(bb, paramAsbo)
+            automaton           = resultGetOrElse(bb, asbo, createAutomaton(instr, node, asbo.identifier))
             targetBB            = cfg getEntry succ
-          } updateResultAndWorklist((targetBB, paramAsbo), oldAutomaton | automaton)
+          } updateResultAndWorkListMutable((targetBB, paramAsbo), oldAutomaton | automaton)
           // call-to-return
           propagateIdentity(cfg getReturnSites bb, bb, factAsbo)
         // inter-procedural end-to-return edge: return value assignment
@@ -192,23 +222,28 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
               callAsbo     <- idToAsbo getOrElse(callId, Set(createAsbo(callDef, callNode)))
             } {
               val callExplNode = (callBlock, callAsbo)
-              val prevResult   = result(callExplNode)
-              val retResult    = result getOrElse ((bb, resultAsbo), createAutomaton(instr, retNode, resultAsbo.identifier))
-              updateResultAndWorklist(callExplNode, prevResult | retResult)
+              val prevResult   = resultGetOrElse(callBlock, callAsbo)
+              val retResult    = resultGetOrElse(bb, resultAsbo, createAutomaton(instr, retNode, resultAsbo.identifier))
+              updateResultAndWorkListMutable(callExplNode, prevResult | retResult)
             }
           }
         case _                                                                           =>
           propagateIdentity(cfg getSuccNodes bb, bb, factAsbo)
       }
     }
-    result.valuesIterator
+    resultMutable.valuesIterator ++ resultImmutable.valuesIterator
   }
 
-  private[this] def propagateIdentity(succNodes: Iterator[BB], bb: BB, factAsbo: ASBO)(implicit worklist: WorkList): Unit =
+  private[this] def propagateIdentity(
+    succNodes: Iterator[BB],
+    bb: BB, factAsbo: ASBO
+  )(
+    implicit worklist: WorkList
+  ): Unit =
     succNodes foreach {
       succ =>
         val succNode = (succ, factAsbo)
-        updateResultAndWorklist(succNode, result(succNode) | result((bb, factAsbo)))
+        updateResultAndWorkListMutable(succNode, resultMutable(succNode) | resultMutable((bb, factAsbo)))
     }
 
   /**
@@ -234,13 +269,13 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
       if ((sb == factAsbo) || (args contains factAsbo)) {
         val argAutos = args map {
           a =>
-            result getOrElse ((bb, a), createAutomaton(instr, node, a.identifier))
+            resultGetOrElse(bb, a, createAutomaton(instr, node, a.identifier))
         }
         val argAuto = StringPartAutomaton.merge(argAutos.toIterator)
         appendResult(bb, succ, sb, argAuto)
       }
       if (sb != factAsbo)
-        updateResultAndWorklist((succ, factAsbo), result(bb, factAsbo))
+        updateResultAndWorkListMutable((succ, factAsbo), resultGetOrElse(bb, factAsbo))
     }
   }
 
