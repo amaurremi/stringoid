@@ -177,7 +177,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
             }
             cfg getSuccNodes bb foreach {
               succ =>
-                updateResultAndWorkListMutable((succ, sfAsbo), automaton)
+                updateResultAndWorkListImmutable((succ, sfAsbo), automaton)
             }
           } else
             propagateIdentity(cfg getSuccNodes bb, bb, factAsbo)
@@ -197,7 +197,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
             oldAutomaton        = resultGetOrElse(bb, paramAsbo)
             automaton           = resultGetOrElse(bb, asbo, createAutomaton(instr, node, asbo.identifier))
             targetBB            = cfg getEntry succ
-          } updateResultAndWorkListMutable((targetBB, paramAsbo), oldAutomaton | automaton)
+          } updateResultAndWorkListImmutable((targetBB, paramAsbo), oldAutomaton | automaton)
           // call-to-return
           propagateIdentity(cfg getReturnSites bb, bb, factAsbo)
         // inter-procedural end-to-return edge: return value assignment
@@ -224,7 +224,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
               val callExplNode = (callBlock, callAsbo)
               val prevResult   = resultGetOrElse(callBlock, callAsbo)
               val retResult    = resultGetOrElse(bb, resultAsbo, createAutomaton(instr, retNode, resultAsbo.identifier))
-              updateResultAndWorkListMutable(callExplNode, prevResult | retResult)
+              updateResultAndWorkListImmutable(callExplNode, prevResult | retResult)
             }
           }
         case _                                                                           =>
