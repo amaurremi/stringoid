@@ -16,7 +16,7 @@ import scala.collection.mutable
 
 // todo remove instructions from StringPartAutomaton!
 
-trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSpecifiers with CFG {
+trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSpecifiers with WorkListModule {
 
   // todo have two maps as Ondřej suggestsed
   private[this] val result = mutable.Map.empty[ExplodedNode, StringPartAutomaton] withDefaultValue StringPartAutomaton()
@@ -75,7 +75,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     asbo: ASBO,
     newAutomaton: StringPartAutomaton
   )(
-    implicit worklist: Worklist
+    implicit worklist: WorkList
   ): Unit = {
     val succNode  = (succ, asbo)
     val oldResult = result((bb, asbo))
@@ -89,11 +89,11 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     node: ExplodedNode,
     automaton: StringPartAutomaton
   )(
-    implicit worklist: Worklist
+    implicit worklist: WorkList
   ): Unit = {
     val oldResult = result(node)
     result += (node -> automaton)
-    if (oldResult != automaton) worklist enqueue node
+    if (oldResult != automaton) worklist insert node
   }
 
   private[this] lazy val cfg = AcyclicCfg()
@@ -103,7 +103,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     implicit val worklist = initializeWorklist(cfg, idToAsbo)
 
     while (worklist.nonEmpty) {
-      val (bb, factAsbo) = worklist.dequeue()
+      val (bb, factAsbo) = worklist.take()
       val node           = CallGraphNode(bb.getNode)
 
       def getId(vn: ValueNumber) = createIdentifier(vn, node)
@@ -204,7 +204,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     result.valuesIterator
   }
 
-  private[this] def propagateIdentity(succNodes: Iterator[BB], bb: BB, factAsbo: ASBO)(implicit worklist: Worklist): Unit =
+  private[this] def propagateIdentity(succNodes: Iterator[BB], bb: BB, factAsbo: ASBO)(implicit worklist: WorkList): Unit =
     succNodes foreach {
       succ =>
         val succNode = (succ, factAsbo)
@@ -222,7 +222,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     bb: BB,
     factAsbo: ASBO
   )(
-    implicit worklist: Worklist
+    implicit worklist: WorkList
   ): Unit = {
     val node = CallGraphNode(bb.getNode)
     def getId(vn: ValueNumber) = createIdentifier(vn, node)
@@ -264,9 +264,9 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
   }
 
   // todo is this right?
-  private[this] def initializeWorklist(cfg: AcyclicCfg, idToAsbo: Map[Identifier, Set[ASBO]]): Worklist = {
+  private[this] def initializeWorklist(cfg: AcyclicCfg, idToAsbo: Map[Identifier, Set[ASBO]]): WorkList = {
 
-    val worklist = mutable.Queue.empty[ExplodedNode]
+    val worklist = new WorkList(cfg)
 
     cfg.nodesIterator foreach {
       bb =>
@@ -275,7 +275,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
           val asbos = idToAsbo(createIdentifier(sbDef, CallGraphNode(bb.getNode)))
           asbos foreach {
             asbo =>
-              worklist enqueue ((bb, asbo))
+              worklist insert ((bb, asbo))
           }
         }
 

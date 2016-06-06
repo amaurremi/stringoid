@@ -22,8 +22,6 @@ trait CFG extends InterProcASBOModule {
 
   type ExplodedNode = (BB, ASBO)
 
-  type Worklist = mutable.Queue[ExplodedNode]
-
   object AcyclicCfg {
 
     // map from `acyclicCallGraph` nodes to intraprocedural (possibly cyclic) CFGs
@@ -90,6 +88,7 @@ trait CFG extends InterProcASBOModule {
             ()
         }
       }
+
       new AcyclicCfg(graph, acyclicInterprocCFG, acyclicCallGraph)
       })
   }
@@ -97,7 +96,7 @@ trait CFG extends InterProcASBOModule {
   /**
     * @param acyclicInterProcCFG Note that this CFG is acyclic inter-procedurally, but can have cycles inside procedures
     */
-  class AcyclicCfg private[CFG](graph: NumberedGraph[BB], acyclicInterProcCFG: ExplodedInterproceduralCFG, callGraph: CallGraph) {
+  class AcyclicCfg private[CFG](val graph: NumberedGraph[BB], acyclicInterProcCFG: ExplodedInterproceduralCFG, callGraph: CallGraph) {
 
     import AcyclicCfg.intraCfgCache
 
