@@ -96,7 +96,7 @@ trait CFG extends InterProcASBOModule {
   /**
     * @param acyclicInterProcCFG Note that this CFG is acyclic inter-procedurally, but can have cycles inside procedures
     */
-  class AcyclicCfg private[CFG](val graph: NumberedGraph[BB], acyclicInterProcCFG: ExplodedInterproceduralCFG, callGraph: CallGraph) {
+  class AcyclicCfg private[CFG](val graph: NumberedGraph[BB], acyclicInterProcCFG: ExplodedInterproceduralCFG, acyclicCallGraph: CallGraph) {
 
     import AcyclicCfg.intraCfgCache
 
@@ -109,8 +109,8 @@ trait CFG extends InterProcASBOModule {
     /* if `bb` is a return-instruction block inside a callee method, gets the basic blocks of the call sites that invoke this method */
     def getCallBlocks(bb: BB): Iterator[BB] =
       for {
-        caller   <- callGraph getPredNodes bb.getNode
-        callerBB <- intraCfgCache(callGraph getNumber caller)
+        caller   <- acyclicCallGraph getPredNodes bb.getNode
+        callerBB <- intraCfgCache(acyclicCallGraph getNumber caller)
         instr     = callerBB.getLastInstruction
         if instr.isInstanceOf[SSAAbstractInvokeInstruction]
         callBlock = new BasicBlockInContext(caller, callerBB)

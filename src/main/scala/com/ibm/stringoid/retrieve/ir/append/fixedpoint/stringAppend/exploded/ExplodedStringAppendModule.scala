@@ -303,32 +303,34 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
 
     val worklist = new WorkList(cfg)
 
+    // remember which instructions define which value numbers: map pairs (node, iindex) to value numbers
+    val instrToVn = callGraph.foldLeft(Map.empty[(CGNode, Int), ValueNumber]) {
+      case (oldMap, node) =>
+        val table = node.getIR.getSymbolTable
+        (1 to table.getMaxValueNumber).foldLeft(oldMap) {
+          case (oldMap2, vn) if table isConstant vn =>
+            val instr = node.getDU getDef vn
+            oldMap2 + ((node, instr.iindex) -> vn)
+          case (oldMap2, _)                         =>
+            oldMap2
+        }
+    }
+
     cfg.nodesIterator foreach {
       bb =>
-
-        def addToWl(sbDef: ValueNumber): Unit = {
-          val asbos = idToAsbo(createIdentifier(sbDef, CallGraphNode(bb.getNode)))
-          asbos foreach {
-            asbo =>
-              worklist insert ((bb, asbo))
-          }
-        }
-
-        bb.getLastInstruction match {
-          case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                     =>
-            addToWl(getFirstSbAppendDef(instr))
-          case instr: SSAAbstractInvokeInstruction if isSbConstructorWithStringParam(instr) =>
-            addToWl(getSbConstructorDef(instr))
-          case instr: SSAAbstractInvokeInstruction if isStringFormat(instr)                 =>
-            addToWl(instr.getDef)
-          case instr: SSAAbstractInvokeInstruction if getConstantArgs(bb, instr).nonEmpty   => // todo not into lib functions
-            getConstantArgs(bb, instr) foreach addToWl
-          case instr: SSAReturnInstruction                                                  =>
-            getConstantReturnValue(bb, instr) foreach addToWl
-          case _                                                                            =>
+        val node = bb.getNode
+        instrToVn get (node, bb.getLastInstruction.iindex) match {
+          case Some(vn) =>
+            // add to work list
+            idToAsbo(createIdentifier(vn, CallGraphNode(node))) foreach {
+              asbo =>
+                worklist insert ((bb, asbo))
+            }
+          case None     =>
             ()
         }
     }
+
     worklist
   }
 }
