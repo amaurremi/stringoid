@@ -191,7 +191,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
           for {
             succ: CGNode       <- cfg getCallTargets bb
             (asbo, paramIndex) <- substitutionAsbos
-            if asbo == factAsbo // todo do I need to propagate anything else inter-procedurally?
+            if asbo == factAsbo
             paramId             = createIdentifier(paramIndex + 1, CallGraphNode(succ))
             paramAsbo          <- idToAsbo getOrElse (paramId, Set(ASBO(paramId))) // todo add params to ID-to-ASBO by default
             oldAutomaton        = resultGetOrElse(bb, paramAsbo)
@@ -214,7 +214,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
               // call stuff
               callBlock    <- cfg getCallBlocks bb
               callInstr     = callBlock.getLastInstruction.asInstanceOf[SSAAbstractInvokeInstruction]
-              if instr.returnsPrimitiveType || hasStringReturnType(callInstr) // todo add primitive types?
+              if hasPrimitiveReturnType(callInstr) || hasStringReturnType(callInstr)
               callCgNode    = callBlock.getNode
               callNode      = CallGraphNode(callCgNode)
               callDef       = callInstr.getDef

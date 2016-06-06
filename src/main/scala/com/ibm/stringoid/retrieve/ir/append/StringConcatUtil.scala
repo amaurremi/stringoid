@@ -103,4 +103,7 @@ object StringConcatUtil {
 
   def hasStringReturnType(inv: SSAAbstractInvokeInstruction): Boolean =
     inv.getDeclaredResultType.toString contains "java/lang/String"
+
+  def hasPrimitiveReturnType(inv: SSAAbstractInvokeInstruction): Boolean =
+    Seq("B", "C", "D", "F", "I", "J", "S", "Z") contains inv.getDeclaredResultType.getName.toString
 }
