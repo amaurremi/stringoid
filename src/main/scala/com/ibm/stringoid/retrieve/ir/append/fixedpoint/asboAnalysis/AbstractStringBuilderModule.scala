@@ -5,7 +5,7 @@ import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.StringAppend
 import com.ibm.stringoid.retrieve.ir.{IrUrlRetriever, ValueNumber}
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{BitVectorVariable, UnaryOperator}
-import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAPhiInstruction}
+import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAPhiInstruction, SSAReturnInstruction}
 import com.ibm.wala.util.collections.ObjectArrayMapping
 import com.ibm.wala.util.graph.Graph
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph
@@ -126,7 +126,7 @@ trait AbstractStringBuilderModule extends StringAppendTypes with IrUrlRetriever 
         case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv)     =>
           getDefs(inv) foreach addNode
         case inv: SSAAbstractInvokeInstruction if isSbAppend(inv)          =>
-          val (firstDef, secondDef) = getSbAppendDefs(inv) // in 1 = 2.append(3), 1 is firstDef and 2 is secondDef
+          val (firstDef, secondDef) = getSbAppendDefs(inv)                    // in 1 = 2.append(3), 1 is firstDef and 2 is secondDef
           addEdge(secondDef, firstDef)
         case inv: SSAAbstractInvokeInstruction if isSbTostring(inv)        => // in 1 = 2.toString, 1 is sbDef and 2 is sbUse
           val sbDef = getSbToStringDef(inv)
@@ -171,20 +171,25 @@ trait AbstractStringBuilderModule extends StringAppendTypes with IrUrlRetriever 
 
       def getNodeTransferFunction(id: Identifier): UnaryOperator[BitVectorVariable] = {
         getDef(id) match {
-          case instr if isSbConstructorOrFormatInDefUse(instr) =>
+          case instr if isSbConstructorOrFormatInDefUse(instr)                        =>
             createOperator(id)
-          case instr if pointsToPhi(id) && !isPhiDef(id)       =>
+          case instr if pointsToPhi(id) && !isPhiDef(id)                              =>
             createOperator(id)
-          case _                                               =>
+          case _ if isParameter(id)                                                   =>
             val tpe = getTypeAbstraction(node.getIr, valNum(id))
-            if (isMutable(tpe.getTypeReference) && sbIsParameter(id))
+            if (isMutable(tpe.getTypeReference))
               createOperator(id)
             else
               BitVectorIdentity.instance
+          case instr: SSAReturnInstruction
+            if isMutable(getTypeAbstraction(node.getIr, valNum(id)).getTypeReference) =>
+            createOperator(id)
+          case _                                                                      =>
+            BitVectorIdentity.instance
         }
       }
 
-      private[this] def sbIsParameter(id: Identifier) = {
+      private[this] def isParameter(id: Identifier) = {
         valNum(id) <= node.getIr.getNumberOfParameters
       }
 

@@ -128,7 +128,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
 
   private[this] lazy val cfg = AcyclicCfg()
 
-  private[this] def getResult: Iterator[StringPartAutomaton] = {
+  private[this] def getResult: Iterator[StringPartAutomaton] = TimeResult("II analysis phase (computing automata)", {
 
     implicit val worklist = initializeWorklist(cfg, idToAsbo)
 
@@ -237,7 +237,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
       }
     }
     resultMutable.valuesIterator ++ resultImmutable.valuesIterator
-  }
+  })
 
   private[this] def propagateIdentity(
     succNodes: Iterator[BB],

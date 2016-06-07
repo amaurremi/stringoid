@@ -1,12 +1,9 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded
 
-import java.util
-
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.InterProcASBOModule
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.cfg.ControlFlowGraph
-import com.ibm.wala.ipa.callgraph.pruned.PrunedCallGraph
-import com.ibm.wala.ipa.callgraph.{CGNode, CallGraph}
+import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.cfg.{BasicBlockInContext, ExplodedInterproceduralCFG}
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction}
@@ -15,7 +12,6 @@ import com.ibm.wala.util.graph.{Acyclic, NumberedGraph}
 import com.ibm.wala.util.intset.IntPair
 
 import scala.collection.JavaConversions._
-import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 trait CFG extends InterProcASBOModule {
@@ -26,26 +22,8 @@ trait CFG extends InterProcASBOModule {
 
   object AcyclicCfg {
 
-    // map from `acyclicCallGraph` nodes to intraprocedural (possibly cyclic) CFGs
+    // map from call graph nodes to intraprocedural (possibly cyclic) CFGs
     private val intraCfgCache = mutable.Map[Int, ControlFlowGraph[SSAInstruction, IExplodedBasicBlock]]()
-
-    private lazy val acyclicCallGraph: CallGraph = {
-      val backEdges: Map[CGNode, Set[CGNode]] = callGraph.getEntrypointNodes.foldLeft(Map.empty[CGNode, Set[CGNode]]) {
-        case (oldMap, entry) =>
-          Acyclic.computeBackEdges(callGraph, entry).foldLeft(oldMap) {
-            case (oldMap2, backEdge) =>
-              val src = callGraph getNode backEdge.getX
-              val dst = callGraph getNode backEdge.getY
-              val dsts = oldMap2 getOrElse (src, Set.empty[CGNode])
-              oldMap2 + (src -> (dsts + dst))
-          }
-      }
-      val backEdgesJava: util.Map[CGNode, util.Set[CGNode]] = (backEdges map {
-        case (src, dsts) =>
-          src -> dsts.asJava
-      }).asJava
-      new PrunedCallGraph(callGraph, callGraph.iterator.toSet.asJava, backEdgesJava)
-    }
 
     /**
       * Creates an acyclic inter-procedural CFG:
@@ -66,11 +44,13 @@ trait CFG extends InterProcASBOModule {
       }
 
       // CFG with acyclic inter-procedural and possibly cyclic intra-procedural edges
-      val acyclicInterprocCFG: ExplodedInterproceduralCFG = TimeResult("inter-procedurally acyclic CFG", ExplodedInterproceduralCFG.make(acyclicCallGraph))
+      val acyclicInterprocCFG: ExplodedInterproceduralCFG =
+        TimeResult("inter-procedurally acyclic CFG (can have intra-procedural cycles)",
+          ExplodedInterproceduralCFG.make(callGraph))
 
       for {
-        cgNode   <- acyclicCallGraph
-        num       = acyclicCallGraph.getNumber(cgNode)
+        cgNode   <- callGraph
+        num       = callGraph.getNumber(cgNode)
         intraCfg  = intraCfgCache getOrElseUpdate (num, acyclicInterprocCFG getCFG cgNode) // intra-procedural CFG with cycles
         backEdges = Acyclic.computeBackEdges(intraCfg, intraCfg.entry).toSet
         bb       <- intraCfg
@@ -96,14 +76,14 @@ trait CFG extends InterProcASBOModule {
         }
       }
 
-      new AcyclicCfg(graph, acyclicInterprocCFG, acyclicCallGraph)
+      new AcyclicCfg(graph, acyclicInterprocCFG)
       })
   }
 
   /**
     * @param acyclicInterProcCFG Note that this CFG is acyclic inter-procedurally, but can have cycles inside procedures
     */
-  class AcyclicCfg private[CFG](val graph: NumberedGraph[BB], acyclicInterProcCFG: ExplodedInterproceduralCFG, acyclicCallGraph: CallGraph) {
+  class AcyclicCfg private[CFG](val graph: NumberedGraph[BB], acyclicInterProcCFG: ExplodedInterproceduralCFG) {
 
     import AcyclicCfg.intraCfgCache
 
@@ -116,8 +96,8 @@ trait CFG extends InterProcASBOModule {
     /* if `bb` is a return-instruction block inside a callee method, gets the basic blocks of the call sites that invoke this method */
     def getCallBlocks(bb: BB): Iterator[BB] =
       for {
-        caller   <- acyclicCallGraph getPredNodes bb.getNode
-        callerBB <- intraCfgCache(acyclicCallGraph getNumber caller)
+        caller   <- callGraph getPredNodes bb.getNode
+        callerBB <- intraCfgCache(callGraph getNumber caller)
         instr     = callerBB.getLastInstruction
         if instr.isInstanceOf[SSAAbstractInvokeInstruction]
         callBlock = new BasicBlockInContext(caller, callerBB)
