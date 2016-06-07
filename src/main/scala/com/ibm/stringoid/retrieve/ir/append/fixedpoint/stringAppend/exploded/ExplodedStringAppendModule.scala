@@ -8,7 +8,7 @@ import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.StringFormat
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAFieldAccessInstruction, SSAInstruction, SSAReturnInstruction}
-import com.ibm.wala.types.{FieldReference, TypeReference}
+import com.ibm.wala.types.FieldReference
 import seqset.regular.Automaton
 
 import scala.collection.JavaConversions._
@@ -149,7 +149,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
           append(instr, asbos, getSbConstructorArgument(instr), bb, factAsbo)
         // String.format
         case instr: SSAAbstractInvokeInstruction if isStringFormat(instr)                 =>
-          val argValnums = getStringFormatArgs(instr, node) map {
+          val argValnums = getStringFormatArgs(instr, node) flatMap {
             vn =>
               idToAsbo(createIdentifier(vn, node))
           }
@@ -237,9 +237,6 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     }
     resultMutable.valuesIterator ++ resultImmutable.valuesIterator
   }
-
-  private[this] def isMutable(tpe: TypeReference) =
-    Seq("java/lang/StringBuilder", "java/lang/StringBuffer") exists tpe.toString.contains
 
   private[this] def propagateIdentity(
     succNodes: Iterator[BB],

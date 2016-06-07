@@ -2,6 +2,7 @@ package com.ibm.stringoid.retrieve.ir.append
 
 import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAPhiInstruction}
+import com.ibm.wala.types.TypeReference
 
 object StringConcatUtil {
 
@@ -106,4 +107,7 @@ object StringConcatUtil {
 
   def hasPrimitiveReturnType(inv: SSAAbstractInvokeInstruction): Boolean =
     Seq("B", "C", "D", "F", "I", "J", "S", "Z") contains inv.getDeclaredResultType.getName.toString
+
+  def isMutable(tpe: TypeReference) =
+    Seq("java/lang/StringBuilder", "java/lang/StringBuffer") exists tpe.toString.contains
 }
