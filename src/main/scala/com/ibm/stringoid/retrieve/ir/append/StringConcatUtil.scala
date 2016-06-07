@@ -111,6 +111,7 @@ object StringConcatUtil {
   def hasPrimitiveReturnType(inv: SSAAbstractInvokeInstruction): Boolean =
     Seq("B", "C", "D", "F", "I", "J", "S", "Z") contains inv.getDeclaredResultType.getName.toString
 
-  def isMutable(tpe: TypeReference) =
-    Seq("Ljava/lang/StringBuilder", "Ljava/lang/StringBuffer") exists tpe.toString.contains
+  def isMutable(tpe: TypeReference) = {
+    Option(tpe).isDefined && (Seq("Ljava/lang/StringBuilder", "Ljava/lang/StringBuffer") exists tpe.toString.contains)
+  }
 }

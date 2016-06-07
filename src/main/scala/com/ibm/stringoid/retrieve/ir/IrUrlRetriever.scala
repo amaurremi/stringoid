@@ -14,6 +14,7 @@ import com.ibm.wala.ipa.callgraph.AnalysisCache
 import com.ibm.wala.ipa.cha.ClassHierarchy
 import com.ibm.wala.ssa.{DefaultIRFactory, IR, IRFactory}
 import com.ibm.wala.types.ClassLoaderReference
+import com.ibm.wala.util.debug.UnimplementedError
 import edu.illinois.wala.ipa.callgraph.AnalysisScope
 
 import scala.collection.JavaConversions._
@@ -45,8 +46,13 @@ trait IrUrlRetriever extends UrlRetriever with Nodes {
 
   protected def getTypeAbstraction(ir: IR, vn: ValueNumber): TypeAbstraction =
     if (isApk) {
-      val typeInference = typeInferenceMap getOrElseUpdate(ir, TypeInference.make(ir, true))
-      typeInference getType vn
+      try {
+        val typeInference = typeInferenceMap getOrElseUpdate(ir, TypeInference.make(ir, true))
+        typeInference getType vn
+      } catch {
+        case e: UnimplementedError => // todo something is wrong here
+          TypeAbstraction.TOP
+      }
     } else {
       val typeInference = javaAstTypeInferenceMap getOrElseUpdate (ir, new AstJavaTypeInference(ir, cha, true))
       typeInference getType vn
