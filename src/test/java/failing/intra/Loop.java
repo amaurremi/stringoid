@@ -1,4 +1,6 @@
-package intraproc;
+package failing.intra;
+
+import intraproc.Assertions;
 
 public class Loop {
 
