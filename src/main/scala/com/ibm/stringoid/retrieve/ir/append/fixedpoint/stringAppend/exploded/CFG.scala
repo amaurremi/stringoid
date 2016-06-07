@@ -27,8 +27,7 @@ trait CFG extends InterProcASBOModule {
 
     /**
       * Creates an acyclic inter-procedural CFG:
-      * - creates an acyclic call graph
-      * - creates an inter-procedural CFG based on that call graph;
+      * - creates an inter-procedural CFG based on the acyclic call graph;
       *   this graph has acyclic inter-procedural and possibly cyclic intra-procedural edges
       * - for each intra-procedural sub-CFG, computes back-edges, and puts the non-back-edges into the result graph,
       *   thus creating a graph of disconnected acyclic sub-CFGs
@@ -69,8 +68,10 @@ trait CFG extends InterProcASBOModule {
           case instr: SSAAbstractInvokeInstruction =>
             val targets = acyclicInterprocCFG getCallTargets src
             targets foreach {
-              target =>
+              case target if Option(target.getIR).isDefined =>
                 addEdge(src, acyclicInterprocCFG getEntry target)
+              case _                                        =>
+                ()
             }
           case _ =>
             ()

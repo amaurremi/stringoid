@@ -7,7 +7,7 @@ import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.InterProcASB
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.StringFormatSpecifiers
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ipa.callgraph.CGNode
-import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAFieldAccessInstruction, SSAInstruction, SSAReturnInstruction}
+import com.ibm.wala.ssa._
 import com.ibm.wala.types.FieldReference
 import seqset.regular.Automaton
 
@@ -53,7 +53,9 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
   private[this] def getConstantUrls: Iterator[StringPartAutomaton] = {
     for {
       node <- callGraph.iterator()
-      table = node.getIR.getSymbolTable
+      ir    = node.getIR
+      if Option(ir).isDefined
+      table = ir.getSymbolTable
       vn   <- 1 to table.getMaxValueNumber
       if table isStringConstant vn
       string = table getStringValue vn
@@ -139,14 +141,17 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
       def getId(vn: ValueNumber) = createIdentifier(vn, node)
 
       bb.getLastInstruction match {
+
         // StringBuilder.append(str)
         case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                     =>
           val asbos = idToAsbo(getId(getFirstSbAppendDef(instr)))
           append(instr, asbos, getAppendArgument(instr), bb, factAsbo)
+
         // new StringBuilder(str)
         case instr: SSAAbstractInvokeInstruction if isSbConstructorWithStringParam(instr) =>
           val asbos = idToAsbo(getId(getSbConstructorDef(instr)))
           append(instr, asbos, getSbConstructorArgument(instr), bb, factAsbo)
+
         // String.format
         case instr: SSAAbstractInvokeInstruction if isStringFormat(instr)                 =>
           val argValnums = getStringFormatArgs(instr, node) flatMap {
@@ -183,6 +188,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
             propagateIdentity(cfg getSuccNodes bb, bb, factAsbo)
           if (factInArgs)
             propagateIdentity(cfg getSuccNodes bb, bb, factAsbo)
+
         // inter-procedural call-to-start and call-to-return edges:
         // parameter substitution in call + propagate facts down to return node
         // todo test multiple dispatch, e.g. merge
@@ -191,6 +197,8 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
           val substitutionAsbos = argumentAsbos(idToAsbo, instr, node)
           for {
             succ: CGNode       <- cfg getCallTargets bb
+            ir                  = succ.getIR
+            if Option(ir).isDefined
             (asbo, paramIndex) <- substitutionAsbos
             if asbo == factAsbo
             paramId             = createIdentifier(paramIndex + 1, CallGraphNode(succ))
@@ -199,12 +207,13 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
             automaton           = resultGetOrElse(bb, asbo, createAutomaton(instr, node, asbo.identifier))
             targetBB            = cfg getEntry succ
           } {
-            val paramType = succ.getIR getParameterType paramIndex
+            val paramType = ir getParameterType paramIndex
             if (isMutable(paramType)) updateResultAndWorkListMutable((targetBB, paramAsbo), oldAutomaton | automaton)
             else updateResultAndWorkListImmutable((targetBB, paramAsbo), oldAutomaton | automaton)
           }
           // call-to-return
           propagateIdentity(cfg getReturnSites bb, bb, factAsbo)
+
         // inter-procedural end-to-return edge: return value assignment
         case instr: SSAReturnInstruction                                                   =>
           val retDef = instr.getResult
@@ -219,7 +228,8 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
               // call stuff
               callBlock    <- cfg getCallBlocks bb
               callInstr     = callBlock.getLastInstruction.asInstanceOf[SSAAbstractInvokeInstruction]
-              if hasPrimitiveReturnType(callInstr) || hasStringReturnType(callInstr)
+              mutable       = isMutable(callInstr.getDeclaredResultType)
+              if hasPrimitiveReturnType(callInstr) || hasStringReturnType(callInstr) || mutable
               callCgNode    = callBlock.getNode
               callNode      = CallGraphNode(callCgNode)
               callDef       = callInstr.getDef
@@ -229,7 +239,8 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
               val callExplNode = (callBlock, callAsbo)
               val prevResult   = resultGetOrElse(callBlock, callAsbo)
               val retResult    = resultGetOrElse(bb, resultAsbo, createAutomaton(instr, retNode, resultAsbo.identifier))
-              updateResultAndWorkListImmutable(callExplNode, prevResult | retResult)
+              if (mutable) updateResultAndWorkListMutable(callExplNode, prevResult | retResult)
+              else updateResultAndWorkListImmutable(callExplNode, prevResult | retResult)
             }
           }
         case _                                                                           =>
@@ -285,16 +296,6 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     }
   }
 
-  private[this] def getConstantArgs(bb: BB, instr: SSAAbstractInvokeInstruction): Seq[ValueNumber] = {
-    val table = bb.getNode.getIR.getSymbolTable
-    0 until instr.getNumberOfParameters flatMap {
-      arg =>
-        val vn = instr getUse arg
-        if (table isConstant vn) Seq(vn)
-        else Seq.empty[ValueNumber]
-    }
-  }
-
   private[this] def getConstantReturnValue(bb: BB, instr: SSAReturnInstruction): Option[ValueNumber] = {
     if (!instr.returnsVoid()) {
       val table = bb.getNode.getIR.getSymbolTable
@@ -311,16 +312,19 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     // remember which instructions define which String value numbers: map pairs (node, iindex) to value numbers
     val instrToVn = callGraph.foldLeft(Map.empty[(CGNode, Int), ValueNumber]) {
       case (oldMap, node) =>
-        val table = node.getIR.getSymbolTable
-        (1 to table.getMaxValueNumber).foldLeft(oldMap) {
-          case (oldMap2, vn) if hasStringType(node, vn) =>
-            (node.getDU getUses vn).foldLeft(oldMap2) {
-              case (oldMap3, useInstr) =>
-                oldMap3 + ((node, useInstr.iindex) -> vn)
-            }
-          case (oldMap2, _)                         =>
-            oldMap2
-        }
+        val ir = node.getIR
+        if (Option(ir).isDefined) {
+          val table = ir.getSymbolTable
+          (1 to table.getMaxValueNumber).foldLeft(oldMap) {
+            case (oldMap2, vn) if hasStringType(node, vn) =>
+              (node.getDU getUses vn).foldLeft(oldMap2) {
+                case (oldMap3, useInstr) =>
+                  oldMap3 + ((node, useInstr.iindex) -> vn)
+              }
+            case (oldMap2, _) =>
+              oldMap2
+          }
+        } else oldMap
     }
 
     cfg.nodesIterator foreach {

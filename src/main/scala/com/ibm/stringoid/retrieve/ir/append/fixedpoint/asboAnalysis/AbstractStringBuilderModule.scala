@@ -5,7 +5,7 @@ import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.StringAppend
 import com.ibm.stringoid.retrieve.ir.{IrUrlRetriever, ValueNumber}
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{BitVectorVariable, UnaryOperator}
-import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAPhiInstruction, SSAReturnInstruction}
+import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAPhiInstruction}
 import com.ibm.wala.util.collections.ObjectArrayMapping
 import com.ibm.wala.util.graph.Graph
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph
@@ -171,20 +171,22 @@ trait AbstractStringBuilderModule extends StringAppendTypes with IrUrlRetriever 
 
       def getNodeTransferFunction(id: Identifier): UnaryOperator[BitVectorVariable] = {
         getDef(id) match {
-          case instr if isSbConstructorOrFormatInDefUse(instr)                        =>
+          case instr if isSbConstructorOrFormatInDefUse(instr) =>
             createOperator(id)
-          case instr if pointsToPhi(id) && !isPhiDef(id)                              =>
+          case instr if pointsToPhi(id) && !isPhiDef(id)       =>
             createOperator(id)
-          case _ if isParameter(id)                                                   =>
+          case _ if isParameter(id)                            =>
             val tpe = getTypeAbstraction(node.getIr, valNum(id))
             if (isMutable(tpe.getTypeReference))
               createOperator(id)
             else
               BitVectorIdentity.instance
-          case instr: SSAReturnInstruction
-            if isMutable(getTypeAbstraction(node.getIr, valNum(id)).getTypeReference) =>
+          case instr: SSAAbstractInvokeInstruction
+            if isMutable(instr.getDeclaredResultType) &&
+              !isSbAppend(instr) &&
+              !isSbConstructorWithStringParam(instr)           =>
             createOperator(id)
-          case _                                                                      =>
+          case _                                               =>
             BitVectorIdentity.instance
         }
       }

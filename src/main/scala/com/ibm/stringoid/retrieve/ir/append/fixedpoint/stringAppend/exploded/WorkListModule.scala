@@ -1,6 +1,5 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded
 
-import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.util.collections.Heap
 import com.ibm.wala.util.graph.traverse.Topological
 
@@ -13,7 +12,7 @@ trait WorkListModule extends CFG {
     def nonEmpty: Boolean = !isEmpty
 
     private[this] lazy val nodeToOrderNumber: Map[BB, Int] = {
-      val order = TimeResult("topological order", Topological.makeTopologicalIter(cfg.graph))
+      val order = Topological.makeTopologicalIter(cfg.graph)
       val (nodeToNum, _) = order.foldLeft((Map.empty[BB, Int], 0)) {
         case ((oldMap, oldNum), bb) =>
           (oldMap + (bb -> oldNum), oldNum + 1)
