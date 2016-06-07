@@ -65,13 +65,20 @@ trait CFG extends InterProcASBOModule {
 
         // adding inter-procedural edges
         bb.getLastInstruction match {
-          case instr: SSAAbstractInvokeInstruction =>
+          // call-to-start
+          case instr: SSAAbstractInvokeInstruction                =>
             val targets = acyclicInterprocCFG getCallTargets src
             targets foreach {
               case target if Option(target.getIR).isDefined =>
                 addEdge(src, acyclicInterprocCFG getEntry target)
               case _                                        =>
                 ()
+            }
+          // end-to-return
+          case instr if instr == intraCfg.exit.getLastInstruction =>
+            val targets = acyclicInterprocCFG getSuccNodes src
+            targets foreach {
+              addEdge(src, _)
             }
           case _ =>
             ()

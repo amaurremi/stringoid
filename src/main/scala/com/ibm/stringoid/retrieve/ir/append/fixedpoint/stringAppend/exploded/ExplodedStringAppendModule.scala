@@ -134,7 +134,17 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
 
     implicit val worklist = initializeWorklist(cfg, idToAsbo)
 
+    var worklistIteration = 0
+    val printFrequency = 100
+    val debug = true
+
     while (worklist.nonEmpty) {
+
+      if (debug && worklistIteration % printFrequency == 0) {
+        println(s"iteration: $printFrequency, worklist size: ${worklist.size()}")
+        worklistIteration = worklistIteration + 1
+      }
+
       val (bb, factAsbo) = worklist.take()
       val node           = CallGraphNode(bb.getNode)
 
