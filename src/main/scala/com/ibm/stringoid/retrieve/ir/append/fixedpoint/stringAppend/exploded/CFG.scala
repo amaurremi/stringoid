@@ -56,6 +56,9 @@ trait CFG extends InterProcASBOModule {
         bb       <- intraCfg
         src       = new BasicBlockInContext[IExplodedBasicBlock](cgNode, bb)
       } {
+
+        // todo is that the right way of adding intra- and especially inter-procedural edges?
+
         // adding intra-procedural edges
         for {
           succ <- intraCfg getSuccNodes bb
@@ -75,6 +78,7 @@ trait CFG extends InterProcASBOModule {
                 ()
             }
           // end-to-return
+          // todo I'm especially unsure about this part
           case instr if instr == intraCfg.exit.getLastInstruction =>
             val targets = acyclicInterprocCFG getSuccNodes src
             targets foreach {
@@ -90,7 +94,10 @@ trait CFG extends InterProcASBOModule {
   }
 
   /**
-    * @param acyclicInterProcCFG Note that this CFG is acyclic inter-procedurally, but can have cycles inside procedures
+    * @param graph               The fully acyclic CFG that we constructed
+    * @param acyclicInterProcCFG This CFG is acyclic inter-procedurally, but can have cycles inside procedures.
+    *                            We use this CFG because it has convenient methods for traversing the CFG which we
+    *                            don't have in [[graph]], because it's just a [[NumberedGraph]].
     */
   class AcyclicCfg private[CFG](val graph: NumberedGraph[BB], acyclicInterProcCFG: ExplodedInterproceduralCFG) {
 
@@ -100,17 +107,22 @@ trait CFG extends InterProcASBOModule {
 
     def getPredNodes(bb: BB): Iterator[BB] = graph getPredNodes bb
 
+    // todo this method takes a lot of time
     def getCallTargets(bb: BB) = acyclicInterProcCFG getCallTargets bb
 
-    /* if `bb` is a return-instruction block inside a callee method, gets the basic blocks of the call sites that invoke this method */
-    def getCallBlocks(bb: BB): Iterator[BB] =
+    // todo this method takes a lot of time and seems overly complicated for what it does, but I don't know how else to do it. Is this right?
+    /**
+      * @return the basic blocks of the call sites that invoke `callee`
+      */
+    def getCallBlocks(callee: BB): Iterator[BB] =
       for {
-        caller   <- callGraph getPredNodes bb.getNode
-        callerBB <- intraCfgCache(callGraph getNumber caller)
-        instr     = callerBB.getLastInstruction
+        caller   <- callGraph getPredNodes callee.getNode
+        intraCfg  = intraCfgCache(callGraph getNumber caller)
+        bb       <- intraCfg
+        instr     = bb.getLastInstruction
         if instr.isInstanceOf[SSAAbstractInvokeInstruction]
-        callBlock = new BasicBlockInContext(caller, callerBB)
-        if acyclicInterProcCFG getCallTargets callBlock contains bb.getNode
+        callBlock = new BasicBlockInContext(caller, bb)
+        if acyclicInterProcCFG getCallTargets callBlock contains callee.getNode
       } yield callBlock
 
     def getEntry(node: CGNode): BB = acyclicInterProcCFG getEntry node
