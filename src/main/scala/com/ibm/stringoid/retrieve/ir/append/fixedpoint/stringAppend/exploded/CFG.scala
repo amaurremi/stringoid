@@ -99,7 +99,7 @@ trait CFG extends InterProcASBOModule {
     *                            We use this CFG because it has convenient methods for traversing the CFG which we
     *                            don't have in [[graph]], because it's just a [[NumberedGraph]].
     */
-  class AcyclicCfg private[CFG](val graph: NumberedGraph[BB], acyclicInterProcCFG: ExplodedInterproceduralCFG) {
+  class AcyclicCfg private[CFG](graph: NumberedGraph[BB], acyclicInterProcCFG: ExplodedInterproceduralCFG) {
 
     import AcyclicCfg.intraCfgCache
 
