@@ -8,7 +8,7 @@ import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.StringFormat
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAFieldAccessInstruction, SSAInstruction, SSAReturnInstruction}
-import com.ibm.wala.types.FieldReference
+import com.ibm.wala.types.{FieldReference, TypeReference}
 import seqset.regular.Automaton
 
 import scala.collection.JavaConversions._
@@ -16,7 +16,7 @@ import scala.collection.mutable
 
 // todo remove instructions from StringPartAutomaton!
 
-trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSpecifiers with WorkListModule {
+trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSpecifiers with WorkListModule with IrUrlRetriever {
 
   /**
     * Analysis result that maps exploded nodes to automata. This maps tracks only mutable ASBOs, i.e.
@@ -89,7 +89,8 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     val newResult =
       if (oldResult.automaton == Automaton.empty[StringPartAutomaton]) newAutomaton
       else oldResult +++ newAutomaton
-    updateResultAndWorkListMutable(succNode, newResult)
+    val oldSuccResult = resultMutable(succNode)
+    updateResultAndWorkListMutable(succNode, oldSuccResult | newResult)
   }
 
   private[this] def updateResultAndWorkListMutable(
@@ -109,10 +110,9 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
   )(
     implicit worklist: WorkList
   ): Unit = {
-    if (!(resultImmutable contains node._2)) {
-      resultImmutable += (node._2 -> automaton)
-      worklist insert node
-    }
+    val oldResult = resultImmutable(node._2)
+    resultImmutable += (node._2 -> automaton)
+    if (oldResult != automaton) worklist insert node
   }
 
   private[this] def resultGetOrElse(
@@ -197,7 +197,11 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
             oldAutomaton        = resultGetOrElse(bb, paramAsbo)
             automaton           = resultGetOrElse(bb, asbo, createAutomaton(instr, node, asbo.identifier))
             targetBB            = cfg getEntry succ
-          } updateResultAndWorkListImmutable((targetBB, paramAsbo), oldAutomaton | automaton)
+          } {
+            val paramType = node.getIr getParameterType paramIndex
+            if (isMutable(paramType)) updateResultAndWorkListMutable((targetBB, paramAsbo), oldAutomaton | automaton)
+            else updateResultAndWorkListImmutable((targetBB, paramAsbo), oldAutomaton | automaton)
+          }
           // call-to-return
           propagateIdentity(cfg getReturnSites bb, bb, factAsbo)
         // inter-procedural end-to-return edge: return value assignment
@@ -234,6 +238,9 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     resultMutable.valuesIterator ++ resultImmutable.valuesIterator
   }
 
+  private[this] def isMutable(tpe: TypeReference) =
+    Seq("java/lang/StringBuilder", "java/lang/StringBuffer") exists tpe.toString.contains
+
   private[this] def propagateIdentity(
     succNodes: Iterator[BB],
     bb: BB, factAsbo: ASBO
@@ -242,8 +249,9 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
   ): Unit =
     succNodes foreach {
       succ =>
-        val succNode = (succ, factAsbo)
-        updateResultAndWorkListMutable(succNode, resultMutable(succNode) | resultMutable((bb, factAsbo)))
+        val succNode  = (succ, factAsbo)
+        val automaton = resultMutable getOrElse ((bb, factAsbo), createAutomaton(bb.getLastInstruction, CallGraphNode(bb.getNode), factAsbo.identifier))
+        updateResultAndWorkListMutable(succNode, resultMutable(succNode) | automaton)
     }
 
   /**
@@ -302,12 +310,12 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
 
     val worklist = new WorkList(cfg)
 
-    // remember which instructions define which (constant) value numbers: map pairs (node, iindex) to value numbers
+    // remember which instructions define which String value numbers: map pairs (node, iindex) to value numbers
     val instrToVn = callGraph.foldLeft(Map.empty[(CGNode, Int), ValueNumber]) {
       case (oldMap, node) =>
         val table = node.getIR.getSymbolTable
         (1 to table.getMaxValueNumber).foldLeft(oldMap) {
-          case (oldMap2, vn) if table isConstant vn =>
+          case (oldMap2, vn) if hasStringType(node, vn) =>
             (node.getDU getUses vn).foldLeft(oldMap2) {
               case (oldMap3, useInstr) =>
                 oldMap3 + ((node, useInstr.iindex) -> vn)
@@ -336,5 +344,10 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     }
 
     worklist
+  }
+
+  private[this] def hasStringType(node: CGNode, vn: ValueNumber): Boolean = {
+    val tpe = getTypeAbstraction(node.getIR, vn)
+    tpe.toString contains "Ljava/lang/String"
   }
 }
