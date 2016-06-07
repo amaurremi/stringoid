@@ -185,6 +185,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
             propagateIdentity(cfg getSuccNodes bb, bb, factAsbo)
         // inter-procedural call-to-start and call-to-return edges:
         // parameter substitution in call + propagate facts down to return node
+        // todo test multiple dispatch, e.g. merge
         case instr: SSAAbstractInvokeInstruction                                           =>
           // call-to-start
           val substitutionAsbos = argumentAsbos(idToAsbo, instr, node)
@@ -198,7 +199,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
             automaton           = resultGetOrElse(bb, asbo, createAutomaton(instr, node, asbo.identifier))
             targetBB            = cfg getEntry succ
           } {
-            val paramType = node.getIr getParameterType paramIndex
+            val paramType = succ.getIR getParameterType paramIndex
             if (isMutable(paramType)) updateResultAndWorkListMutable((targetBB, paramAsbo), oldAutomaton | automaton)
             else updateResultAndWorkListImmutable((targetBB, paramAsbo), oldAutomaton | automaton)
           }

@@ -1,8 +1,8 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis
 
-import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.StringAppendTypes
+import com.ibm.stringoid.retrieve.ir.{IrUrlRetriever, ValueNumber}
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{BitVectorVariable, UnaryOperator}
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAPhiInstruction}
@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
  * An abstract string builder object (ASBO) is the representation of one such string builder object that can be mapped
  * to by many value numbers.
  */
-trait AbstractStringBuilderModule extends StringAppendTypes {
+trait AbstractStringBuilderModule extends StringAppendTypes with IrUrlRetriever {
 
   type AsboMapping = OrdinalSetMapping[ASBO]
 
@@ -73,7 +73,8 @@ trait AbstractStringBuilderModule extends StringAppendTypes {
   }
 
   protected def createAbstractObjectNumbering(node: Node)(implicit tag: ClassTag[ASBO]): AsboMapping = {
-    val abstractObjects = node.getIr.iterateAllInstructions() flatMap {
+    val ir = node.getIr
+    val abstractObjects = ir.iterateAllInstructions() flatMap {
       case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv)                            =>
         Iterator(createAsbo(getSbConstructorDef(inv), node))
       case inv: SSAAbstractInvokeInstruction if isStringFormat(inv) || hasStringReturnType(inv) =>
@@ -86,8 +87,12 @@ trait AbstractStringBuilderModule extends StringAppendTypes {
       case _                                                                                    =>
         Iterator.empty
     }
+    val params = 1 to ir.getSymbolTable.getNumberOfParameters collect {
+      case vn if isMutable(getTypeAbstraction(ir, vn).getTypeReference) =>
+        createAsbo(vn, node)
+    }
 
-    new ObjectArrayMapping[ASBO](abstractObjects.toArray[ASBO])
+    new ObjectArrayMapping[ASBO]((abstractObjects ++ params).toArray[ASBO])
   }
 
   abstract class AsboFixedPointSolver(
@@ -117,6 +122,7 @@ trait AbstractStringBuilderModule extends StringAppendTypes {
         graph addEdge(sourceN, targetN)
       }
       node.getIr.iterateAllInstructions() foreach {
+        // todo remove just adding nodes?
         case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv)     =>
           getDefs(inv) foreach addNode
         case inv: SSAAbstractInvokeInstruction if isSbAppend(inv)          =>
@@ -140,6 +146,7 @@ trait AbstractStringBuilderModule extends StringAppendTypes {
         case _                                                             =>
         // do  nothing
       }
+
       graph
     }
 
@@ -165,12 +172,20 @@ trait AbstractStringBuilderModule extends StringAppendTypes {
       def getNodeTransferFunction(id: Identifier): UnaryOperator[BitVectorVariable] = {
         getDef(id) match {
           case instr if isSbConstructorOrFormatInDefUse(instr) =>
-            createOperator(id, instr)
-          case instr if pointsToPhi(id) && !(isPhiDef(id)) =>
-            createOperator(id, instr)
-          case _                                               => // todo is this wrong? what if this phi depends on another phi?
-            BitVectorIdentity.instance
+            createOperator(id)
+          case instr if pointsToPhi(id) && !isPhiDef(id)       =>
+            createOperator(id)
+          case _                                               =>
+            val tpe = getTypeAbstraction(node.getIr, valNum(id))
+            if (isMutable(tpe.getTypeReference) && sbIsParameter(id))
+              createOperator(id)
+            else
+              BitVectorIdentity.instance
         }
+      }
+
+      private[this] def sbIsParameter(id: Identifier) = {
+        valNum(id) <= node.getIr.getNumberOfParameters
       }
 
       private[this] def pointsToPhi(id: Identifier): Boolean =
@@ -179,7 +194,7 @@ trait AbstractStringBuilderModule extends StringAppendTypes {
       private[this] def isPhiDef(id: Identifier): Boolean =
         getDef(id).isInstanceOf[SSAPhiInstruction]
 
-      private[this] def createOperator(id: Identifier, instr: SSAInstruction): UnaryOperator[BitVectorVariable] = {
+      private[this] def createOperator(id: Identifier): UnaryOperator[BitVectorVariable] = {
         val mappedIndex = abstractObjectNumbering getMappedIndex ASBO(id)
         assert(mappedIndex >= 0)
         val gen = new BitVector()

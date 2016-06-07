@@ -57,6 +57,9 @@ object StringConcatUtil {
   def getFirstSbAppendDef(instr: SSAAbstractInvokeInstruction): ValueNumber =
     instr getDef 0
 
+  def getSecondSbAppendDef(instr: SSAAbstractInvokeInstruction): ValueNumber =
+    instr getDef 1
+
   def getSbAppendDefs(instr: SSAAbstractInvokeInstruction): (ValueNumber, ValueNumber) = {
     assert(isSbAppend(instr))
     (instr getDef 0, instr getUse 0)
@@ -109,5 +112,5 @@ object StringConcatUtil {
     Seq("B", "C", "D", "F", "I", "J", "S", "Z") contains inv.getDeclaredResultType.getName.toString
 
   def isMutable(tpe: TypeReference) =
-    Seq("java/lang/StringBuilder", "java/lang/StringBuffer") exists tpe.toString.contains
+    Seq("Ljava/lang/StringBuilder", "Ljava/lang/StringBuffer") exists tpe.toString.contains
 }
