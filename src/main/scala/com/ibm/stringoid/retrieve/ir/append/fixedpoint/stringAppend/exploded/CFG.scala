@@ -50,15 +50,16 @@ trait CFG extends InterProcASBOModule {
 
       for {
         cgNode   <- callGraph
-        num       = callGraph.getNumber(cgNode)
+        num       = callGraph getNumber cgNode
         intraCfg  = intraCfgCache getOrElseUpdate (num, acyclicInterprocCFG getCFG cgNode) // intra-procedural CFG with cycles
+        if Option(intraCfg).isDefined
         backEdges = Acyclic.computeBackEdges(intraCfg, intraCfg.entry).toSet
         bb       <- intraCfg
         src       = new BasicBlockInContext[IExplodedBasicBlock](cgNode, bb)
       } {
         // adding intra-procedural edges
         for {
-          succ <- (intraCfg getNormalSuccessors bb) ++ (intraCfg getExceptionalSuccessors bb) // todo should this just be replaced with getSuccNodes?
+          succ <- intraCfg getSuccNodes bb
           if !(backEdges contains new IntPair(bb.getNumber, succ.getNumber))
           dst   = new BasicBlockInContext[IExplodedBasicBlock](cgNode, succ)
         } addEdge(src, dst)
