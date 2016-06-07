@@ -229,7 +229,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
               callBlock    <- cfg getCallBlocks bb
               callInstr     = callBlock.getLastInstruction.asInstanceOf[SSAAbstractInvokeInstruction]
               mutable       = isMutable(callInstr.getDeclaredResultType)
-              if hasPrimitiveReturnType(callInstr) || hasStringReturnType(callInstr) || mutable
+              if mutable || hasPrimitiveReturnType(callInstr) || hasStringReturnType(callInstr)
               callCgNode    = callBlock.getNode
               callNode      = CallGraphNode(callCgNode)
               callDef       = callInstr.getDef
