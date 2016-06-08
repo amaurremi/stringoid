@@ -190,14 +190,14 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
                 }
                 prevAuto | newAuto
             }
-            cfg getSuccNodes bb foreach {
+            cfg getIntraSuccnodes bb foreach {
               succ =>
                 updateResultAndWorkListImmutable((succ, sfAsbo), automaton)
             }
           } else
-            propagateIdentity(cfg getSuccNodes bb, bb, factAsbo)
+            propagateIdentity(cfg getIntraSuccnodes bb, bb, factAsbo)
           if (factInArgs)
-            propagateIdentity(cfg getSuccNodes bb, bb, factAsbo)
+            propagateIdentity(cfg getIntraSuccnodes bb, bb, factAsbo)
 
         // inter-procedural call-to-start and call-to-return edges:
         // parameter substitution in call + propagate facts down to return node
@@ -254,7 +254,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
             }
           }
         case _                                                                           =>
-          propagateIdentity(cfg getSuccNodes bb, bb, factAsbo)
+          propagateIdentity(cfg getIntraSuccnodes bb, bb, factAsbo)
       }
     }
     resultMutable.valuesIterator ++ resultImmutable.valuesIterator
@@ -289,7 +289,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     val node = CallGraphNode(bb.getNode)
     def getId(vn: ValueNumber) = createIdentifier(vn, node)
     for {
-      succ <- (cfg getSuccNodes bb).toIterable
+      succ <- (cfg getIntraSuccnodes bb).toIterable
       sb   <- asbos
       args  = idToAsbo(getId(argVn))
     } {

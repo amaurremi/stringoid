@@ -24,14 +24,15 @@ trait CFG extends InterProcASBOModule {
 
     // map from call graph nodes to intraprocedural (possibly cyclic) CFGs
     private val intraCfgCache = mutable.Map[Int, ControlFlowGraph[SSAInstruction, IExplodedBasicBlock]]()
+    // map from call graph nodes to sets of call-instruction blocks
+    val nodeToCallBlocks = mutable.Map[Int, Set[BB]]() withDefaultValue Set.empty[BB]
 
     /**
-      * Creates an acyclic inter-procedural CFG:
+      * Creates a disconnected graph of acyclic intra-procedural CFGs
       * - creates an inter-procedural CFG based on the acyclic call graph;
       *   this graph has acyclic inter-procedural and possibly cyclic intra-procedural edges
       * - for each intra-procedural sub-CFG, computes back-edges, and puts the non-back-edges into the result graph,
       *   thus creating a graph of disconnected acyclic sub-CFGs
-      * - adds all inter-procedural edges into the result graph, yielding an inter-procedural acyclic CFG
       */
     def apply(): AcyclicCfg = TimeResult("acyclic CFG", {
       val graph = new SlowSparseNumberedGraph[BB](1)
@@ -54,39 +55,24 @@ trait CFG extends InterProcASBOModule {
         if Option(intraCfg).isDefined
         backEdges = Acyclic.computeBackEdges(intraCfg, intraCfg.entry).toSet
         bb       <- intraCfg
+        succ     <- intraCfg getSuccNodes bb
+        if !(backEdges contains new IntPair(bb.getNumber, succ.getNumber))
         src       = new BasicBlockInContext[IExplodedBasicBlock](cgNode, bb)
+        dst       = new BasicBlockInContext[IExplodedBasicBlock](cgNode, succ)
       } {
-
-        // todo is that the right way of adding intra- and especially inter-procedural edges?
+        // populating map from nodes to call blocks
+        src.getLastInstruction match {
+          case _: SSAAbstractInvokeInstruction =>
+            nodeToCallBlocks += (num -> (nodeToCallBlocks(num) + src))
+          case _                               =>
+            ()
+        }
 
         // adding intra-procedural edges
         for {
           succ <- intraCfg getSuccNodes bb
           if !(backEdges contains new IntPair(bb.getNumber, succ.getNumber))
-          dst   = new BasicBlockInContext[IExplodedBasicBlock](cgNode, succ)
         } addEdge(src, dst)
-
-        // adding inter-procedural edges
-        bb.getLastInstruction match {
-          // call-to-start
-          case instr: SSAAbstractInvokeInstruction                =>
-            val targets = acyclicInterprocCFG getCallTargets src
-            targets foreach {
-              case target if Option(target.getIR).isDefined =>
-                addEdge(src, acyclicInterprocCFG getEntry target)
-              case _                                        =>
-                ()
-            }
-          // end-to-return
-          // todo I'm especially unsure about this part
-          case instr if instr == intraCfg.exit.getLastInstruction =>
-            val targets = acyclicInterprocCFG getSuccNodes src
-            targets foreach {
-              addEdge(src, _)
-            }
-          case _ =>
-            ()
-        }
       }
 
       new AcyclicCfg(graph, acyclicInterprocCFG)
@@ -94,18 +80,16 @@ trait CFG extends InterProcASBOModule {
   }
 
   /**
-    * @param graph               The fully acyclic CFG that we constructed
+    * @param acyclicIntraCfgs    The disconnected graph of acyclic intra-procedural CFGs
     * @param acyclicInterProcCFG This CFG is acyclic inter-procedurally, but can have cycles inside procedures.
     *                            We use this CFG because it has convenient methods for traversing the CFG which we
-    *                            don't have in [[graph]], because it's just a [[NumberedGraph]].
+    *                            don't have in [[acyclicIntraCfgs]], because it's just a [[NumberedGraph]].
     */
-  class AcyclicCfg private[CFG](val graph: NumberedGraph[BB], acyclicInterProcCFG: ExplodedInterproceduralCFG) {
+  class AcyclicCfg private[CFG](val acyclicIntraCfgs: NumberedGraph[BB], acyclicInterProcCFG: ExplodedInterproceduralCFG) {
 
-    import AcyclicCfg.intraCfgCache
+    import AcyclicCfg.nodeToCallBlocks
 
-    def getSuccNodes(bb: BB): Iterator[BB] = graph getSuccNodes bb
-
-    def getPredNodes(bb: BB): Iterator[BB] = graph getPredNodes bb
+    def getIntraSuccnodes(bb: BB): Iterator[BB] = acyclicIntraCfgs getSuccNodes bb
 
     // todo this method takes a lot of time
     def getCallTargets(bb: BB) = acyclicInterProcCFG getCallTargets bb
@@ -117,18 +101,14 @@ trait CFG extends InterProcASBOModule {
     def getCallBlocks(callee: BB): Iterator[BB] =
       for {
         caller   <- callGraph getPredNodes callee.getNode
-        intraCfg  = intraCfgCache(callGraph getNumber caller)
-        bb       <- intraCfg
-        instr     = bb.getLastInstruction
-        if instr.isInstanceOf[SSAAbstractInvokeInstruction]
-        callBlock = new BasicBlockInContext(caller, bb)
-        if acyclicInterProcCFG getCallTargets callBlock contains callee.getNode
-      } yield callBlock
+        callBB   <- nodeToCallBlocks(callGraph getNumber caller)
+        if acyclicInterProcCFG getCallTargets callBB contains callee.getNode
+      } yield callBB
 
     def getEntry(node: CGNode): BB = acyclicInterProcCFG getEntry node
 
     def getReturnSites(bb: BB): Iterator[BB] = acyclicInterProcCFG getReturnSites bb
 
-    def nodesIterator: Iterator[BB] = graph.iterator()
+    def nodesIterator: Iterator[BB] = acyclicIntraCfgs.iterator()
   }
 }
