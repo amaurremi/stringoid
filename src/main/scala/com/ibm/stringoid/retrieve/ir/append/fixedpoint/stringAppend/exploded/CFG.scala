@@ -23,26 +23,28 @@ trait CFG extends InterProcASBOModule {
 
     override def getCFG(n: CGNode): ControlFlowGraph[SSAInstruction, IExplodedBasicBlock] = {
       val cfg       = super[ExplodedInterproceduralCFG].getCFG(n)
-      val backEdges = Acyclic.computeBackEdges(cfg, cfg.entry).toSet
-      val filter = new EdgeFilter[IExplodedBasicBlock] {
+      if (Option(cfg).isDefined) {
+        val backEdges = Acyclic.computeBackEdges(cfg, cfg.entry).toSet
+        val filter = new EdgeFilter[IExplodedBasicBlock] {
 
-        override def hasExceptionalEdge(src: IExplodedBasicBlock, dst: IExplodedBasicBlock): Boolean =
-          hasEdge(src, dst, cfg.getExceptionalSuccessors)
+          override def hasExceptionalEdge(src: IExplodedBasicBlock, dst: IExplodedBasicBlock): Boolean =
+            hasEdge(src, dst, cfg.getExceptionalSuccessors)
 
-        override def hasNormalEdge(src: IExplodedBasicBlock, dst: IExplodedBasicBlock): Boolean =
-          hasEdge(src, dst, cfg.getNormalSuccessors)
+          override def hasNormalEdge(src: IExplodedBasicBlock, dst: IExplodedBasicBlock): Boolean =
+            hasEdge(src, dst, cfg.getNormalSuccessors)
 
-        private[this] def hasEdge(
-          src: IExplodedBasicBlock,
-          dst: IExplodedBasicBlock,
-          succFun: IExplodedBasicBlock => util.Collection[IExplodedBasicBlock]
-        ) = {
-          val isBackEdge = backEdges contains new IntPair(cfg getNumber src, cfg getNumber dst)
-          def isSucc = succFun(src) contains dst
-          !isBackEdge && isSucc
+          private[this] def hasEdge(
+            src: IExplodedBasicBlock,
+            dst: IExplodedBasicBlock,
+            succFun: IExplodedBasicBlock => util.Collection[IExplodedBasicBlock]
+          ) = {
+            val isBackEdge = backEdges contains new IntPair(cfg getNumber src, cfg getNumber dst)
+            def isSucc = succFun(src) contains dst
+            !isBackEdge && isSucc
+          }
         }
-      }
-      PrunedCFG.make(cfg, filter)
+        PrunedCFG.make(cfg, filter)
+      } else cfg
     }
 
     def getCallBlocks(callee: BB): Iterator[BB] = {
