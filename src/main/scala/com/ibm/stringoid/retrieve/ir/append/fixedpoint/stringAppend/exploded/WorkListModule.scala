@@ -37,11 +37,13 @@ trait WorkListModule extends CFG {
         val topologicalNum1 = bbToOrderNum(elt1._1)
         val topologicalNum2 = bbToOrderNum(elt2._1)
         if (topologicalNum1 == topologicalNum2) {
-          assert(elt1._2.identifier.node == elt2._2.identifier.node)
-          elt1._2.identifier.vn < elt2._2.identifier.vn
+          val idNode1 = elt1._2.identifier.node
+          val idNode2 = elt2._2.identifier.node
+          if (idNode1 == idNode2) elt1._2.identifier.vn < elt2._2.identifier.vn
+          else (callGraph getNumber idNode1) < (callGraph getNumber idNode2)
         }
         else topologicalNum1 < topologicalNum2
       } else cgNum1 < cgNum2
+    }
   }
-
 }
