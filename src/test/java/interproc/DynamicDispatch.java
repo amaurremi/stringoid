@@ -4,12 +4,12 @@ public class DynamicDispatch {
 
     public static void main(String[] args) {
         DynamicDispatch d = args == null ? new DynamicDispatchBaby() : new DynamicDispatch();
-        String url = d.getDomain("http://");
+        String url = new StringBuilder(d.getDomain("http://")).append("/path").toString();
 
         System.out.println(url);
 
-        Assertions.shouldContainHttp("dynamic-dispatch.com");
-        Assertions.shouldContainHttp("dynamic-dispatch-baby.com");
+        Assertions.shouldContainHttp("dynamic-dispatch.com/path");
+        Assertions.shouldContainHttp("dynamic-dispatch-baby.com/path");
     }
 
     String getDomain(String prefix) {
