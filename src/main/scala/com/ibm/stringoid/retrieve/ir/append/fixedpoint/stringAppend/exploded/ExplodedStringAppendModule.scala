@@ -136,7 +136,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
 
     while (worklist.nonEmpty) {
 
-      if (debug && (worklistIteration % printFrequency) == 0) {
+      if (debug && ((worklistIteration % printFrequency) == 0)) {
         println(s"iteration: $printFrequency, worklist size: ${worklist.size()}")
         worklistIteration = worklistIteration + 1
       }
