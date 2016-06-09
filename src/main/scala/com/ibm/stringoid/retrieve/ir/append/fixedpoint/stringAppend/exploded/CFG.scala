@@ -26,17 +26,21 @@ trait CFG extends InterProcASBOModule {
 
     private[this] val nodeToCfg = mutable.Map[Int, CFG]()
 
-    override def getCFG(n: CGNode): CFG =
-      nodeToCfg get (callGraph getNumber n) match {
+    override def getCFG(n: CGNode): CFG = {
+      val num = callGraph getNumber n
+      nodeToCfg get num match {
         case Some(graph) =>
           graph
-        case None =>
+        case None        =>
           val cfg = super[ExplodedInterproceduralCFG].getCFG(n)
-          if (Option(cfg).isDefined) {
+          val acyclic = if (Option(cfg).isDefined) {
             val filter = new BackEdgeFilter(cfg)
             PrunedCFG.make(cfg, filter)
           } else cfg
+          nodeToCfg += (num -> acyclic)
+          acyclic
       }
+    }
 
     def getCallBlocks(callee: BB): Iterator[BB] = {
       val entry = acyclicCFG getEntry callee.getNode

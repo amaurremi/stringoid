@@ -128,13 +128,13 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
 
   private[this] def getResult: Iterator[StringPartAutomaton] = TimeResult("II analysis phase (computing automata)", {
 
-    implicit val worklist = initializeWorklist(idToAsbo)
+    implicit val worklist = TimeResult("initialize work list", initializeWorklist(idToAsbo))
 
     var worklistIteration = 0
     val printFrequency = 100
     val debug = true
 
-    while (worklist.nonEmpty) {
+    TimeResult("processing work list", while (worklist.nonEmpty) {
 
       if (debug && ((worklistIteration % printFrequency) == 0)) {
         println(s"iteration: $printFrequency, worklist size: ${worklist.size()}")
@@ -252,7 +252,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
         case _                                                                           =>
           propagateIdentity(acyclicCFG getSuccNodes bb, bb, factAsbo)
       }
-    }
+    })
     resultMutable.valuesIterator ++ resultImmutable.valuesIterator
   })
 
