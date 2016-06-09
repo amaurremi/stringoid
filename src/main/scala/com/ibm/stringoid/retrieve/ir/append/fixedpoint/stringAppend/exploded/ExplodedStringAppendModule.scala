@@ -131,15 +131,17 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     implicit val worklist = TimeResult("initialize work list", initializeWorklist(idToAsbo))
 
     var worklistIteration = 0
-    val printFrequency = 100
-    val debug = true
+    val printFrequency = 25000
 
     TimeResult("processing work list", while (worklist.nonEmpty) {
 
-      if (debug && ((worklistIteration % printFrequency) == 0)) {
-        println(s"iteration: $printFrequency, worklist size: ${worklist.size()}")
-        worklistIteration = worklistIteration + 1
+      if (DEBUG && ((worklistIteration % printFrequency) == 0)) {
+        println(s"iteration: ${worklistIteration / 1000}k, worklist size: ${worklist.size()}")
+        if (worklist.size == 32272) {
+          val x = 1
+        }
       }
+      worklistIteration = worklistIteration + 1
 
       val (bb, factAsbo) = worklist.take()
       val node           = CallGraphNode(bb.getNode)
@@ -332,6 +334,8 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
           }
         } else oldMap
     }
+
+    if (DEBUG) println("acyclic CFG size: " + acyclicCFG.size)
 
     acyclicCFG foreach {
       bb =>
