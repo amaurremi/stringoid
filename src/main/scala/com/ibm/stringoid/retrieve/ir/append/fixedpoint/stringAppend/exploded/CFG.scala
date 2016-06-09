@@ -63,8 +63,8 @@ trait CFG extends InterProcASBOModule {
         !isBackEdge && isSucc
       }
     }
-
-    lazy val acyclicCFG = TimeResult("acyclic CFG", new AcyclicInterproceduralCFG)
   }
+
+  lazy val acyclicCFG = TimeResult("acyclic CFG", new AcyclicInterproceduralCFG)
 
 }
