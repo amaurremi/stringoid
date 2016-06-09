@@ -135,15 +135,15 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     implicit val worklist = initializeWorklist(cfg, idToAsbo)
 
     var worklistIteration = 0
-    val printFrequency = 100
+    val printFrequency = 25000
     val debug = true
 
     while (worklist.nonEmpty) {
 
       if (debug && (worklistIteration % printFrequency) == 0) {
-        println(s"iteration: $printFrequency, worklist size: ${worklist.size()}")
-        worklistIteration = worklistIteration + 1
+        println(s"iteration: ${worklistIteration / 1000}k, worklist size: ${worklist.size()}")
       }
+      worklistIteration = worklistIteration + 1
 
       val (bb, factAsbo) = worklist.take()
       val node           = CallGraphNode(bb.getNode)
@@ -262,16 +262,25 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
 
   private[this] def propagateIdentity(
     succNodes: Iterator[BB],
-    bb: BB, factAsbo: ASBO
+    bb: BB,
+    factAsbo: ASBO
   )(
     implicit worklist: WorkList
-  ): Unit =
+  ): Unit = {
+    val identifier = factAsbo.identifier
+    val mutable = isMutable(getTypeAbstraction(identifier.node.getIR, identifier.vn).getTypeReference)
     succNodes foreach {
       succ =>
-        val succNode  = (succ, factAsbo)
-        val automaton = resultMutable getOrElse ((bb, factAsbo), createAutomaton(bb.getLastInstruction, CallGraphNode(bb.getNode), factAsbo.identifier))
-        updateResultAndWorkListMutable(succNode, resultMutable(succNode) | automaton)
+        val succNode = (succ, factAsbo)
+        def createdAutomaton = createAutomaton(bb.getLastInstruction, CallGraphNode(bb.getNode), identifier)
+        val automaton =
+          if (mutable) resultMutable getOrElse((bb, factAsbo), createdAutomaton)
+          else resultImmutable getOrElse(factAsbo, createdAutomaton)
+        val mergedAutomaton = resultMutable(succNode)
+        if (mutable) updateResultAndWorkListMutable(succNode, mergedAutomaton)
+        else updateResultAndWorkListImmutable(succNode, mergedAutomaton)
     }
+  }
 
   /**
     * @param asbos  ASBOs of the stringbuilders to which we're appending
@@ -315,48 +324,49 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     } else None
   }
 
-  private[this] def initializeWorklist(cfg: AcyclicCfg, idToAsbo: Map[Identifier, Set[ASBO]]): WorkList = {
+  private[this] def initializeWorklist(cfg: AcyclicCfg, idToAsbo: Map[Identifier, Set[ASBO]]): WorkList =
+    TimeResult("initializing work list", {
 
-    val worklist = new WorkList(cfg)
+      val worklist = new WorkList(cfg)
 
-    // remember which instructions define which String value numbers: map pairs (node, iindex) to value numbers
-    val instrToVn = callGraph.foldLeft(Map.empty[(CGNode, Int), ValueNumber]) {
-      case (oldMap, node) =>
-        val ir = node.getIR
-        if (Option(ir).isDefined) {
-          val table = ir.getSymbolTable
-          (1 to table.getMaxValueNumber).foldLeft(oldMap) {
-            case (oldMap2, vn) if hasStringType(node, vn) =>
-              (node.getDU getUses vn).foldLeft(oldMap2) {
-                case (oldMap3, useInstr) =>
-                  oldMap3 + ((node, useInstr.iindex) -> vn)
-              }
-            case (oldMap2, _) =>
-              oldMap2
+      // remember which instructions define which String value numbers: map pairs (node, iindex) to value numbers
+      val instrToVn = callGraph.foldLeft(Map.empty[(CGNode, Int), ValueNumber]) {
+        case (oldMap, node) =>
+          val ir = node.getIR
+          if (Option(ir).isDefined) {
+            val table = ir.getSymbolTable
+            (1 to table.getMaxValueNumber).foldLeft(oldMap) {
+              case (oldMap2, vn) if hasStringType(node, vn) =>
+                (node.getDU getUses vn).foldLeft(oldMap2) {
+                  case (oldMap3, useInstr) =>
+                    oldMap3 + ((node, useInstr.iindex) -> vn)
+                }
+              case (oldMap2, _) =>
+                oldMap2
+            }
+          } else oldMap
+      }
+
+      cfg.nodesIterator foreach {
+        bb =>
+          val node = bb.getNode
+          val instr = bb.getLastInstruction
+          if (Option(instr).isDefined) {
+            instrToVn get(node, instr.iindex) match {
+              case Some(vn) =>
+                // add to work list
+                idToAsbo(createIdentifier(vn, CallGraphNode(node))) foreach {
+                  asbo =>
+                    worklist insert ((bb, asbo))
+                }
+              case None     =>
+                ()
+            }
           }
-        } else oldMap
-    }
+      }
 
-    cfg.nodesIterator foreach {
-      bb =>
-        val node = bb.getNode
-        val instr = bb.getLastInstruction
-        if (Option(instr).isDefined) {
-          instrToVn get(node, instr.iindex) match {
-            case Some(vn) =>
-              // add to work list
-              idToAsbo(createIdentifier(vn, CallGraphNode(node))) foreach {
-                asbo =>
-                  worklist insert ((bb, asbo))
-              }
-            case None     =>
-              ()
-          }
-        }
-    }
-
-    worklist
-  }
+      worklist
+    })
 
   private[this] def hasStringType(node: CGNode, vn: ValueNumber): Boolean = {
     val tpe = getTypeAbstraction(node.getIR, vn)

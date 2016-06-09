@@ -91,10 +91,8 @@ trait CFG extends InterProcASBOModule {
 
     def getIntraSuccnodes(bb: BB): Iterator[BB] = acyclicIntraCfgs getSuccNodes bb
 
-    // todo this method takes a lot of time
     def getCallTargets(bb: BB) = acyclicInterProcCFG getCallTargets bb
 
-    // todo this method takes a lot of time and seems overly complicated for what it does, but I don't know how else to do it. Is this right?
     /**
       * @return the basic blocks of the call sites that invoke `callee`
       */

@@ -45,7 +45,7 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
       /* INTRA procedural*/
       it("computes URLs in CHA IR analysis") {
         val file = Paths.get("src/test/java/intraproc")
-        val analysisConfig = AnalysisConfig(irSource = Cha, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
+        val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
         run(analysisConfig)
       }
 
