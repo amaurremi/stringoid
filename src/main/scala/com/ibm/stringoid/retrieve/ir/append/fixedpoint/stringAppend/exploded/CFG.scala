@@ -14,6 +14,7 @@ import com.ibm.wala.util.graph.Acyclic
 import com.ibm.wala.util.intset.IntPair
 
 import scala.collection.JavaConversions._
+import scala.collection.mutable
 
 trait CFG extends InterProcASBOModule {
 
@@ -21,37 +22,49 @@ trait CFG extends InterProcASBOModule {
 
   class AcyclicInterproceduralCFG extends ExplodedInterproceduralCFG(callGraph, IndiscriminateFilter.singleton[CGNode]) {
 
-    override def getCFG(n: CGNode): ControlFlowGraph[SSAInstruction, IExplodedBasicBlock] = {
-      val cfg       = super[ExplodedInterproceduralCFG].getCFG(n)
-      if (Option(cfg).isDefined) {
-        val backEdges = Acyclic.computeBackEdges(cfg, cfg.entry).toSet
-        val filter = new EdgeFilter[IExplodedBasicBlock] {
+    private[this] type CFG = ControlFlowGraph[SSAInstruction, IExplodedBasicBlock]
 
-          override def hasExceptionalEdge(src: IExplodedBasicBlock, dst: IExplodedBasicBlock): Boolean =
-            hasEdge(src, dst, cfg.getExceptionalSuccessors)
+    private[this] val nodeToCfg = mutable.Map[Int, CFG]()
 
-          override def hasNormalEdge(src: IExplodedBasicBlock, dst: IExplodedBasicBlock): Boolean =
-            hasEdge(src, dst, cfg.getNormalSuccessors)
-
-          private[this] def hasEdge(
-            src: IExplodedBasicBlock,
-            dst: IExplodedBasicBlock,
-            succFun: IExplodedBasicBlock => util.Collection[IExplodedBasicBlock]
-          ) = {
-            val isBackEdge = backEdges contains new IntPair(cfg getNumber src, cfg getNumber dst)
-            def isSucc = succFun(src) contains dst
-            !isBackEdge && isSucc
-          }
-        }
-        PrunedCFG.make(cfg, filter)
-      } else cfg
-    }
+    override def getCFG(n: CGNode): CFG =
+      nodeToCfg get (callGraph getNumber n) match {
+        case Some(graph) =>
+          graph
+        case None =>
+          val cfg = super[ExplodedInterproceduralCFG].getCFG(n)
+          if (Option(cfg).isDefined) {
+            val filter = new BackEdgeFilter(cfg)
+            PrunedCFG.make(cfg, filter)
+          } else cfg
+      }
 
     def getCallBlocks(callee: BB): Iterator[BB] = {
       val entry = acyclicCFG getEntry callee.getNode
       acyclicCFG getPredNodes entry
     }
+
+    private[this] class BackEdgeFilter(cfg: CFG) extends EdgeFilter[IExplodedBasicBlock] {
+
+      private[this] val backEdges = Acyclic.computeBackEdges(cfg, cfg.entry).toSet
+
+      override def hasExceptionalEdge(src: IExplodedBasicBlock, dst: IExplodedBasicBlock): Boolean =
+        hasEdge(src, dst, cfg.getExceptionalSuccessors)
+
+      override def hasNormalEdge(src: IExplodedBasicBlock, dst: IExplodedBasicBlock): Boolean =
+        hasEdge(src, dst, cfg.getNormalSuccessors)
+
+      private[this] def hasEdge(
+        src: IExplodedBasicBlock,
+        dst: IExplodedBasicBlock,
+        succFun: IExplodedBasicBlock => util.Collection[IExplodedBasicBlock]
+      ): Boolean = {
+        val isBackEdge = backEdges contains new IntPair(cfg getNumber src, cfg getNumber dst)
+        def isSucc = succFun(src) contains dst
+        !isBackEdge && isSucc
+      }
+    }
+
+    lazy val acyclicCFG = TimeResult("acyclic CFG", new AcyclicInterproceduralCFG)
   }
 
-  lazy val acyclicCFG = TimeResult("acyclic CFG", new AcyclicInterproceduralCFG)
 }
