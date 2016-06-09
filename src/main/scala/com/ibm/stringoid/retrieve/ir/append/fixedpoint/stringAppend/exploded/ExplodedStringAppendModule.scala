@@ -50,7 +50,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     TimeResult("merging filtered automata", StringPartAutomaton.merge(filteredAutomata ++ constants))
   }
 
-  private[this] def getConstantUrls: Iterator[StringPartAutomaton] =
+  private[this] def getConstantUrls: Iterator[StringPartAutomaton] = {
     for {
       node <- callGraph.iterator()
       ir    = node.getIR
@@ -62,11 +62,13 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
       if isUrlPrefix(string)
       spart  = StringIdentifier(createIdentifier(vn, CallGraphNode(node)))
     } yield StringPartAutomaton(spart)
+  }
 
-  private[this] val idToAsbo: Map[CgIdentifier, Set[ASBO]] =
+  private[this] val idToAsbo: Map[CgIdentifier, Set[ASBO]] = {
     identifierToAsbo withDefault {
       id => Set(createAsbo(id.vn, CallGraphNode(id.node)))
     }
+  }
 
   private[this] def createAutomaton(instruction: SSAInstruction, node: Node, id: Identifier): StringPartAutomaton =
     node.getDu getDef valNum(id) match {
@@ -126,22 +128,22 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     } else immutAuto.get
   }
 
+  private[this] lazy val cfg = AcyclicCfg()
+
   private[this] def getResult: Iterator[StringPartAutomaton] = TimeResult("II analysis phase (computing automata)", {
 
-    implicit val worklist = TimeResult("initialize work list", initializeWorklist(idToAsbo))
+    implicit val worklist = initializeWorklist(cfg, idToAsbo)
 
     var worklistIteration = 0
-    val printFrequency = 25000
+    val printFrequency = 100
+    val debug = true
 
-    TimeResult("processing work list", while (worklist.nonEmpty) {
+    while (worklist.nonEmpty) {
 
-      if (DEBUG && ((worklistIteration % printFrequency) == 0)) {
-        println(s"iteration: ${worklistIteration / 1000}k, worklist size: ${worklist.size()}")
-        if (worklist.size == 32272) {
-          val x = 1
-        }
+      if (debug && (worklistIteration % printFrequency) == 0) {
+        println(s"iteration: $printFrequency, worklist size: ${worklist.size()}")
+        worklistIteration = worklistIteration + 1
       }
-      worklistIteration = worklistIteration + 1
 
       val (bb, factAsbo) = worklist.take()
       val node           = CallGraphNode(bb.getNode)
@@ -188,39 +190,39 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
                 }
                 prevAuto | newAuto
             }
-            acyclicCFG getSuccNodes bb foreach {
+            cfg getIntraSuccnodes bb foreach {
               succ =>
                 updateResultAndWorkListImmutable((succ, sfAsbo), automaton)
             }
           } else
-            propagateIdentity(acyclicCFG getSuccNodes bb, bb, factAsbo)
+            propagateIdentity(cfg getIntraSuccnodes bb, bb, factAsbo)
           if (factInArgs)
-            propagateIdentity(acyclicCFG getSuccNodes bb, bb, factAsbo)
+            propagateIdentity(cfg getIntraSuccnodes bb, bb, factAsbo)
 
         // inter-procedural call-to-start and call-to-return edges:
         // parameter substitution in call + propagate facts down to return node
-        // todo test dynamic dispatch, e.g. merge
+        // todo test multiple dispatch, e.g. merge
         case instr: SSAAbstractInvokeInstruction                                           =>
           // call-to-start
           val substitutionAsbos = argumentAsbos(idToAsbo, instr, node)
           for {
-            succ: CGNode       <- acyclicCFG getCallTargets bb
+            succ: CGNode       <- cfg getCallTargets bb
             ir                  = succ.getIR
             if Option(ir).isDefined
             (asbo, paramIndex) <- substitutionAsbos
             if asbo == factAsbo
             paramId             = createIdentifier(paramIndex + 1, CallGraphNode(succ))
-            paramAsbo          <- idToAsbo getOrElse (paramId, Set(ASBO(paramId)))
+            paramAsbo          <- idToAsbo getOrElse (paramId, Set(ASBO(paramId))) // todo add params to ID-to-ASBO by default
             oldAutomaton        = resultGetOrElse(bb, paramAsbo)
             automaton           = resultGetOrElse(bb, asbo, createAutomaton(instr, node, asbo.identifier))
-            targetBB            = acyclicCFG getEntry succ
+            targetBB            = cfg getEntry succ
           } {
             val paramType = ir getParameterType paramIndex
             if (isMutable(paramType)) updateResultAndWorkListMutable((targetBB, paramAsbo), oldAutomaton | automaton)
             else updateResultAndWorkListImmutable((targetBB, paramAsbo), oldAutomaton | automaton)
           }
           // call-to-return
-          propagateIdentity(acyclicCFG getReturnSites bb, bb, factAsbo)
+          propagateIdentity(cfg getReturnSites bb, bb, factAsbo)
 
         // inter-procedural end-to-return edge: return value assignment
         case instr: SSAReturnInstruction                                                   =>
@@ -234,7 +236,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
               resultAsbo   <- idToAsbo getOrElse (resultId, Set(createAsbo(retDef, retNode)))
               if resultAsbo == factAsbo
               // call stuff
-              callBlock    <- acyclicCFG getCallBlocks bb
+              callBlock    <- cfg getCallBlocks bb
               callInstr     = callBlock.getLastInstruction.asInstanceOf[SSAAbstractInvokeInstruction]
               mutable       = isMutable(callInstr.getDeclaredResultType)
               if mutable || hasPrimitiveReturnType(callInstr) || hasStringReturnType(callInstr)
@@ -252,9 +254,9 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
             }
           }
         case _                                                                           =>
-          propagateIdentity(acyclicCFG getSuccNodes bb, bb, factAsbo)
+          propagateIdentity(cfg getIntraSuccnodes bb, bb, factAsbo)
       }
-    })
+    }
     resultMutable.valuesIterator ++ resultImmutable.valuesIterator
   })
 
@@ -287,7 +289,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     val node = CallGraphNode(bb.getNode)
     def getId(vn: ValueNumber) = createIdentifier(vn, node)
     for {
-      succ <- (acyclicCFG getSuccNodes bb).toIterable
+      succ <- (cfg getIntraSuccnodes bb).toIterable
       sb   <- asbos
       args  = idToAsbo(getId(argVn))
     } {
@@ -313,9 +315,9 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     } else None
   }
 
-  private[this] def initializeWorklist(idToAsbo: Map[Identifier, Set[ASBO]]): WorkList = {
+  private[this] def initializeWorklist(cfg: AcyclicCfg, idToAsbo: Map[Identifier, Set[ASBO]]): WorkList = {
 
-    val worklist = new WorkList()
+    val worklist = new WorkList(cfg)
 
     // remember which instructions define which String value numbers: map pairs (node, iindex) to value numbers
     val instrToVn = callGraph.foldLeft(Map.empty[(CGNode, Int), ValueNumber]) {
@@ -335,9 +337,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
         } else oldMap
     }
 
-    if (DEBUG) println("acyclic CFG size: " + acyclicCFG.size)
-
-    acyclicCFG foreach {
+    cfg.nodesIterator foreach {
       bb =>
         val node = bb.getNode
         val instr = bb.getLastInstruction

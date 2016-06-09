@@ -50,9 +50,7 @@ object IrNodesModule {
           case (src, dsts) =>
             src -> dsts.asJava
         }).asJava
-        val pruned = new PrunedCallGraph(noLibGraph, noLibGraph.iterator.toSet.asJava, backEdgesJava)
-        if (DEBUG) println("call graph size: " + pruned.size)
-        pruned
+        new PrunedCallGraph(noLibGraph, noLibGraph.iterator.toSet.asJava, backEdgesJava)
       })
     }
 

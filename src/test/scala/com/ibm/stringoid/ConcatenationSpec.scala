@@ -14,7 +14,7 @@ import scala.collection.{Set, breakOut}
 
 class ConcatenationSpec extends FunSpec with StringoidAnalysis {
 
-  private[this] val doRunTests = false
+  private[this] val doRunTests = true
 
   import AnalysisType._
   import IrSource._
