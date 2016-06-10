@@ -7,6 +7,8 @@ import com.ibm.wala.ssa.{DefUse, IR}
 
 trait Nodes {
 
+  val DEBUG = true
+
   type Identifier
 
   def valNum(id: Identifier): ValueNumber
