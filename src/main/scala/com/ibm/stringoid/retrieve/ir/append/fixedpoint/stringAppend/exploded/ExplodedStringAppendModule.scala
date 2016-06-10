@@ -77,13 +77,13 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     }
 
   private[this] def appendResult(
-                                  bb: BB,
-                                  succ: BB,
-                                  asbo: ASBO,
-                                  newAutomaton: StringPartAutomaton
-                                )(
-                                  implicit worklist: WorkList
-                                ): Unit = {
+    bb: BB,
+    succ: BB,
+    asbo: ASBO,
+    newAutomaton: StringPartAutomaton
+  )(
+    implicit worklist: WorkList
+  ): Unit = {
     val succNode  = (succ, asbo)
     val oldResult = resultMutable((bb, asbo))
     val newResult =
@@ -94,32 +94,32 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
   }
 
   private[this] def updateResultAndWorkListMutable(
-                                                    node: ExplodedNode,
-                                                    automaton: StringPartAutomaton
-                                                  )(
-                                                    implicit worklist: WorkList
-                                                  ): Unit = {
+    node: ExplodedNode,
+    automaton: StringPartAutomaton
+  )(
+    implicit worklist: WorkList
+  ): Unit = {
     val oldResult = resultMutable(node)
     resultMutable += (node -> automaton)
     if (oldResult != automaton) worklist insert node
   }
 
   private[this] def updateResultAndWorkListImmutable(
-                                                      node: ExplodedNode,
-                                                      automaton: StringPartAutomaton
-                                                    )(
-                                                      implicit worklist: WorkList
-                                                    ): Unit = {
+    node: ExplodedNode,
+    automaton: StringPartAutomaton
+  )(
+    implicit worklist: WorkList
+  ): Unit = {
     val oldResult = resultImmutable(node._2)
     resultImmutable += (node._2 -> automaton)
     if (oldResult != automaton) worklist insert node
   }
 
   private[this] def resultGetOrElse(
-                                     bb: BB,
-                                     asbo: ASBO,
-                                     default: StringPartAutomaton = StringPartAutomaton()
-                                   ): StringPartAutomaton = {
+    bb: BB,
+    asbo: ASBO,
+    default: StringPartAutomaton = StringPartAutomaton()
+  ): StringPartAutomaton = {
     val immutAuto = resultImmutable get asbo
     if (immutAuto.isEmpty) {
       resultMutable getOrElse ((bb, asbo), default)
@@ -259,12 +259,12 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
   })
 
   private[this] def propagateIdentity(
-                                       succNodes: Iterator[BB],
-                                       bb: BB,
-                                       factAsbo: ASBO
-                                     )(
-                                       implicit worklist: WorkList
-                                     ): Unit = {
+    succNodes: Iterator[BB],
+    bb: BB,
+    factAsbo: ASBO
+  )(
+    implicit worklist: WorkList
+  ): Unit = {
     val identifier = factAsbo.identifier
     val mutable = isMutable(getTypeAbstraction(identifier.node.getIR, identifier.vn).getTypeReference)
     succNodes foreach {
@@ -285,14 +285,14 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     * @param argVn  value number of the argument that's being appended
     */
   private[this] def append(
-                            instr: SSAAbstractInvokeInstruction,
-                            asbos: Set[ASBO],
-                            argVn: ValueNumber,
-                            bb: BB,
-                            factAsbo: ASBO
-                          )(
-                            implicit worklist: WorkList
-                          ): Unit = {
+    instr: SSAAbstractInvokeInstruction,
+    asbos: Set[ASBO],
+    argVn: ValueNumber,
+    bb: BB,
+    factAsbo: ASBO
+  )(
+    implicit worklist: WorkList
+  ): Unit = {
     val node = CallGraphNode(bb.getNode)
     def getId(vn: ValueNumber) = createIdentifier(vn, node)
     val succNodes = acyclicCFG getSuccNodes bb
