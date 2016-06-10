@@ -274,7 +274,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
         val automaton =
           if (mutable) resultMutable getOrElse((bb, factAsbo), createdAutomaton)
           else resultImmutable getOrElse(factAsbo, createdAutomaton)
-        val mergedAutomaton = resultMutable(succNode)
+        val mergedAutomaton = resultMutable(succNode) | automaton
         if (mutable) updateResultAndWorkListMutable(succNode, mergedAutomaton)
         else updateResultAndWorkListImmutable(succNode, mergedAutomaton)
     }
