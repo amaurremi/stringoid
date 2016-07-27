@@ -202,12 +202,11 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
         // todo test dynamic dispatch, e.g. merge
         case instr: SSAAbstractInvokeInstruction                                           =>
           // call-to-start
-          val substitutionAsbos = argumentAsbos(idToAsbo, instr, node)
           for {
             succ: CGNode       <- acyclicCFG getCallTargets bb
             ir                  = succ.getIR
             if Option(ir).isDefined
-            (asbo, paramIndex) <- substitutionAsbos
+            (asbo, paramIndex) <- argumentAsbos(idToAsbo, instr, node)
             if asbo == factAsbo
             paramId             = createIdentifier(paramIndex + 1, CallGraphNode(succ))
             paramAsbo          <- idToAsbo getOrElse (paramId, Set(ASBO(paramId)))
@@ -257,6 +256,11 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     })
     resultMutable.valuesIterator ++ resultImmutable.valuesIterator
   })
+
+  def length[A] : List[A] => Int = {
+    list =>
+      list.length
+  }
 
   private[this] def propagateIdentity(
     succNodes: Iterator[BB],

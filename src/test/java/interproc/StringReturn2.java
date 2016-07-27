@@ -9,7 +9,6 @@ public class StringReturn2 {
 
         System.out.println(sb);
 
-        Assertions.shouldContainHttp("string-return-2.com");
         Assertions.shouldContainHttp("string-return-2.com/path");
     }
 
