@@ -15,7 +15,7 @@ public class Example {
         // important: please pass the necessary URL _without_ the "http://" or "https://" prefix.
         // if you do, the analysis will detect it anyway, which could lead to false positives!
         Assertions.shouldContainHttp("example.com");
-        Assertions.shouldContainHttp("example/path");
+        Assertions.shouldContainHttp("example.com/path");
     }
 
     static String getDomain(String prefix) {
