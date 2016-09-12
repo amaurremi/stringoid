@@ -40,8 +40,8 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
         if (hasSbType(id.node, id.vn, getTypeAbstraction(id.node.getIR, id.vn)))
           emptyAuto
         else
-          newAuto(StringIdentifier(id))
-    }) // todo remove that stupid SPA class
+          createAutomaton(CallGraphNode(asbo.identifier.node), asbo.identifier)
+    })
 
   def stringAppends(fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
     // concatenation URLs
@@ -154,7 +154,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
                               case StringIdentifier(id) =>
                                 val automata = idToAsbo(id) map {
                                   asbo =>
-                                    resultMap(bb) getOrElse (asbo, newAuto(StringIdentifier(id)))
+                                    resultMap(bb) getOrElse (asbo, createAutomaton(CallGraphNode(id.node), id))
                                 }
                                 resultAutomaton +++ merge(automata.toIterator)
                               case other =>

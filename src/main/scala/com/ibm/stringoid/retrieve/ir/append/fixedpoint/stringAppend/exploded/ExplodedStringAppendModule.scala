@@ -170,7 +170,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
                       case StringIdentifier(id) =>
                         val automata = idToAsbo(id) map {
                           asbo =>
-                            resultGetOrElse(bb, asbo, newAuto(StringIdentifier(id)))
+                            resultGetOrElse(bb, asbo, createAutomaton(CallGraphNode(asbo.identifier.node), asbo.identifier))
                         }
                         resultAutomaton +++ merge(automata.toIterator)
                       case other =>
