@@ -6,7 +6,7 @@ import com.ibm.stringoid.AnalysisTypeObject.AnalysisType._
 import com.ibm.stringoid.IrSourceObject.IrSource._
 import com.ibm.stringoid.retrieve.UrlRetriever
 import com.ibm.stringoid.retrieve.grep.GrepUrlRetriever
-import com.ibm.stringoid.retrieve.ir.append.fixedpoint.FixedPointAppendIrRetrieverImplementations.{CgIntraProcFixedPointAppendIrRetriever, ChaIntraProcFixedPointAppendIrRetriever, ExplodedInterProcFixedPointAppendIrRetriever}
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.FixedPointAppendIrRetrieverImplementations.{CgIntraProcFixedPointAppendIrRetriever, ChaIntraProcFixedPointAppendIrRetriever, ExplodedInterProcFixedPointAppendIrRetriever, ExplodedInterProcFixedPointAppendIrRetrieverOld}
 import com.ibm.stringoid.retrieve.ir.constant.ConstantUrlFromIrRetriever
 import com.ibm.stringoid.util.TimeResult
 
@@ -40,9 +40,10 @@ trait StringoidAnalysis {
     config.analysis match {
       case Append    =>
         config.irSource match {
-          case Cha       => new ChaIntraProcFixedPointAppendIrRetriever(config)
-          case Cg        => new CgIntraProcFixedPointAppendIrRetriever(config)
-          case InterProc => new ExplodedInterProcFixedPointAppendIrRetriever(config)
+          case Cha          => new ChaIntraProcFixedPointAppendIrRetriever(config)
+          case Cg           => new CgIntraProcFixedPointAppendIrRetriever(config)
+          case InterProc    => new ExplodedInterProcFixedPointAppendIrRetriever(config)
+          case InterProcOld => new ExplodedInterProcFixedPointAppendIrRetrieverOld(config)
         }
       case Constants =>
         new ConstantUrlFromIrRetriever(config)

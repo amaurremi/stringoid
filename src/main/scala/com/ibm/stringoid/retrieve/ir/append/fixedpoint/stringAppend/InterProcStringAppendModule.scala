@@ -23,7 +23,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
     val automata = stringAppendsForSolver(solver)
     val filteredAutomata: Iterator[StringPartAutomaton] = TimeResult("filter URL automata", automata map {
       auto =>
-        StringPartAutomaton(auto.automaton.filterHeads {
+        auto.filterHeads {
           case StringIdentifier(id)     =>
             val table = id.node.getIR.getSymbolTable
             val vn    = id.vn
@@ -33,9 +33,9 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
           case StringFormatPart(string) =>
             isUrlPrefix(string)
           case _                        => false
-        })
+        }
     })
-    TimeResult("merging filtered automata", StringPartAutomaton.merge(filteredAutomata))
+    TimeResult("merging filtered automata", merge(filteredAutomata))
   }
 
   class InterProcStringAppendSolver(
@@ -72,7 +72,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             idToAsbo get getId(getFirstSbAppendDef(instr)) match {
               case Some(asbos) =>
                 val id = getId(getAppendArgument(instr))
-                new StringBuilderAppendOperator(asbos, id, CallGraphNode(id.node), node, instr)
+                StringBuilderAppendOperator(asbos, id, CallGraphNode(id.node), node, instr)
               case None        =>
                 // todo note that this means that we are appending to a StringBuilder for which we haven't added an ASBO to the idToAsbo map.
                 // todo I think this means that the StringBuilder has been passed as a parameter or is a field. We should handle this case too at some point.
@@ -82,27 +82,27 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             idToAsbo get getId(getSbConstructorDef(inv)) match {
               case Some(asbos) =>
                 val appendArgument = getId(getSbConstructorArgument(inv))
-                new StringBuilderAppendOperator(asbos, appendArgument, CallGraphNode(appendArgument.node), node, inv)
+                StringBuilderAppendOperator(asbos, appendArgument, CallGraphNode(appendArgument.node), node, inv)
               case None        =>
                 throw new UnsupportedOperationException(MISSING_STRING_BUILDER_MESSAGE)
             }
           case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)                 =>
-            new StringFormatAppendOperator(inv, node)
+            StringFormatAppendOperator(inv, node)
           case inv: SSAAbstractInvokeInstruction                                        =>
-            new ParamSubstitutionOperator(
+            ParamSubstitutionOperator(
               inv,
               callGraph.getPossibleTargets(node.node, inv.getCallSite).toSet,
               argumentAsbos(idToAsbo, inv, node))
           case ret: SSAReturnInstruction                                                =>
             val lhsAsbos = for {
               callerNode  <- getCallNodes(node)
-              callerInstr <- getCallInstructions(ret, callerNode, node)
+              callerInstr <- getCallInstructions(callerNode, node)
               if ret.returnsPrimitiveType || hasStringReturnType(callerInstr)  // todo test primitive & void
               callDef      = callerInstr.getDef
               callId       = createIdentifier(callDef, callerNode)
               asbo        <- idToAsbo getOrElse (callId, Set(createAsbo(callDef, callerNode)))
             } yield asbo
-            new ReturnOperator(lhsAsbos, ret, node)
+            ReturnOperator(lhsAsbos, ret.getResult, node)
           case instr =>
             IdentityOperator(instr)
         }
@@ -117,30 +117,27 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
        */
       case class ReturnOperator(
         lhsAsbos: Iterator[ASBO],
-        retInstr: SSAReturnInstruction,
+        result: ValueNumber,
         retNode: Node
       ) extends UnaryOperator[AtaReference] {
 
         /* l = c()   ... c() { ... return result; } */
         private[this] def addReturnResult(rhsMap: AsboMap): AsboMap = {
-          val result = retInstr.getResult
           if (result > 0) {
             val resultId = createIdentifier(result, retNode)
             val newMap = (for {
               resultAsbo <- idToAsbo getOrElse(resultId, Set(createAsbo(result, retNode)))
               lAsbo <- lhsAsbos
-              lAuto = rhsMap getOrElse(lAsbo, StringPartAutomaton())
+              lAuto = rhsMap getOrElse(lAsbo, emptyAuto)
               resultAsboId = createIdentifier(resultAsbo.identifier.vn, CallGraphNode(resultAsbo.identifier.node))
-              oldLhs = rhsMap getOrElse(lAsbo, StringPartAutomaton()) // todo replace with createAutomaton
-              resultAuto = rhsMap getOrElse(resultAsbo, createAutomaton(retInstr, retNode, resultAsboId))
+              oldLhs = rhsMap getOrElse(lAsbo, emptyAuto) // todo replace with createAutomaton
+              resultAuto = rhsMap getOrElse(resultAsbo, createAutomaton(retNode, resultAsboId))
             } yield lAsbo -> (oldLhs | lAuto | resultAuto))(breakOut)
             rhsMap ++ newMap
           } else rhsMap
         }
 
         override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {
-          updateProcessedInstructions(processedRetInstructions, retInstr)
-
           val rhsMap = ataRefMapping(rhs.index).asboToAutomaton
           val newMap = addReturnResult(rhsMap)
 
@@ -170,15 +167,13 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             (asbo, paramIndex) <- substitutionAsbos
             paramId = createIdentifier(paramIndex + 1, cgNode)
             paramAsbo    <- idToAsbo getOrElse (paramId, Set(ASBO(paramId)))
-            oldAutomaton  = rhsMap getOrElse (paramAsbo, StringPartAutomaton())
-            automaton     = rhsMap getOrElse (asbo, StringPartAutomaton())
+            oldAutomaton  = rhsMap getOrElse (paramAsbo, emptyAuto)
+            automaton     = rhsMap getOrElse (asbo, emptyAuto)
           } yield paramAsbo -> (oldAutomaton | automaton))(breakOut)
           rhsMap ++ newPairs
         }
 
         override def evaluate(lhs: AtaReference, rhs: AtaReference): Byte = {
-          updateProcessedInstructions(processedCallInstructions, callInstr)
-
           val rhsMap = ataRefMapping(rhs.index).asboToAutomaton
           val newMap = createSubstitutionMap(rhsMap)
 

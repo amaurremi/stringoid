@@ -4,6 +4,7 @@ import java.util.regex.Pattern
 
 import com.ibm.stringoid.retrieve.ir._
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.{Nodes, StringAutomata}
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAArrayStoreInstruction}
 
 import scala.collection.JavaConversions._
@@ -15,7 +16,7 @@ object StringFormatSpecifiers {
   val fsPattern       = Pattern.compile(formatSpecifier)
 }
 
-trait StringFormatSpecifiers extends StringAppendTypes {
+trait StringFormatSpecifiers extends StringAutomata {
 
   import StringFormatSpecifiers._
 
@@ -77,7 +78,7 @@ trait StringFormatSpecifiers extends StringAppendTypes {
         case (parts, Specifier(count)) =>
           val newVariables =
             if (argValNums.hasNext)
-              createAutomaton(instr, node, createIdentifier(argValNums.next(), node)).automaton.iterator.toVector
+              createAutomaton(node, createIdentifier(argValNums.next(), node)).iterator.toVector
             else Vector(Seq(MissingStringFormatArgument))
           if (parts.isEmpty) newVariables map { _.toVector }
           else for {

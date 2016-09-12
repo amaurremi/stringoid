@@ -43,7 +43,7 @@ abstract class FixedPointAppendIrRetriever(
             val writeVal = instr.getVal
             val table = ir.getSymbolTable
             if (table isConstant writeVal) {
-              val stringPart = StringPartAutomaton(node.getDu getDef writeVal, StaticFieldPart(String.valueOf(table getConstantValue writeVal)))
+              val stringPart = newAuto(StaticFieldPart(String.valueOf(table getConstantValue writeVal)))
               val automaton =
                 if (oldMap2 contains field) oldMap2(field) | stringPart
                 else stringPart
@@ -66,7 +66,7 @@ abstract class FixedPointAppendIrRetriever(
         case instr: SSAFieldAccessInstruction =>
           val strings = for {
             automaton <- (fieldToAutomaton get instr.getDeclaredField).toSeq
-            seq       <- automaton.automaton.iterator
+            seq       <- automaton.iterator
           } yield seq.head
           strings filter {
             case StaticFieldPart(str) => isUrlPrefix(str)

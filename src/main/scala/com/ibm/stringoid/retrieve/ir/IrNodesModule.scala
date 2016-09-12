@@ -25,6 +25,7 @@ object IrNodesModule {
 
   private[IrNodesModule] trait CgNodeRetriever extends IrUrlRetriever {
 
+    // creates acyclic call graph
     lazy val callGraph: CallGraph = {
       val conf  = if (isApk) configWithApk(config.file) else withMainEntryPoint(configWithSrc(config.file))
       val graph = TimeResult("call graph", FlexibleCallGraphBuilder()(conf).cg)

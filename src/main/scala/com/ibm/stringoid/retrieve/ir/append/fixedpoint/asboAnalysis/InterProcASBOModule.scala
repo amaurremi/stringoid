@@ -2,7 +2,6 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis
 
 import com.ibm.stringoid.retrieve.ir._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.CgNodes
-import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.StringAppendTypes
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.cast.java.ssa.AstJavaInvokeInstruction
 import com.ibm.wala.ipa.callgraph.CallGraph
@@ -11,7 +10,7 @@ import com.ibm.wala.ssa._
 import scala.collection.JavaConversions._
 import scala.collection.breakOut
 
-trait InterProcASBOModule extends AbstractStringBuilderModule with StringAppendTypes with CgNodes {
+trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
 
   def callGraph: CallGraph
 
@@ -56,7 +55,6 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with StringAppendT
     } yield (asbo, argIndex)
 
   protected def getCallInstructions(
-    ret: SSAReturnInstruction,
     callerNode: Node,
     calleeNode: Node
   ): Iterator[SSAAbstractInvokeInstruction] = {

@@ -1,7 +1,6 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis
 
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
-import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.StringAppendTypes
 import com.ibm.stringoid.retrieve.ir.{IrUrlRetriever, ValueNumber}
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{BitVectorVariable, UnaryOperator}
@@ -30,7 +29,7 @@ import scala.reflect.ClassTag
  * An abstract string builder object (ASBO) is the representation of one such string builder object that can be mapped
  * to by many value numbers.
  */
-trait AbstractStringBuilderModule extends StringAppendTypes with IrUrlRetriever {
+trait AbstractStringBuilderModule extends IrUrlRetriever {
 
   type AsboMapping = OrdinalSetMapping[ASBO]
 

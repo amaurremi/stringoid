@@ -5,7 +5,9 @@ import java.nio.file.Paths
 import com.ibm.stringoid.AnalysisTypeObject.AnalysisType
 import com.ibm.stringoid.IrSourceObject.IrSource
 import com.ibm.stringoid.retrieve.UrlPartDefs._
+import com.ibm.stringoid.retrieve.ir.IrUrlRetriever
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.FixedPointAppendIrRetriever
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded.ExplodedGraphPass
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ssa.{IR, SSAAbstractInvokeInstruction, SSAInstruction}
 import org.scalatest.FunSpec
@@ -24,11 +26,11 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
     if (doRunTests) {
 
       /* Run this test for your example programs */
-      it("computes URLs in inter-procedural analysis (moretests)") {
-        val file = Paths.get("src/test/java/moretests")
-        val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
-        run(analysisConfig)
-      }
+//      it("computes URLs in inter-procedural analysis (moretests)") {
+//        val file = Paths.get("src/test/java/moretests")
+//        val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
+//        run(analysisConfig)
+//      }
 
 //      it("runs a benchmark") {
 //        val ret = retriever(AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = Paths.get("dynamic-data/apps/mobi.ifunny-2447.apk"), outputUrls = true))
@@ -36,11 +38,11 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
 //      }
 
       /* debugging */
-//      it("reproduces debugging test") {
-//        val file = Paths.get("src/test/java/debug")
-//        val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
-//        run(analysisConfig)
-//      }
+      it("reproduces debugging test") {
+        val file = Paths.get("src/test/java/debug")
+        val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
+        run(analysisConfig)
+      }
 
       /* failing */
 //      it("reproduces failing tests") {
@@ -49,12 +51,12 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
 //        run(analysisConfig)
 //      }
 
-//      /* INTRA procedural*/
-//      it("computes URLs in CHA IR analysis") {
-//        val file = Paths.get("src/test/java/intraproc")
-//        val analysisConfig = AnalysisConfig(irSource = Cha, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
-//        run(analysisConfig)
-//      }
+      /* INTRA procedural*/
+      it("computes URLs in CHA IR analysis") {
+        val file = Paths.get("src/test/java/intraproc")
+        val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
+        run(analysisConfig)
+      }
 
 //      /* INTER procedural */
 //      it("computes URLs in inter-procedural analysis") {
@@ -69,7 +71,7 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
     def run(config: AnalysisConfig) = {
       val interProc = config.irSource == IrSource.InterProc
       retriever(config) match {
-        case ret: FixedPointAppendIrRetriever =>
+        case ret: IrUrlRetriever =>
           val expectedUrls: Iterator[(IMethod, String)] =
             for {
               node <- ret.getAllNodes

@@ -1,6 +1,8 @@
 package com.ibm.stringoid.retrieve.ir.append
 
-import com.ibm.stringoid.retrieve.ir.ValueNumber
+import com.ibm.stringoid.retrieve.ir.{IrUrlRetriever, ValueNumber}
+import com.ibm.wala.analysis.typeInference.TypeAbstraction
+import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAPhiInstruction}
 import com.ibm.wala.types.TypeReference
 
@@ -113,5 +115,14 @@ object StringConcatUtil {
 
   def isMutable(tpe: TypeReference) = {
     Option(tpe).isDefined && (Seq("Ljava/lang/StringBuilder", "Ljava/lang/StringBuffer") exists tpe.toString.contains)
+  }
+
+  def hasStringType(node: CGNode, vn: ValueNumber, abstr: TypeAbstraction): Boolean = {
+    abstr.toString contains "Ljava/lang/String"
+  }
+
+  def hasSbType(node: CGNode, vn: ValueNumber, abstr: TypeAbstraction): Boolean = {
+    val typeStr = abstr.toString
+    (typeStr contains "java/lang/StringBuilder") || (typeStr contains "java/lang/StringBuffer")
   }
 }

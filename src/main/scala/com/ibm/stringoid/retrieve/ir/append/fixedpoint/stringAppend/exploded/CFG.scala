@@ -10,7 +10,8 @@ import com.ibm.wala.ipa.cfg.{BasicBlockInContext, EdgeFilter, ExplodedInterproce
 import com.ibm.wala.ssa.SSAInstruction
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
 import com.ibm.wala.util.collections.IndiscriminateFilter
-import com.ibm.wala.util.graph.Acyclic
+import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph
+import com.ibm.wala.util.graph.{Acyclic, Graph}
 import com.ibm.wala.util.intset.IntPair
 
 import scala.collection.JavaConversions._
@@ -67,6 +68,8 @@ trait CFG extends InterProcASBOModule {
         !isBackEdge && isSucc
       }
     }
+
+    def getEntryPoints: Iterable[BB] = callGraph.getEntrypointNodes map getEntry
   }
 
   lazy val acyclicCFG = TimeResult("acyclic CFG", new AcyclicInterproceduralCFG)

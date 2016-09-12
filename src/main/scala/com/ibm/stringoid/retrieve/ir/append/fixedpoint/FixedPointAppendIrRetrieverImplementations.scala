@@ -5,7 +5,7 @@ import argonaut._
 import com.ibm.stringoid._
 import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.ir.IrNodesModule.{CgIntraProcIrNodes, ChaIntraProcIrNodes, InterProcIrNodes, IntraProcIrNodes}
-import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded.ExplodedStringAppendModule
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded.{ExplodedGraphPass, ExplodedStringAppendModule}
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.{InterProcStringAppendModule, IntraProcStringAppendModule}
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.types.FieldReference
@@ -16,6 +16,9 @@ import scala.collection.breakOut
 object FixedPointAppendIrRetrieverImplementations {
 
   final class ExplodedInterProcFixedPointAppendIrRetriever(config: AnalysisConfig)
+    extends InterProcFixedPointAppendIrRetriever(config) with ExplodedGraphPass
+
+  final class ExplodedInterProcFixedPointAppendIrRetrieverOld(config: AnalysisConfig)
     extends InterProcFixedPointAppendIrRetriever(config) with ExplodedStringAppendModule
 
   final class WalaInterProcFixedPointAppendIrRetriever(config: AnalysisConfig)
@@ -43,15 +46,13 @@ object FixedPointAppendIrRetrieverImplementations {
       UrlsWithSources(urlWithSourcesMap, -1)
     }
 
-    override protected def getAutomataWithSources: AutomataWithSources = {
-      AutomataWithSources(Iterator(getAutomaton), -1)
-    }
+    override protected def getAutomataWithSources = AutomataWithSources(Iterator(getAutomaton), -1)
 
     /**
       * assumes `node.getIr` is not `null`
       */
     def getAutomaton: (Json, Method) = {
-      val automaton = stringAppends(fieldToAutomaton).automaton.toDFA.toJson {
+      val automaton = stringAppends(fieldToAutomaton).toDFA.toJson {
         sp: StringPart =>
           stringPartToUrlPart(sp).asJson.toString()
       }
@@ -59,7 +60,7 @@ object FixedPointAppendIrRetrieverImplementations {
     }
 
     private[this] def getConcatUrls: Iterator[Url] = {
-      stringAppends(fieldToAutomaton).automaton.iterator map {
+      stringAppends(fieldToAutomaton).iterator map {
         stringParts =>
           val urlParts = stringParts map stringPartToUrlPart
           Url(urlParts.toVector)
@@ -116,7 +117,7 @@ object FixedPointAppendIrRetrieverImplementations {
       * assumes `node.getIr` is not `null`
       */
     def getAutomaton(node: Node): (Json, Method) = {
-      val automaton = stringAppends(node, fieldToAutomaton).automaton.toDFA.toJson {
+      val automaton = stringAppends(node, fieldToAutomaton).toDFA.toJson {
         sp: StringPart =>
           getStringPartToUrlPart(node, sp).asJson.toString()
       }
@@ -129,7 +130,7 @@ object FixedPointAppendIrRetrieverImplementations {
       for {
         vn <- 1 to ir.getSymbolTable.getMaxValueNumber
         stringPart <- urlPrefixes(vn, node)
-        stringTail <- (appendAutomaton.automaton tails stringPart).iterator take 100
+        stringTail <- (appendAutomaton tails stringPart).iterator take 100
       } yield (Url(parseUrl(node, stringPart +: stringTail)), ir.getMethod.toString)
     }
 

@@ -22,7 +22,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
     val automata = stringAppendsForSolver(solver)
     val filteredAutomata: Iterator[StringPartAutomaton] = TimeResult("filter URL automata", automata map {
       auto =>
-        StringPartAutomaton(auto.automaton.filterHeads {
+        auto.filterHeads {
           case StringIdentifier(vn)     =>
             val table = node.getIr.getSymbolTable
             (table isStringConstant vn) && isUrlPrefix(table getStringValue vn)
@@ -31,9 +31,9 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
           case StringFormatPart(string) =>
             isUrlPrefix(string)
           case _                        => false
-        })
+        }
     })
-    TimeResult("merging filtered automata", StringPartAutomaton.merge(filteredAutomata))
+    TimeResult("merging filtered automata", merge(filteredAutomata))
 
   }
 

@@ -42,6 +42,7 @@ object IrSourceObject {
     val Cha = Value("cha")
     val Cg = Value("cg")
     val InterProc = Value("interproc")
+    val InterProcOld = Value("interprocold")
     val IrSourceUnset = Value
 
     def validValues = values - IrSourceUnset
@@ -56,7 +57,9 @@ object IrSourceObject {
         case Cg =>
           "call graph"
         case InterProc =>
-          "inter-procedural analysis"
+          "inter-procedural analysis (one-pass)"
+        case InterProcOld =>
+          "old inter-procedural analysis (worklist)"
         case IrSourceUnset =>
           throw new UnsupportedOperationException("no analysis set")
       }
