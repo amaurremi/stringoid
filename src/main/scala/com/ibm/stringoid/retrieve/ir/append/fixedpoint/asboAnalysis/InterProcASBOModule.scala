@@ -15,7 +15,6 @@ import com.ibm.wala.util.graph.Graph
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph
 
 import scala.collection.JavaConversions._
-import scala.collection.breakOut
 
 trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
 
@@ -28,13 +27,14 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
   def getCallBlocks(callee: BB): Iterator[BB]
 
   protected lazy val identifierToAsbo: Map[Identifier, Set[ASBO]] =
-    TimeResult("ID-to-ASBO map", callGraph.foldLeft(Map.empty[Identifier, Set[ASBO]]) {
-    case (prevMap, n) =>
-      val newMap: Map[Identifier, Set[ASBO]] = (for {
-        (id, asbos) <- getIdToAsboMap
-        prevAsbos = prevMap getOrElse (id, Set.empty[ASBO])
-      } yield id -> (prevAsbos ++ asbos))(breakOut)
-      prevMap ++ newMap
+    TimeResult("ID-to-ASBO map", {
+      val solver = new InterProcAsboFixedPointSolver(abstractObjectNumbering)
+      val result = getResult(solver)
+      (for {
+        id <- solver.valueNumberGraph
+        intSet <- Option((result getOut id).getValue)
+        i2a = intSetToAsbo(intSet, solver.abstractObjectNumbering)
+      } yield id -> i2a).toMap[Identifier, Set[ASBO]]
     })
 
   private[this] def abstractObjectNumbering: AsboMapping = {
@@ -43,19 +43,6 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
         createAbstractObjectNumbering(CallGraphNode(node))
     }
     createAbstractObjectMapping(numberingIterator)
-  }
-
-  /**
-    * The resulting map from value numbers to abstract StringBuilder objects
-    */
-  private[this] def getIdToAsboMap: Map[Identifier, Set[ASBO]] = {
-    val solver = new InterProcAsboFixedPointSolver(abstractObjectNumbering)
-    val result = getResult(solver)
-    (for {
-      id <- solver.valueNumberGraph
-      intSet <- Option((result getOut id).getValue)
-      i2a = intSetToAsbo(intSet, solver.abstractObjectNumbering)
-    } yield id -> i2a).toMap[Identifier, Set[ASBO]]
   }
 
   /**
@@ -152,13 +139,6 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
                 addNode(inv.getDef)
               case inv: SSAAbstractInvokeInstruction if hasStringReturnType(inv) =>
                 addNode(inv.getDef)
-              case phi: SSAPhiInstruction                                        =>
-                val defNode = phi.getDef
-                addNode(defNode)
-                getPhiUses(phi) foreach {
-                  use =>
-                    addEdge(use, defNode)
-                }
 
               // inter-procedural
               case inv: SSAAbstractInvokeInstruction                             =>
@@ -186,6 +166,21 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
               case _ =>
               // do  nothing
             }
+        }
+
+        // add phi edges, since CFG does not contain phi instructions
+        // todo or does it?
+        for {
+          node   <- callGraph
+          instr  <- node.getIR.iteratePhis
+          phi    = instr.asInstanceOf[SSAPhiInstruction]
+          defId  = createIdentifier(phi.getDef, CallGraphNode(node))
+          use    <- getPhiUses(phi)
+          useId  = createIdentifier(use, CallGraphNode(node))
+        } {
+          if (!(graph containsNode defId)) graph addNode defId
+          if (!(graph containsNode useId)) graph addNode useId
+          graph addEdge (useId, defId)
         }
 
         graph
