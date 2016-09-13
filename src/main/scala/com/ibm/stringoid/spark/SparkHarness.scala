@@ -4,7 +4,7 @@ import java.io.File
 import java.net.URI
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path => HadoopPath, RemoteIterator}
+import org.apache.hadoop.fs.{FileSystem, RemoteIterator, Path => HadoopPath}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Logging, SparkConf, SparkContext}
 

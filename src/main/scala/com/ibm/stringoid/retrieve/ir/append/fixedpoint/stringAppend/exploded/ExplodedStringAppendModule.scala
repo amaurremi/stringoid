@@ -9,7 +9,6 @@ import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ssa._
 import com.ibm.wala.types.FieldReference
-import seqset.regular.Automaton
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
@@ -63,7 +62,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
       spart  = StringIdentifier(createIdentifier(vn, CallGraphNode(node)))
     } yield newAuto(spart)
 
-  private[this] val idToAsbo: Map[CgIdentifier, Set[ASBO]] =
+  val idToAsbo: Map[CgIdentifier, Set[ASBO]] =
     identifierToAsbo withDefault {
       id => Set(createAsbo(id.vn, CallGraphNode(id.node)))
     }
@@ -225,7 +224,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
               resultAsbo   <- idToAsbo getOrElse (resultId, Set(createAsbo(retDef, retNode)))
               if resultAsbo == factAsbo
               // call stuff
-              callBlock    <- acyclicCFG getCallBlocks bb
+              callBlock    <- getCallBlocks(bb)
               callInstr     = callBlock.getLastInstruction.asInstanceOf[SSAAbstractInvokeInstruction]
               mutable       = isMutable(callInstr.getDeclaredResultType)
               if mutable || hasPrimitiveReturnType(callInstr) || hasStringReturnType(callInstr)

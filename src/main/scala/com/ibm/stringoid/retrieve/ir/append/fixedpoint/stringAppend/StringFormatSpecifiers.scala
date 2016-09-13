@@ -4,7 +4,7 @@ import java.util.regex.Pattern
 
 import com.ibm.stringoid.retrieve.ir._
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
-import com.ibm.stringoid.retrieve.ir.append.fixedpoint.{Nodes, StringAutomata}
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.StringAutomata
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAArrayStoreInstruction}
 
 import scala.collection.JavaConversions._

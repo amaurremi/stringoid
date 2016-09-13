@@ -7,12 +7,9 @@ import com.ibm.wala.fixpoint.{BitVectorVariable, UnaryOperator}
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAPhiInstruction}
 import com.ibm.wala.util.collections.ObjectArrayMapping
 import com.ibm.wala.util.graph.Graph
-import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph
 import com.ibm.wala.util.intset.{BitVector, IntSet, OrdinalSetMapping}
 
 import scala.collection.JavaConversions._
-import scala.collection.breakOut
-import scala.reflect.ClassTag
 
 /**
  * Consider the program
@@ -33,35 +30,16 @@ trait AbstractStringBuilderModule extends IrUrlRetriever {
 
   type AsboMapping = OrdinalSetMapping[ASBO]
 
-  protected def getSolver(node: Node, numbering: AsboMapping): AsboFixedPointSolver
-
-  protected final def asboSolver(node: Node): AsboFixedPointSolver =
-    getSolver(node, createAbstractObjectNumbering(node))
-
   /**
     * If the method deals with StringBuilders, returns Some result
     */
-  private[this] def getResult(solver: AsboFixedPointSolver): BitVectorSolver[Identifier] = {
+  protected[this] def getResult(solver: AsboFixedPointSolver): BitVectorSolver[Identifier] = {
     val result = solver.result
     result.solve(null)
     result
   }
 
-  /**
-    * The resulting map from value numbers to abstract StringBuilder objects
-    */
-  protected final def idToAsboForNode(node: Node): Map[Identifier, Set[ASBO]] =
-    if (hasIr(node)) {
-      val solver = asboSolver(node)
-      val result = getResult(solver)
-      (for {
-        id <- solver.valueNumberGraph
-        intSet <- Option((result getOut id).getValue)
-        i2a = intSetToAsbo(intSet, solver.abstractObjectNumbering)
-      } yield id -> i2a)(breakOut)
-    } else Map.empty[Identifier, Set[ASBO]]
-
-  private[this] def intSetToAsbo(intSet: IntSet, numbering: AsboMapping): Set[ASBO] = {
+  protected[this] def intSetToAsbo(intSet: IntSet, numbering: AsboMapping): Set[ASBO] = {
     val walaIterator = intSet.intIterator
     val set = new Iterator[ValueNumber] {
       override def hasNext: Boolean = walaIterator.hasNext
@@ -71,7 +49,7 @@ trait AbstractStringBuilderModule extends IrUrlRetriever {
     set map numbering.getMappedObject
   }
 
-  protected def createAbstractObjectNumbering(node: Node)(implicit tag: ClassTag[ASBO]): AsboMapping = {
+  protected def createAbstractObjectNumbering(node: Node): Iterator[ASBO] = {
     val ir = node.getIr
     val abstractObjects = ir.iterateAllInstructions() flatMap {
       case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv)                            =>
@@ -91,63 +69,17 @@ trait AbstractStringBuilderModule extends IrUrlRetriever {
         createAsbo(vn, node)
     }
 
-    new ObjectArrayMapping[ASBO]((abstractObjects ++ params).toArray[ASBO])
+    abstractObjects ++ params
   }
 
-  abstract class AsboFixedPointSolver(
-   node: Node,
-   val abstractObjectNumbering: AsboMapping
-  ) {
+  protected def createAbstractObjectMapping(asbos: Iterator[ASBO]): AsboMapping =
+    new ObjectArrayMapping[ASBO](asbos.toArray[ASBO])
 
-    lazy val valueNumberGraph: Graph[Identifier] = {
-      // 1 = new SB();
-      // 2 = 1.append(3);
-      // ...
-      // 4 = 1.append(5);
-      // For this case, we need to add three nodes that contain VN 1, and the nodes need to be connected with each other.
-      // Since append is mutable (it changes 1's object) we cannot connect the nodes to the first node where 1 is defined.
-      // So we need to remember the previous instruction that appended something to 1, which is the purpose of this map.
-      // todo test this case in unit tests
-      val graph = new SlowSparseNumberedGraph[Identifier](1)
-      def addNode(vn: ValueNumber) {
-        val n = createIdentifier(vn, node)
-        if (!(graph containsNode n)) graph addNode n
-      }
-      def addEdge(source: ValueNumber, target: ValueNumber) {
-        val sourceN = createIdentifier(source, node)
-        val targetN = createIdentifier(target, node)
-        addNode(source)
-        addNode(target)
-        graph addEdge(sourceN, targetN)
-      }
-      node.getIr.iterateAllInstructions() foreach {
-        // todo remove just adding nodes?
-        case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv)     =>
-          getDefs(inv) foreach addNode
-        case inv: SSAAbstractInvokeInstruction if isSbAppend(inv)          =>
-          val (firstDef, secondDef) = getSbAppendDefs(inv)                    // in 1 = 2.append(3), 1 is firstDef and 2 is secondDef
-          addEdge(secondDef, firstDef)
-        case inv: SSAAbstractInvokeInstruction if isSbTostring(inv)        => // in 1 = 2.toString, 1 is sbDef and 2 is sbUse
-          val sbDef = getSbToStringDef(inv)
-          val sbUse = getSbToStringUse(inv)
-          addEdge(sbUse, sbDef)
-        case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)      =>
-          addNode(inv.getDef)
-        case inv: SSAAbstractInvokeInstruction if hasStringReturnType(inv) =>
-          addNode(inv.getDef)
-        case phi: SSAPhiInstruction                                        =>
-          val defNode = phi.getDef
-          addNode(defNode)
-          getPhiUses(phi) foreach {
-            use =>
-              addEdge(use, defNode)
-          }
-        case _                                                             =>
-        // do  nothing
-      }
+  abstract class AsboFixedPointSolver(val abstractObjectNumbering: AsboMapping) {
 
-      graph
-    }
+    def valueNumberGraph: Graph[Identifier]
+
+    def getTransferFunctions: StringBuilderTransferFunctions
 
     /**
       * If a method has deals with StringBuilders, returns Some solver, otherwise None
@@ -155,7 +87,7 @@ trait AbstractStringBuilderModule extends IrUrlRetriever {
     def result: BitVectorSolver[Identifier] = {
       val framework = new BitVectorFramework[Identifier, ASBO](
         valueNumberGraph,
-        new StringBuilderTransferFunctions,
+        getTransferFunctions,
         abstractObjectNumbering)
       val solver = new BitVectorSolver[Identifier](framework)
       solver.solve(null)
@@ -166,41 +98,17 @@ trait AbstractStringBuilderModule extends IrUrlRetriever {
 
     def getUses(id: Identifier): Iterator[SSAInstruction]
 
-    class StringBuilderTransferFunctions extends ITransferFunctionProvider[Identifier, BitVectorVariable] {
+    abstract class StringBuilderTransferFunctions extends ITransferFunctionProvider[Identifier, BitVectorVariable] {
 
-      def getNodeTransferFunction(id: Identifier): UnaryOperator[BitVectorVariable] = {
-        getDef(id) match {
-          case instr if isSbConstructorOrFormatInDefUse(instr) =>
-            createOperator(id)
-          case instr if pointsToPhi(id) && !isPhiDef(id)       =>
-            createOperator(id)
-          case _ if isParameter(id)                            =>
-            val tpe = getTypeAbstraction(node.getIr, valNum(id))
-            if (isMutable(tpe.getTypeReference))
-              createOperator(id)
-            else
-              BitVectorIdentity.instance
-          case instr: SSAAbstractInvokeInstruction
-            if isMutable(instr.getDeclaredResultType) &&
-              !isSbAppend(instr) &&
-              !isSbConstructorWithStringParam(instr)           =>
-            createOperator(id)
-          case _                                               =>
-            BitVectorIdentity.instance
-        }
-      }
+      def getNodeTransferFunction(id: Identifier): UnaryOperator[BitVectorVariable]
 
-      private[this] def isParameter(id: Identifier) = {
-        valNum(id) <= node.getIr.getNumberOfParameters
-      }
-
-      private[this] def pointsToPhi(id: Identifier): Boolean =
+      def pointsToPhi(id: Identifier): Boolean =
         getUses(id) exists { _.isInstanceOf[SSAPhiInstruction] }
 
-      private[this] def isPhiDef(id: Identifier): Boolean =
+      def isPhiDef(id: Identifier): Boolean =
         getDef(id).isInstanceOf[SSAPhiInstruction]
 
-      private[this] def createOperator(id: Identifier): UnaryOperator[BitVectorVariable] = {
+      def createOperator(id: Identifier): UnaryOperator[BitVectorVariable] = {
         val mappedIndex = abstractObjectNumbering getMappedIndex ASBO(id)
         assert(mappedIndex >= 0)
         val gen = new BitVector()

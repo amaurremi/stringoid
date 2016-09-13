@@ -6,20 +6,17 @@ import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.InterProcASB
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.cfg.ControlFlowGraph
 import com.ibm.wala.ipa.callgraph.CGNode
-import com.ibm.wala.ipa.cfg.{BasicBlockInContext, EdgeFilter, ExplodedInterproceduralCFG, PrunedCFG}
+import com.ibm.wala.ipa.cfg.{EdgeFilter, ExplodedInterproceduralCFG, PrunedCFG}
 import com.ibm.wala.ssa.SSAInstruction
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
 import com.ibm.wala.util.collections.IndiscriminateFilter
-import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph
-import com.ibm.wala.util.graph.{Acyclic, Graph}
+import com.ibm.wala.util.graph.Acyclic
 import com.ibm.wala.util.intset.IntPair
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
 trait CFG extends InterProcASBOModule {
-
-  protected type BB = BasicBlockInContext[IExplodedBasicBlock]
 
   class AcyclicInterproceduralCFG extends ExplodedInterproceduralCFG(callGraph, IndiscriminateFilter.singleton[CGNode]) {
 
@@ -41,11 +38,6 @@ trait CFG extends InterProcASBOModule {
           nodeToCfg += (num -> acyclic)
           acyclic
       }
-    }
-
-    def getCallBlocks(callee: BB): Iterator[BB] = {
-      val entry = acyclicCFG getEntry callee.getNode
-      acyclicCFG getPredNodes entry
     }
 
     private[this] class BackEdgeFilter(cfg: CFG) extends EdgeFilter[IExplodedBasicBlock] {
@@ -72,6 +64,10 @@ trait CFG extends InterProcASBOModule {
     def getEntryPoints: Iterable[BB] = callGraph.getEntrypointNodes map getEntry
   }
 
-  lazy val acyclicCFG = TimeResult("acyclic CFG", new AcyclicInterproceduralCFG)
+  lazy val acyclicCFG: AcyclicInterproceduralCFG = TimeResult("acyclic CFG", new AcyclicInterproceduralCFG)
 
+  def getCallBlocks(callee: BB): Iterator[BB] = {
+    val entry = acyclicCFG getEntry callee.getNode
+    acyclicCFG getPredNodes entry
+  }
 }

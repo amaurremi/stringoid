@@ -5,7 +5,7 @@ import argonaut._
 import com.ibm.stringoid._
 import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.ir.IrNodesModule.{CgIntraProcIrNodes, ChaIntraProcIrNodes, InterProcIrNodes, IntraProcIrNodes}
-import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded.{ExplodedGraphPass, ExplodedStringAppendModule}
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded.{CFG, ExplodedGraphPass, ExplodedStringAppendModule}
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.{InterProcStringAppendModule, IntraProcStringAppendModule}
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.types.FieldReference
@@ -22,7 +22,7 @@ object FixedPointAppendIrRetrieverImplementations {
     extends InterProcFixedPointAppendIrRetriever(config) with ExplodedStringAppendModule
 
   final class WalaInterProcFixedPointAppendIrRetriever(config: AnalysisConfig)
-    extends InterProcFixedPointAppendIrRetriever(config) with InterProcStringAppendModule
+    extends InterProcFixedPointAppendIrRetriever(config) with InterProcStringAppendModule with CFG
 
   sealed abstract class InterProcFixedPointAppendIrRetriever(config: AnalysisConfig)
     extends FixedPointAppendIrRetriever(config)

@@ -2,7 +2,7 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
 import com.ibm.stringoid.retrieve.ir._
 import com.ibm.wala.ipa.callgraph.CGNode
-import com.ibm.wala.ssa.{SSAFieldAccessInstruction, SSAInstruction}
+import com.ibm.wala.ssa.SSAFieldAccessInstruction
 import com.ibm.wala.types.FieldReference
 import seqset.regular.Automaton
 
@@ -62,5 +62,6 @@ trait CgNodes extends StringAutomata {
 
   override type Node = CallGraphNode
 
-  final override def createIdentifier(vn: ValueNumber, node: CallGraphNode) = CgIdentifier(node.node, vn)
+  final override def createIdentifier(vn: ValueNumber, node: CallGraphNode) =
+    CgIdentifier(node.node, vn)
 }

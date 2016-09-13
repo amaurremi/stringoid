@@ -3,7 +3,6 @@ package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend
 import java.util
 
 import com.ibm.stringoid.retrieve.ir.ValueNumber
-import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.AbstractStringBuilderModule
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.dataflow.graph._

@@ -1,6 +1,6 @@
 package com.ibm.stringoid.retrieve.ir.append
 
-import com.ibm.stringoid.retrieve.ir.{IrUrlRetriever, ValueNumber}
+import com.ibm.stringoid.retrieve.ir.ValueNumber
 import com.ibm.wala.analysis.typeInference.TypeAbstraction
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAPhiInstruction}

@@ -10,7 +10,6 @@ import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ssa._
 import com.ibm.wala.types.FieldReference
 import com.ibm.wala.util.graph.traverse.Topological
-import seqset.regular.Automaton
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable

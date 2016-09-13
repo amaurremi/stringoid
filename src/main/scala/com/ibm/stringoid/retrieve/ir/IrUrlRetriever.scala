@@ -3,7 +3,7 @@ package com.ibm.stringoid.retrieve.ir
 import com.ibm.stringoid.AnalysisConfig
 import com.ibm.stringoid.retrieve.UrlCheck.isUrlPrefix
 import com.ibm.stringoid.retrieve.UrlRetriever
-import com.ibm.stringoid.retrieve.ir.append.fixedpoint.{Nodes, StringAutomata}
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.StringAutomata
 import com.ibm.wala.analysis.typeInference.{TypeAbstraction, TypeInference}
 import com.ibm.wala.cast.ir.ssa.AstIRFactory.AstDefaultIRFactory
 import com.ibm.wala.cast.java.analysis.typeInference.AstJavaTypeInference
