@@ -17,6 +17,29 @@ trait IntraProcASBOModule extends AbstractStringBuilderModule with IrNodes {
   protected final def asboSolver(node: Node): AsboFixedPointSolver =
     new IntraProcAsboFixedPointSolver(node, createAbstractObjectMapping(createAbstractObjectNumbering(node)))
 
+  protected def createAbstractObjectNumbering(node: Node): Iterator[ASBO] = {
+    val ir = node.getIr
+    val abstractObjects = ir.iterateAllInstructions() flatMap {
+      case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv)                            =>
+        Iterator(createAsbo(getSbConstructorDef(inv), node))
+      case inv: SSAAbstractInvokeInstruction if isStringFormat(inv) || hasStringReturnType(inv) =>
+        Iterator(createAsbo(inv.getDef, node))
+      case phi: SSAPhiInstruction                                                               =>
+        0 until phi.getNumberOfUses map {
+          use =>
+            createAsbo(phi getUse use, node)
+        }
+      case _                                                                                    =>
+        Iterator.empty
+    }
+    val params = 1 to ir.getSymbolTable.getNumberOfParameters collect {
+      case vn if isMutable(getTypeAbstraction(ir, vn).getTypeReference) =>
+        createAsbo(vn, node)
+    }
+
+    abstractObjects ++ params
+  }
+
   /**
     * The resulting map from value numbers to abstract StringBuilder objects
     */

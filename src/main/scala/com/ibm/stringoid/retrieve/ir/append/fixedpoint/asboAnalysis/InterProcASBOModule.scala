@@ -15,6 +15,7 @@ import com.ibm.wala.util.graph.Graph
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph
 
 import scala.collection.JavaConversions._
+import scala.collection.mutable
 
 trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
 
@@ -46,6 +47,36 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
         createAbstractObjectNumbering(CallGraphNode(node))
     }
     createAbstractObjectMapping(numberingIterator)
+  }
+
+  protected def createAbstractObjectNumbering(node: Node): Iterator[ASBO] = {
+    val ir = node.getIr
+    val abstractObjects = ir.iterateAllInstructions() flatMap {
+      case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv) =>
+        Iterator(createAsbo(getSbConstructorDef(inv), node))
+      case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)  =>
+        Iterator(createAsbo(inv.getDef, node))
+      case inv: SSAAbstractInvokeInstruction                         =>
+        getArgsAndParams(inv) map {
+          case (arg, _) =>
+            createAsbo(arg, node)
+        }
+      case phi: SSAPhiInstruction                                    =>
+        0 until phi.getNumberOfUses map {
+          use =>
+            createAsbo(phi getUse use, node)
+        }
+      case ret: SSAReturnInstruction                                 =>
+        Iterator(createAsbo(ret.getResult, node))
+      case _                                                         =>
+        Iterator.empty
+    }
+    val params = 1 to ir.getSymbolTable.getNumberOfParameters collect {
+      case vn if isMutable(getTypeAbstraction(ir, vn).getTypeReference) =>
+        createAsbo(vn, node)
+    }
+
+    abstractObjects ++ params
   }
 
   /**
@@ -87,6 +118,14 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
     } yield callSite
   }
 
+  protected def getArgsAndParams(
+    inv: SSAAbstractInvokeInstruction
+  ): Seq[(ValueNumber, ValueNumber)] =
+    0 until inv.getNumberOfParameters map {
+      argIndex =>
+        (inv getUse argIndex, argIndex + 1)
+    }
+
   class InterProcAsboFixedPointSolver(numbering: AsboMapping) extends AsboFixedPointSolver(numbering) {
 
 //    override def getDef(id: Identifier): SSAInstruction =
@@ -99,6 +138,19 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
 
       override def getUses(id: Identifier): Iterator[SSAInstruction] = id.node.getDU getUses id.vn
 
+      // We need to store information about which identifiers are returned and which are passed into calls.
+      val idInfo = mutable.Map.empty[Identifier, IdInfo] withDefaultValue IdInfo()
+
+      case class IdInfo(isRet: Boolean = false, isArg: Boolean = false)
+
+      private[this] def setIdInfoArg(id: Identifier): Unit = {
+        idInfo(id) = idInfo(id).copy(isArg = true)
+      }
+
+      private[this] def setIdInfoRet(id: Identifier): Unit = {
+        idInfo(id) = idInfo(id).copy(isRet = true)
+      }
+
       lazy val valueNumberGraph: Graph[Identifier] = {
         // 1 = new SB();
         // 2 = 1.append(3);
@@ -108,20 +160,21 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
         // Since append is mutable (it changes 1's object) we cannot connect the nodes to the first node where 1 is defined.
         // So we need to remember the previous instruction that appended something to 1, which is the purpose of this map.
         // todo test this case in unit tests
+
         val graph = new SlowSparseNumberedGraph[Identifier](1)
         acyclicCFG.iterator foreach {
           bb =>
             val node = bb.getNode
-            def addNode(vn: ValueNumber, n: CGNode = node, isReturn: Boolean = false) {
-              val id = createIdentifier(vn, CallGraphNode(n), isReturn)
+            def addNode(vn: ValueNumber, n: CGNode = node) {
+              val id = createIdentifier(vn, CallGraphNode(n))
               if (!(graph containsNode id)) graph addNode id
             }
-            def addEdge(sourceVn: ValueNumber, targetVn: ValueNumber, sourceNode: CGNode = node, targetNode: CGNode = node, isReturn: Boolean = false) {
-              addNode(sourceVn, sourceNode, isReturn = isReturn)
-              addNode(targetVn, targetNode, isReturn = isReturn)
+            def addEdge(sourceVn: ValueNumber, targetVn: ValueNumber, sourceNode: CGNode = node, targetNode: CGNode = node) {
+              addNode(sourceVn, sourceNode)
+              addNode(targetVn, targetNode)
               graph addEdge(
-                createIdentifier(sourceVn, CallGraphNode(sourceNode), isReturn),
-                createIdentifier(targetVn, CallGraphNode(targetNode), isReturn))
+                createIdentifier(sourceVn, CallGraphNode(sourceNode)),
+                createIdentifier(targetVn, CallGraphNode(targetNode)))
             }
 
             bb.getLastInstruction match {
@@ -152,16 +205,19 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
                   if inv.getDeclaredTarget == callTarget.getMethod.getReference
                   (arg, param) <- argsAndParams
                 } {
+                  setIdInfoArg(createIdentifier(arg, CallGraphNode(node)))
                   addEdge(arg, param, sourceNode = node, targetNode = callTarget)
                 }
               case ret: SSAReturnInstruction if ret.getResult > 0                 =>
+                val retResult = ret.getResult
+                setIdInfoRet(createIdentifier(retResult, CallGraphNode(node)))
                   for {
                     callBlock    <- getCallBlocks(bb)
                     callInstr     = callBlock.getLastInstruction.asInstanceOf[SSAAbstractInvokeInstruction]
                     mutable       = isMutable(callInstr.getDeclaredResultType)
                     if mutable || hasPrimitiveReturnType(callInstr) || hasStringReturnType(callInstr)
                   } {
-                    addEdge(ret.getResult, callInstr.getDef, node, callBlock.getNode, isReturn = true)
+                    addEdge(retResult, callInstr.getDef, node, callBlock.getNode)
                   }
               case _ =>
               // do  nothing
@@ -186,14 +242,6 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
         graph
       }
 
-      private[this] def getArgsAndParams(
-        inv: SSAAbstractInvokeInstruction
-      ): Seq[(ValueNumber, ValueNumber)] =
-        0 until inv.getNumberOfParameters map {
-          argIndex =>
-            (inv getUse argIndex, argIndex + 1)
-        }
-
       class InterStringBuilderTransferFunctions extends StringBuilderTransferFunctions {
 
         def getNodeTransferFunction(id: Identifier): UnaryOperator[BitVectorVariable] = {
@@ -202,18 +250,18 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
               createOperator(id)
             case instr if pointsToPhi(id) && !isPhiDef(id)          =>
               createOperator(id)
-            case _ if isParameter(id)                               =>
-              val tpe = getTypeAbstraction(id.node.getIR, valNum(id))
-              if (isMutable(tpe.getTypeReference))
-                createOperator(id)
-              else
-                BitVectorIdentity.instance
-            case instr: SSAAbstractInvokeInstruction
-              if isMutable(instr.getDeclaredResultType) &&
-                !isSbAppend(instr) &&
-                !isSbConstructorWithStringParam(instr)              =>
-              createOperator(id)
-            case _ if id.isReturn                                   =>
+//            case _ if isParameter(id)                               =>
+//              val tpe = getTypeAbstraction(id.node.getIR, valNum(id))
+//              if (isMutable(tpe.getTypeReference))
+//                createOperator(id)
+//              else
+//                BitVectorIdentity.instance
+//            case instr: SSAAbstractInvokeInstruction
+//              if isMutable(instr.getDeclaredResultType) &&
+//                !isSbAppend(instr) &&
+//                !isSbConstructorWithStringParam(instr)              =>
+//              createOperator(id)
+            case _ if idInfo(id).isRet || idInfo(id).isArg          =>
               createOperator(id)
             case _                                                  =>
               BitVectorIdentity.instance

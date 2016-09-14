@@ -1,15 +1,12 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis
 
-import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.{IrUrlRetriever, ValueNumber}
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{BitVectorVariable, UnaryOperator}
-import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAPhiInstruction, SSAReturnInstruction}
+import com.ibm.wala.ssa.{SSAInstruction, SSAPhiInstruction}
 import com.ibm.wala.util.collections.ObjectArrayMapping
 import com.ibm.wala.util.graph.Graph
 import com.ibm.wala.util.intset.{BitVector, IntSet, OrdinalSetMapping}
-
-import scala.collection.JavaConversions._
 
 /**
  * Consider the program
@@ -47,31 +44,6 @@ trait AbstractStringBuilderModule extends IrUrlRetriever {
       override def next(): Int = walaIterator.next()
     }.toSet[ValueNumber]
     set map numbering.getMappedObject
-  }
-
-  protected def createAbstractObjectNumbering(node: Node): Iterator[ASBO] = {
-    val ir = node.getIr
-    val abstractObjects = ir.iterateAllInstructions() flatMap {
-      case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv)                            =>
-        Iterator(createAsbo(getSbConstructorDef(inv), node))
-      case inv: SSAAbstractInvokeInstruction if isStringFormat(inv) || hasStringReturnType(inv) =>
-        Iterator(createAsbo(inv.getDef, node))
-      case phi: SSAPhiInstruction                                                               =>
-        0 until phi.getNumberOfUses map {
-          use =>
-            createAsbo(phi getUse use, node)
-        }
-      case ret: SSAReturnInstruction                                                            =>
-        Iterator(createAsbo(ret.getResult, node))
-      case _                                                                                    =>
-        Iterator.empty
-    }
-    val params = 1 to ir.getSymbolTable.getNumberOfParameters collect {
-      case vn if isMutable(getTypeAbstraction(ir, vn).getTypeReference) =>
-        createAsbo(vn, node)
-    }
-
-    abstractObjects ++ params
   }
 
   protected def createAbstractObjectMapping(asbos: Iterator[ASBO]): AsboMapping =

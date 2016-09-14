@@ -46,32 +46,22 @@ trait IrNodes extends StringAutomata {
 
   override type Node = IrNode
 
-  final override def createIdentifier(vn: ValueNumber, node: IrNode, isReturn: Boolean = false) = vn
+  final override def createIdentifier(vn: ValueNumber, node: IrNode) = vn
 }
 
 trait CgNodes extends StringAutomata {
 
   override type Identifier = CgIdentifier
 
-  case class CgIdentifier(node: CGNode, vn: ValueNumber, isReturn: Boolean = false) {
+  case class CgIdentifier(node: CGNode, vn: ValueNumber) {
 
     override val hashCode = node.getGraphNodeId * 23 + vn
-
-    override def equals(obj: Any): Boolean = {
-      obj match {
-          // ignoring `isReturn`
-        case CgIdentifier(n, v, _) =>
-          n == node && v == vn
-        case _                     =>
-          false
-      }
-    }
   }
 
   override def valNum(id: Identifier): ValueNumber = id.vn
 
   override type Node = CallGraphNode
 
-  final override def createIdentifier(vn: ValueNumber, node: CallGraphNode, isReturn: Boolean = false) =
-    CgIdentifier(node.node, vn, isReturn)
+  final override def createIdentifier(vn: ValueNumber, node: CallGraphNode) =
+    CgIdentifier(node.node, vn)
 }
