@@ -65,9 +65,4 @@ trait CFG extends InterProcASBOModule {
   }
 
   lazy val acyclicCFG: AcyclicInterproceduralCFG = TimeResult("acyclic CFG", new AcyclicInterproceduralCFG)
-
-  def getCallBlocks(callee: BB): Iterator[BB] = {
-    val entry = acyclicCFG getEntry callee.getNode
-    acyclicCFG getPredNodes entry
-  }
 }

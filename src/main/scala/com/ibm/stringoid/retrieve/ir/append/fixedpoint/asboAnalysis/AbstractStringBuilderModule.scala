@@ -4,7 +4,7 @@ import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.{IrUrlRetriever, ValueNumber}
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{BitVectorVariable, UnaryOperator}
-import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAPhiInstruction}
+import com.ibm.wala.ssa.{SSAAbstractInvokeInstruction, SSAInstruction, SSAPhiInstruction, SSAReturnInstruction}
 import com.ibm.wala.util.collections.ObjectArrayMapping
 import com.ibm.wala.util.graph.Graph
 import com.ibm.wala.util.intset.{BitVector, IntSet, OrdinalSetMapping}
@@ -61,6 +61,8 @@ trait AbstractStringBuilderModule extends IrUrlRetriever {
           use =>
             createAsbo(phi getUse use, node)
         }
+      case ret: SSAReturnInstruction                                                            =>
+        Iterator(createAsbo(ret.getResult, node))
       case _                                                                                    =>
         Iterator.empty
     }

@@ -6,8 +6,6 @@ import com.ibm.stringoid.AnalysisTypeObject.AnalysisType
 import com.ibm.stringoid.IrSourceObject.IrSource
 import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.ir.IrUrlRetriever
-import com.ibm.stringoid.retrieve.ir.append.fixedpoint.FixedPointAppendIrRetriever
-import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded.ExplodedGraphPass
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ssa.{IR, SSAAbstractInvokeInstruction, SSAInstruction}
 import org.scalatest.FunSpec
@@ -51,19 +49,19 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
 //        run(analysisConfig)
 //      }
 
-      /* INTRA procedural*/
-      it("computes URLs in CHA IR analysis") {
-        val file = Paths.get("src/test/java/intraproc")
+//      /* INTRA procedural*/
+//      it("computes URLs in CHA IR analysis") {
+//        val file = Paths.get("src/test/java/intraproc")
+//        val analysisConfig = AnalysisConfig(irSource = Cha, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
+//        run(analysisConfig)
+//      }
+
+      /* INTER procedural */
+      it("computes URLs in inter-procedural analysis") {
+        val file = Paths.get("src/test/java/interproc")
         val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
         run(analysisConfig)
       }
-
-//      /* INTER procedural */
-//      it("computes URLs in inter-procedural analysis") {
-//        val file = Paths.get("src/test/java/interproc")
-//        val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
-//        run(analysisConfig)
-//      }
     } else {
       println("No tests run: test running option disabled")
     }

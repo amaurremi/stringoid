@@ -45,5 +45,5 @@ trait Nodes {
 
   final def createAsbo(vn: ValueNumber, node: Node) = ASBO(createIdentifier(vn, node))
 
-  def createIdentifier(vn: ValueNumber, node: Node): Identifier
+  def createIdentifier(vn: ValueNumber, node: Node, isReturn: Boolean = false): Identifier
 }

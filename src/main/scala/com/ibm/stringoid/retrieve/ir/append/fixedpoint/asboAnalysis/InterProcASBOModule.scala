@@ -24,7 +24,10 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
 
   def acyclicCFG: ExplodedInterproceduralCFG
 
-  def getCallBlocks(callee: BB): Iterator[BB]
+  def getCallBlocks(callee: BB): Iterator[BB] = {
+    val entry = acyclicCFG getEntry callee.getNode
+    acyclicCFG getPredNodes entry
+  }
 
   protected lazy val identifierToAsbo: Map[Identifier, Set[ASBO]] =
     TimeResult("ID-to-ASBO map", {
@@ -109,16 +112,16 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
         acyclicCFG.iterator foreach {
           bb =>
             val node = bb.getNode
-            def addNode(vn: ValueNumber, n: CGNode = node) {
-              val id = createIdentifier(vn, CallGraphNode(n))
+            def addNode(vn: ValueNumber, n: CGNode = node, isReturn: Boolean = false) {
+              val id = createIdentifier(vn, CallGraphNode(n), isReturn)
               if (!(graph containsNode id)) graph addNode id
             }
-            def addEdge(sourceVn: ValueNumber, targetVn: ValueNumber, sourceNode: CGNode = node, targetNode: CGNode = node) {
-              addNode(sourceVn, sourceNode)
-              addNode(targetVn, targetNode)
+            def addEdge(sourceVn: ValueNumber, targetVn: ValueNumber, sourceNode: CGNode = node, targetNode: CGNode = node, isReturn: Boolean = false) {
+              addNode(sourceVn, sourceNode, isReturn = isReturn)
+              addNode(targetVn, targetNode, isReturn = isReturn)
               graph addEdge(
-                createIdentifier(sourceVn, CallGraphNode(sourceNode)),
-                createIdentifier(targetVn, CallGraphNode(targetNode)))
+                createIdentifier(sourceVn, CallGraphNode(sourceNode), isReturn),
+                createIdentifier(targetVn, CallGraphNode(targetNode), isReturn))
             }
 
             bb.getLastInstruction match {
@@ -149,20 +152,17 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
                   if inv.getDeclaredTarget == callTarget.getMethod.getReference
                   (arg, param) <- argsAndParams
                 } {
-                  addEdge(param, arg, sourceNode = callTarget, targetNode = node)
+                  addEdge(arg, param, sourceNode = node, targetNode = callTarget)
                 }
-              case ret: SSAReturnInstruction                                     =>
-                val retDef = ret.getDef
-                if (retDef > 0) {
+              case ret: SSAReturnInstruction if ret.getResult > 0                 =>
                   for {
                     callBlock    <- getCallBlocks(bb)
                     callInstr     = callBlock.getLastInstruction.asInstanceOf[SSAAbstractInvokeInstruction]
                     mutable       = isMutable(callInstr.getDeclaredResultType)
                     if mutable || hasPrimitiveReturnType(callInstr) || hasStringReturnType(callInstr)
                   } {
-                    addEdge(callInstr.getDef, retDef, callBlock.getNode, node)
+                    addEdge(ret.getResult, callInstr.getDef, node, callBlock.getNode, isReturn = true)
                   }
-                }
               case _ =>
               // do  nothing
             }
@@ -198,11 +198,11 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
 
         def getNodeTransferFunction(id: Identifier): UnaryOperator[BitVectorVariable] = {
           getDef(id) match {
-            case instr if isSbConstructorOrFormatInDefUse(instr) =>
+            case instr if isSbConstructorOrFormatInDefUse(instr)    =>
               createOperator(id)
-            case instr if pointsToPhi(id) && !isPhiDef(id)       =>
+            case instr if pointsToPhi(id) && !isPhiDef(id)          =>
               createOperator(id)
-            case _ if isParameter(id)                            =>
+            case _ if isParameter(id)                               =>
               val tpe = getTypeAbstraction(id.node.getIR, valNum(id))
               if (isMutable(tpe.getTypeReference))
                 createOperator(id)
@@ -211,9 +211,11 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
             case instr: SSAAbstractInvokeInstruction
               if isMutable(instr.getDeclaredResultType) &&
                 !isSbAppend(instr) &&
-                !isSbConstructorWithStringParam(instr)           =>
+                !isSbConstructorWithStringParam(instr)              =>
               createOperator(id)
-            case _                                               =>
+            case _ if id.isReturn                                   =>
+              createOperator(id)
+            case _                                                  =>
               BitVectorIdentity.instance
           }
         }
