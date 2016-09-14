@@ -49,12 +49,12 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
 //        run(analysisConfig)
 //      }
 
-//      /* INTRA procedural*/
-//      it("computes URLs in CHA IR analysis") {
-//        val file = Paths.get("src/test/java/intraproc")
-//        val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
-//        run(analysisConfig)
-//      }
+      /* INTRA procedural*/
+      it("computes URLs in CHA IR analysis") {
+        val file = Paths.get("src/test/java/intraproc")
+        val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
+        run(analysisConfig)
+      }
 
       /* INTER procedural */
       it("computes URLs in inter-procedural analysis") {

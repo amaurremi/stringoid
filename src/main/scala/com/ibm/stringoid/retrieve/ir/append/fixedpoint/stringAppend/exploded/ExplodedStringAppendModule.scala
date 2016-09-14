@@ -21,12 +21,12 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     * Analysis result that maps exploded nodes to automata. This maps tracks only mutable ASBOs, i.e.
     * ASBOs corresponding to StringBuilders and StringBuffers.
     */
-  private[this] val resultMutable = mutable.Map.empty[ExplodedNode, StringPartAutomaton] withDefaultValue emptyAuto
+  private[this] val resultMutable = mutable.Map.empty[ExplodedNode, StringPartAutomaton] withDefaultValue epsilonAuto
 
   /**
     * Analysis result that maps immutable ASBOs to automata.
     */
-  private[this] val resultImmutable = mutable.Map.empty[ASBO, StringPartAutomaton] withDefaultValue emptyAuto
+  private[this] val resultImmutable = mutable.Map.empty[ASBO, StringPartAutomaton] withDefaultValue epsilonAuto
 
   def stringAppends(fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
     // concatenation URLs
@@ -78,7 +78,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     val succNode  = (succ, asbo)
     val oldResult = resultMutable((bb, asbo))
     val newResult =
-      if (oldResult == emptyAuto) newAutomaton
+      if (oldResult == epsilonAuto) newAutomaton
       else oldResult +++ newAutomaton
     val oldSuccResult = resultMutable(succNode)
     updateResultAndWorkListMutable(succNode, oldSuccResult | newResult)
@@ -109,7 +109,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
   private[this] def resultGetOrElse(
     bb: BB,
     asbo: ASBO,
-    default: StringPartAutomaton = emptyAuto
+    default: StringPartAutomaton = epsilonAuto
   ): StringPartAutomaton = {
     val immutAuto = resultImmutable get asbo
     if (immutAuto.isEmpty) {
@@ -161,7 +161,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
           val sfAsbo     = createAsbo(instr.getDef, node)
           if (factInArgs || sfAsbo == factAsbo) {
             val sfArgSeqs: Seq[Seq[StringPart]] = reorderStringFormatArgs(instr, node)
-            val automaton = sfArgSeqs.foldLeft(emptyAuto) {
+            val automaton = sfArgSeqs.foldLeft(epsilonAuto) {
               case (prevAuto, sfArgs) =>
                 val nextAuto = sfArgs.tail.foldLeft(newAuto(sfArgs.head)) {
                   case (resultAutomaton, stringFormatArg) =>

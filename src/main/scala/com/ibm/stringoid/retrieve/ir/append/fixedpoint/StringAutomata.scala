@@ -27,14 +27,12 @@ trait StringAutomata extends Nodes {
 
   type StringPartAutomaton = Automaton[StringPart]
 
-  def emptyAuto = Automaton.empty[StringPart]
+  def epsilonAuto = Automaton.empty[StringPart] + Seq.empty[StringPart]
 
-  def epsilonAuto = emptyAuto + Seq.empty[StringPart]
-
-  def newAuto(sp: StringPart): StringPartAutomaton = emptyAuto + Seq(sp)
+  def newAuto(sp: StringPart): StringPartAutomaton = epsilonAuto + Seq(sp)
 
   def merge(sps: Iterator[StringPartAutomaton]): StringPartAutomaton = {
-    sps.foldLeft(emptyAuto) {
+    sps.foldLeft(epsilonAuto) {
       _ | _
     }
   }

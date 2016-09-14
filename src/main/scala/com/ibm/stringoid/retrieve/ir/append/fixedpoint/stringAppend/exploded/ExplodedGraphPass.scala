@@ -37,7 +37,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
       asbo =>
         val id   = asbo.identifier
         if (hasSbType(id.node, id.vn, getTypeAbstraction(id.node.getIR, id.vn)))
-          emptyAuto
+          epsilonAuto
         else
           createAutomaton(CallGraphNode(asbo.identifier.node), asbo.identifier)
     })
@@ -145,7 +145,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
                   val sfAsbo = createAsbo(instr.getDef, cgNode)
                   if (factInArgs || sfAsbo == factAsbo) {
                     val sfArgSeqs: Seq[Seq[StringPart]] = reorderStringFormatArgs(instr, cgNode)
-                    val automaton = sfArgSeqs.foldLeft(emptyAuto) {
+                    val automaton = sfArgSeqs.foldLeft(epsilonAuto) {
                       case (prevAuto, sfArgs) =>
                         val nextAuto = sfArgs.tail.foldLeft(newAuto(sfArgs.head)) {
                           case (resultAutomaton, stringFormatArg) =>
@@ -187,7 +187,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
     bb: BB,
     factAsbo: ASBO
   ): Unit = {
-    val automaton = acyclicCFG.getPredNodes(bb).foldLeft(emptyAuto) {
+    val automaton = acyclicCFG.getPredNodes(bb).foldLeft(epsilonAuto) {
       case (auto, pred) =>
         resultMap(pred)(factAsbo) | auto
     }
@@ -217,14 +217,12 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
     asbos foreach {
       sb =>
         if (sb == factAsbo || (argAsbos contains factAsbo)) {
-          val predAuto = predNodes.foldLeft(emptyAuto) {
+          val predAuto = predNodes.foldLeft(epsilonAuto) {
             case (auto, predNode) =>
               resultMap(predNode)(sb) | auto
           }
 
-          val newAuto =
-            if (predAuto == emptyAuto) argAutomaton
-            else predAuto +++ argAutomaton
+          val newAuto = predAuto +++ argAutomaton
           resultMap(bb) = resultMap(bb) + (sb -> newAuto)
         }
     }

@@ -128,9 +128,9 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             val newMap = (for {
               resultAsbo <- idToAsbo getOrElse(resultId, Set(createAsbo(result, retNode)))
               lAsbo <- lhsAsbos
-              lAuto = rhsMap getOrElse(lAsbo, emptyAuto)
+              lAuto = rhsMap getOrElse(lAsbo, epsilonAuto)
               resultAsboId = createIdentifier(resultAsbo.identifier.vn, CallGraphNode(resultAsbo.identifier.node))
-              oldLhs = rhsMap getOrElse(lAsbo, emptyAuto) // todo replace with createAutomaton
+              oldLhs = rhsMap getOrElse(lAsbo, epsilonAuto) // todo replace with createAutomaton
               resultAuto = rhsMap getOrElse(resultAsbo, createAutomaton(retNode, resultAsboId))
             } yield lAsbo -> (oldLhs | lAuto | resultAuto))(breakOut)
             rhsMap ++ newMap
@@ -167,8 +167,8 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             (asbo, paramIndex) <- substitutionAsbos
             paramId = createIdentifier(paramIndex + 1, cgNode)
             paramAsbo    <- idToAsbo getOrElse (paramId, Set(ASBO(paramId)))
-            oldAutomaton  = rhsMap getOrElse (paramAsbo, emptyAuto)
-            automaton     = rhsMap getOrElse (asbo, emptyAuto)
+            oldAutomaton  = rhsMap getOrElse (paramAsbo, epsilonAuto)
+            automaton     = rhsMap getOrElse (asbo, epsilonAuto)
           } yield paramAsbo -> (oldAutomaton | automaton))(breakOut)
           rhsMap ++ newPairs
         }
