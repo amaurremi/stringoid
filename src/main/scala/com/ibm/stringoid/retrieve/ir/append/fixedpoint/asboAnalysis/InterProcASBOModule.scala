@@ -193,8 +193,6 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
                 addEdge(sbUse, sbDef)
               case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)      =>
                 addNode(inv.getDef)
-              case inv: SSAAbstractInvokeInstruction if hasStringReturnType(inv) =>
-                addNode(inv.getDef)
 
               // inter-procedural
               case inv: SSAAbstractInvokeInstruction                             =>

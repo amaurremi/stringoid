@@ -116,8 +116,8 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
           val predNodes = acyclicCFG getPredNodes bb
           val factAsbos = (predNodes flatMap { resultMap(_).keys }) ++ getUsedFacts(bb).iterator
           val node      = bb.getNode
-          val cgNode = CallGraphNode(node)
-          val asbos = getAsbosForNode(bb)
+          val cgNode    = CallGraphNode(node)
+          val asbos     = getAsbosForNode(bb)
           def getId(vn: ValueNumber) = createIdentifier(vn, cgNode)
 
           factAsbos foreach {
