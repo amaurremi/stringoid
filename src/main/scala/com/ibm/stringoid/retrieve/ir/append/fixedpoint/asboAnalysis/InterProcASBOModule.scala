@@ -120,11 +120,13 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
 
   protected def getArgsAndParams(
     inv: SSAAbstractInvokeInstruction
-  ): Seq[(ValueNumber, ValueNumber)] =
-    0 until inv.getNumberOfParameters map {
+  ): Seq[(ValueNumber, ValueNumber)] = {
+    val firstArg = if (inv.isStatic) 0 else 1 // exclusing `this`
+    firstArg until inv.getNumberOfParameters map {
       argIndex =>
         (inv getUse argIndex, argIndex + 1)
     }
+  }
 
   class InterProcAsboFixedPointSolver(numbering: AsboMapping) extends AsboFixedPointSolver(numbering) {
 
@@ -134,113 +136,121 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
 //    override def getUses(id: Identifier): Iterator[SSAInstruction] =
 //      CallGraphNode(id.node).getDu getUses id.vn
 
-      override def getDef(id: Identifier): SSAInstruction = id.node.getDU getDef id.vn
+    override def getDef(id: Identifier): SSAInstruction = id.node.getDU getDef id.vn
 
-      override def getUses(id: Identifier): Iterator[SSAInstruction] = id.node.getDU getUses id.vn
+    override def getUses(id: Identifier): Iterator[SSAInstruction] = id.node.getDU getUses id.vn
 
-      // We need to store information about which identifiers are returned and which are passed into calls.
-      val idInfo = mutable.Map.empty[Identifier, IdInfo] withDefaultValue IdInfo()
+    // We need to store information about which identifiers are returned and which are passed into calls.
+    val idInfo = mutable.Map.empty[Identifier, IdInfo] withDefaultValue IdInfo()
 
-      case class IdInfo(isRet: Boolean = false, isArg: Boolean = false)
+    case class IdInfo(isRet: Boolean = false, isArg: Boolean = false)
 
-      private[this] def setIdInfoArg(id: Identifier): Unit = {
-        idInfo(id) = idInfo(id).copy(isArg = true)
-      }
+    private[this] def setIdInfoArg(id: Identifier): Unit = {
+      idInfo(id) = idInfo(id).copy(isArg = true)
+    }
 
-      private[this] def setIdInfoRet(id: Identifier): Unit = {
-        idInfo(id) = idInfo(id).copy(isRet = true)
-      }
+    private[this] def setIdInfoRet(id: Identifier): Unit = {
+      idInfo(id) = idInfo(id).copy(isRet = true)
+    }
 
-      lazy val valueNumberGraph: Graph[Identifier] = {
-        // 1 = new SB();
-        // 2 = 1.append(3);
-        // ...
-        // 4 = 1.append(5);
-        // For this case, we need to add three nodes that contain VN 1, and the nodes need to be connected with each other.
-        // Since append is mutable (it changes 1's object) we cannot connect the nodes to the first node where 1 is defined.
-        // So we need to remember the previous instruction that appended something to 1, which is the purpose of this map.
-        // todo test this case in unit tests
+    lazy val valueNumberGraph: Graph[Identifier] = {
+      // 1 = new SB();
+      // 2 = 1.append(3);
+      // ...
+      // 4 = 1.append(5);
+      // For this case, we need to add three nodes that contain VN 1, and the nodes need to be connected with each other.
+      // Since append is mutable (it changes 1's object) we cannot connect the nodes to the first node where 1 is defined.
+      // So we need to remember the previous instruction that appended something to 1, which is the purpose of this map.
+      // todo test this case in unit tests
 
-        val graph = new SlowSparseNumberedGraph[Identifier](1)
-        acyclicCFG.iterator foreach {
-          bb =>
-            val node = bb.getNode
-            def addNode(vn: ValueNumber, n: CGNode = node) {
-              val id = createIdentifier(vn, CallGraphNode(n))
-              if (!(graph containsNode id)) graph addNode id
-            }
-            def addEdge(sourceVn: ValueNumber, targetVn: ValueNumber, sourceNode: CGNode = node, targetNode: CGNode = node) {
-              addNode(sourceVn, sourceNode)
-              addNode(targetVn, targetNode)
-              graph addEdge(
-                createIdentifier(sourceVn, CallGraphNode(sourceNode)),
-                createIdentifier(targetVn, CallGraphNode(targetNode)))
-            }
+      val graph = new SlowSparseNumberedGraph[Identifier](1)
+      acyclicCFG.iterator foreach {
+        bb =>
+          val node = bb.getNode
+          def addNode(vn: ValueNumber, n: CGNode = node) {
+            val id = createIdentifier(vn, CallGraphNode(n))
+            if (!(graph containsNode id)) graph addNode id
+          }
+          def addEdge(sourceVn: ValueNumber, targetVn: ValueNumber, sourceNode: CGNode = node, targetNode: CGNode = node) {
+            addNode(sourceVn, sourceNode)
+            addNode(targetVn, targetNode)
+            graph addEdge(
+              createIdentifier(sourceVn, CallGraphNode(sourceNode)),
+              createIdentifier(targetVn, CallGraphNode(targetNode)))
+          }
 
-            bb.getLastInstruction match {
-              // intra-procedural
-              case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv)     =>
-                getDefs(inv) foreach {
-                  vn =>
-                    addNode(vn)
-                }
-              case inv: SSAAbstractInvokeInstruction if isSbAppend(inv)          =>
-                val (firstDef, secondDef) = getSbAppendDefs(inv) // in 1 = 2.append(3), 1 is firstDef and 2 is secondDef
-                addEdge(secondDef, firstDef)
-              case inv: SSAAbstractInvokeInstruction if isSbTostring(inv) => // in 1 = 2.toString, 1 is sbDef and 2 is sbUse
-                val sbDef = getSbToStringDef(inv)
-                val sbUse = getSbToStringUse(inv)
-                addEdge(sbUse, sbDef)
-              case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)      =>
-                addNode(inv.getDef)
+          bb.getLastInstruction match {
+            // intra-procedural
+            case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv)     =>
+              getDefs(inv) foreach {
+                vn =>
+                  addNode(vn)
+              }
+            case inv: SSAAbstractInvokeInstruction if isSbAppend(inv)          =>
+              val (firstDef, secondDef) = getSbAppendDefs(inv) // in 1 = 2.append(3), 1 is firstDef and 2 is secondDef
+              addEdge(secondDef, firstDef)
+            case inv: SSAAbstractInvokeInstruction if isSbTostring(inv) => // in 1 = 2.toString, 1 is sbDef and 2 is sbUse
+              val sbDef = getSbToStringDef(inv)
+              val sbUse = getSbToStringUse(inv)
+              addEdge(sbUse, sbDef)
+            case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)      =>
+              addNode(inv.getDef)
 
-              // inter-procedural
-              case inv: SSAAbstractInvokeInstruction                             =>
-                val targets       = callGraph getSuccNodes node
-                val argsAndParams = getArgsAndParams(inv)
+            // inter-procedural
+            case inv: SSAAbstractInvokeInstruction                             =>
+              val targets       = callGraph getSuccNodes node
+              val argsAndParams = getArgsAndParams(inv)
+              for {
+                callTarget   <- targets
+                if calls(bb, callTarget)
+                (arg, param) <- argsAndParams
+              } {
+                setIdInfoArg(createIdentifier(arg, CallGraphNode(node)))
+                addEdge(arg, param, sourceNode = node, targetNode = callTarget)
+              }
+            case ret: SSAReturnInstruction if ret.getResult > 0                 =>
+              val retResult = ret.getResult
+              setIdInfoRet(createIdentifier(retResult, CallGraphNode(node)))
                 for {
-                  callTarget   <- targets
-                  if inv.getDeclaredTarget == callTarget.getMethod.getReference
-                  (arg, param) <- argsAndParams
+                  callBlock    <- getCallBlocks(bb)
+                  callInstr     = callBlock.getLastInstruction.asInstanceOf[SSAAbstractInvokeInstruction]
+                  mutable       = isMutable(callInstr.getDeclaredResultType)
+                  if mutable || hasPrimitiveReturnType(callInstr) || hasStringReturnType(callInstr)
                 } {
-                  setIdInfoArg(createIdentifier(arg, CallGraphNode(node)))
-                  addEdge(arg, param, sourceNode = node, targetNode = callTarget)
+                  addEdge(retResult, callInstr.getDef, node, callBlock.getNode)
                 }
-              case ret: SSAReturnInstruction if ret.getResult > 0                 =>
-                val retResult = ret.getResult
-                setIdInfoRet(createIdentifier(retResult, CallGraphNode(node)))
-                  for {
-                    callBlock    <- getCallBlocks(bb)
-                    callInstr     = callBlock.getLastInstruction.asInstanceOf[SSAAbstractInvokeInstruction]
-                    mutable       = isMutable(callInstr.getDeclaredResultType)
-                    if mutable || hasPrimitiveReturnType(callInstr) || hasStringReturnType(callInstr)
-                  } {
-                    addEdge(retResult, callInstr.getDef, node, callBlock.getNode)
-                  }
-              case _ =>
-              // do  nothing
-            }
-        }
-
-        // add phi edges, since CFG does not contain phi instructions
-        // todo or does it?
-        for {
-          node   <- callGraph
-          instr  <- node.getIR.iteratePhis
-          phi    = instr.asInstanceOf[SSAPhiInstruction]
-          defId  = createIdentifier(phi.getDef, CallGraphNode(node))
-          use    <- getPhiUses(phi)
-          useId  = createIdentifier(use, CallGraphNode(node))
-        } {
-          if (!(graph containsNode defId)) graph addNode defId
-          if (!(graph containsNode useId)) graph addNode useId
-          graph addEdge (useId, defId)
-        }
-
-        graph
+            case _ =>
+            // do  nothing
+          }
       }
 
-      class InterStringBuilderTransferFunctions extends StringBuilderTransferFunctions {
+      // add phi edges, since CFG does not contain phi instructions
+      // todo or does it?
+      for {
+        node   <- callGraph
+        instr  <- node.getIR.iteratePhis
+        phi    = instr.asInstanceOf[SSAPhiInstruction]
+        defId  = createIdentifier(phi.getDef, CallGraphNode(node))
+        use    <- getPhiUses(phi)
+        useId  = createIdentifier(use, CallGraphNode(node))
+      } {
+        if (!(graph containsNode defId)) graph addNode defId
+        if (!(graph containsNode useId)) graph addNode useId
+        graph addEdge (useId, defId)
+      }
+
+      graph
+    }
+
+    /* does the invoke instruction in `bb` call the target node? */
+    private[this] def calls(bb: BB, target: CGNode): Boolean =
+    acyclicCFG getSuccNodes bb exists {
+      succ =>
+        succ.getNode.getMethod.getReference == target.getMethod.getReference
+    }
+
+
+    class InterStringBuilderTransferFunctions extends StringBuilderTransferFunctions {
 
         def getNodeTransferFunction(id: Identifier): UnaryOperator[BitVectorVariable] = {
           getDef(id) match {
@@ -248,17 +258,6 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
               createOperator(id)
             case instr if pointsToPhi(id) && !isPhiDef(id)          =>
               createOperator(id)
-//            case _ if isParameter(id)                               =>
-//              val tpe = getTypeAbstraction(id.node.getIR, valNum(id))
-//              if (isMutable(tpe.getTypeReference))
-//                createOperator(id)
-//              else
-//                BitVectorIdentity.instance
-//            case instr: SSAAbstractInvokeInstruction
-//              if isMutable(instr.getDeclaredResultType) &&
-//                !isSbAppend(instr) &&
-//                !isSbConstructorWithStringParam(instr)              =>
-//              createOperator(id)
             case _ if idInfo(id).isRet || idInfo(id).isArg          =>
               createOperator(id)
             case _                                                  =>

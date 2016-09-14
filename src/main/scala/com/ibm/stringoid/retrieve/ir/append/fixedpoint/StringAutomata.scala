@@ -29,6 +29,8 @@ trait StringAutomata extends Nodes {
 
   def emptyAuto = Automaton.empty[StringPart]
 
+  def epsilonAuto = emptyAuto + Seq.empty[StringPart]
+
   def newAuto(sp: StringPart): StringPartAutomaton = emptyAuto + Seq(sp)
 
   def merge(sps: Iterator[StringPartAutomaton]): StringPartAutomaton = {

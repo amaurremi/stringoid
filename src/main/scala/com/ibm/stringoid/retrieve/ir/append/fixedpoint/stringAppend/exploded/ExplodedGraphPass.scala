@@ -210,7 +210,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
     val argAsbos  = idToAsbo getOrElse (createIdentifier(argVn, node), Set(createAsbo(argVn, node)))
     val argAutos  = for {
       predNode <- predNodes
-      argAsbo  <- argAsbos
+      argAsbo <- argAsbos
     } yield resultMap(predNode)(argAsbo)
     val argAutomaton = merge(argAutos)
 
