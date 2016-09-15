@@ -52,15 +52,18 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
       /* INTRA procedural*/
       it("computes URLs in CHA IR analysis") {
         val file = Paths.get("src/test/java/intraproc")
-        val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
+        val analysisConfig = AnalysisConfig(irSource = Cha, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
         run(analysisConfig)
       }
 
       /* INTER procedural */
       it("computes URLs in inter-procedural analysis") {
-        val file = Paths.get("src/test/java/interproc")
-        val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
-        run(analysisConfig)
+        val fileInter = Paths.get("src/test/java/interproc")
+        val config    = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = fileInter, outputUrls = true)
+        run(config)
+        val fileIntra = Paths.get("src/test/java/interproc")
+        val analysisConfigIntra = config.copy(file = fileIntra)
+        run(analysisConfigIntra)
       }
     } else {
       println("No tests run: test running option disabled")
@@ -100,7 +103,7 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
                 case (methods, url) =>
                   url == expectedUrl && (interProc || (methods contains method.toString))
               }
-              assert(hasUrl, s"(URL '$expectedUrl' should be contained in result)")
+              assert(hasUrl, s"(URL '$expectedUrl' should be contained in result.\nFound URLs: ${actualUrls.unzip._2.mkString("\n")})")
               println(s"URL '$expectedUrl' found in $method.")
           }
       }
