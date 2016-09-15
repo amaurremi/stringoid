@@ -27,7 +27,7 @@ trait StringAutomata extends Nodes {
 
   type StringPartAutomaton = Automaton[StringPart]
 
-  def epsilonAuto = Automaton.empty[StringPart] + Seq.empty[StringPart]
+  def epsilonAuto = Automaton(Seq.empty[StringPart])
 
   def newAuto(sp: StringPart): StringPartAutomaton = epsilonAuto + Seq(sp)
 

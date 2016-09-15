@@ -61,7 +61,7 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
         val fileInter = Paths.get("src/test/java/interproc")
         val config    = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = fileInter, outputUrls = true)
         run(config)
-        val fileIntra = Paths.get("src/test/java/interproc")
+        val fileIntra = Paths.get("src/test/java/intraproc")
         val analysisConfigIntra = config.copy(file = fileIntra)
         run(analysisConfigIntra)
       }
