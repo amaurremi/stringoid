@@ -147,7 +147,7 @@ class AnalysisScope(
 
     def addSourceDependency(directory: String, analysisScope: Atom = Application) {
       loadersByName.put(JavaSourceAnalysisScope.SOURCE.getName, JavaSourceAnalysisScope.SOURCE)
-      setLoaderImpl(JavaSourceAnalysisScope.SOURCE, "com.ibm.wala.cast.java.translator.jdt.ejc.EJCSourceLoaderImpl")
+      setLoaderImpl(JavaSourceAnalysisScope.SOURCE, "com.ibm.wala.cast.java.translator.jdt.ecj.ECJSourceLoaderImpl")
       initSynthetic(JavaSourceAnalysisScope.SOURCE)
       //    debug("Binary: " + directory);
       val sd = getFile(directory)
