@@ -11,6 +11,7 @@ import com.ibm.wala.ipa.cfg.{ExceptionPrunedCFG, PrunedCFG}
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction
 import com.ibm.wala.ssa.analysis.{ExplodedControlFlowGraph, IExplodedBasicBlock}
 import com.ibm.wala.types.FieldReference
+import scala.collection.JavaConversions._
 
 trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOModule with BackEdges {
 
@@ -56,8 +57,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
 
     override lazy val cfg = {
       val withCycles = ExplodedControlFlowGraph.make(node.getIr)
-      val noCycles   = PrunedCFG.make(withCycles, new BackEdgeFilter(withCycles))
-      ExceptionPrunedCFG.make(noCycles)
+      PrunedCFG.make(withCycles, new BackEdgeFilter(withCycles))
     }
 
     override protected def transferFunctions: StringAppendTransferFunctions = new IntraProcStringAppendTransferFunctions

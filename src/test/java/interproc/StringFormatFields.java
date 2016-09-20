@@ -1,4 +1,4 @@
-package intraproc;
+package interproc;
 
 public class StringFormatFields {
 

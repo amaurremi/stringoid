@@ -67,6 +67,7 @@ abstract class FixedPointAppendIrRetriever(
           val strings = for {
             automaton <- (fieldToAutomaton get instr.getDeclaredField).toSeq
             seq       <- automaton.iterator
+            if seq.nonEmpty
           } yield seq.head
           strings filter {
             case StaticFieldPart(str) => isUrlPrefix(str)
