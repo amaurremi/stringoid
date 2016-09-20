@@ -7,7 +7,7 @@ import com.ibm.wala.ssa.{DefUse, IR}
 
 trait Nodes {
 
-  val DEBUG = true
+  val DEBUG = false
 
   type Identifier
 

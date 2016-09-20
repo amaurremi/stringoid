@@ -4,14 +4,15 @@ import com.ibm.stringoid.retrieve.UrlCheck._
 import com.ibm.stringoid.retrieve.ir._
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.IntraProcASBOModule
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded.BackEdges
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.fixpoint.UnaryOperator
-import com.ibm.wala.ipa.cfg.ExceptionPrunedCFG
+import com.ibm.wala.ipa.cfg.{ExceptionPrunedCFG, PrunedCFG}
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction
 import com.ibm.wala.ssa.analysis.{ExplodedControlFlowGraph, IExplodedBasicBlock}
 import com.ibm.wala.types.FieldReference
 
-trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOModule {
+trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOModule with BackEdges {
 
   /**
     * Get the string concatenation results.
@@ -53,7 +54,11 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
 
     override lazy val initialMapping: AsboMap = initialAtaForNode(node)
 
-    override lazy val cfg = ExceptionPrunedCFG.make(ExplodedControlFlowGraph.make(node.getIr))
+    override lazy val cfg = {
+      val withCycles = ExplodedControlFlowGraph.make(node.getIr)
+      val noCycles   = PrunedCFG.make(withCycles, new BackEdgeFilter(withCycles))
+      ExceptionPrunedCFG.make(noCycles)
+    }
 
     override protected def transferFunctions: StringAppendTransferFunctions = new IntraProcStringAppendTransferFunctions
 
