@@ -8,7 +8,6 @@ import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.StringFormat
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ssa._
-import com.ibm.wala.types.FieldReference
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
@@ -28,7 +27,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     */
   private[this] val resultImmutable = mutable.Map.empty[ASBO, StringPartAutomaton] withDefaultValue epsilonAuto
 
-  def stringAppends(fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
+  def stringAppends(fieldToAutomaton: FieldToAutomaton): StringPartAutomaton = {
     // concatenation URLs
     val filteredAutomata: Iterator[StringPartAutomaton] = TimeResult("filter URL automata", getResult map {
       auto =>

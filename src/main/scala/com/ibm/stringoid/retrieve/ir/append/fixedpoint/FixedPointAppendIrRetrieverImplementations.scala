@@ -8,7 +8,6 @@ import com.ibm.stringoid.retrieve.ir.IrNodesModule.{CgIntraProcIrNodes, ChaIntra
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded.{CFG, ExplodedGraphPass, ExplodedStringAppendModule}
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.{InterProcStringAppendModule, IntraProcStringAppendModule}
 import com.ibm.stringoid.util.TimeResult
-import com.ibm.wala.types.FieldReference
 
 import scala.collection.JavaConversions._
 import scala.collection.breakOut
@@ -28,7 +27,7 @@ object FixedPointAppendIrRetrieverImplementations {
     extends FixedPointAppendIrRetriever(config)
     with InterProcIrNodes {
 
-    def stringAppends(fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton
+    def stringAppends(fieldToAutomaton: FieldToAutomaton): StringPartAutomaton
 
     override def getAllNodes: Iterator[CallGraphNode] =
       callGraph.iterator() map CallGraphNode.apply

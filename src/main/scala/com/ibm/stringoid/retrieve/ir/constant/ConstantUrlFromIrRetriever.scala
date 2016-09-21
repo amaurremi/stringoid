@@ -15,7 +15,7 @@ import com.ibm.wala.types.FieldReference
 final class ConstantUrlFromIrRetriever(override val config: AnalysisConfig) extends ChaIntraProcIrNodes {
 
 
-  override def fieldToAutomaton: Map[FieldReference, StringPartAutomaton] =
+  override def fieldToAutomaton: scala.collection.mutable.Map[FieldReference, StringPartAutomaton] =
     throw new UnsupportedOperationException("field to automaton not needed in constant analysis")
 
   override def getUrlsWithSources: UrlsWithSources = {

@@ -8,7 +8,6 @@ import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.dataflow.graph._
 import com.ibm.wala.fixpoint.{IVariable, UnaryOperator}
 import com.ibm.wala.ssa._
-import com.ibm.wala.types.FieldReference
 import com.ibm.wala.util.graph.NumberedGraph
 import com.ibm.wala.util.graph.impl.NodeWithNumber
 
@@ -46,7 +45,7 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
 
   abstract class StringAppendFixedPointSolver(
     vnToAsbo: Map[Identifier, Set[ASBO]],
-    fieldToAutomaton: Map[FieldReference, StringPartAutomaton]
+    fieldToAutomaton: FieldToAutomaton
   ) {
 
     type BB

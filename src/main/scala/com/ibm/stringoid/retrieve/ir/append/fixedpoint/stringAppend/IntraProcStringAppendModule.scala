@@ -7,18 +7,16 @@ import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.IntraProcASB
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded.BackEdges
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.fixpoint.UnaryOperator
-import com.ibm.wala.ipa.cfg.{ExceptionPrunedCFG, PrunedCFG}
+import com.ibm.wala.ipa.cfg.PrunedCFG
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction
 import com.ibm.wala.ssa.analysis.{ExplodedControlFlowGraph, IExplodedBasicBlock}
-import com.ibm.wala.types.FieldReference
-import scala.collection.JavaConversions._
 
 trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOModule with BackEdges {
 
   /**
     * Get the string concatenation results.
     */
-  def stringAppends(node: Node, fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
+  def stringAppends(node: Node, fieldToAutomaton: FieldToAutomaton): StringPartAutomaton = {
     val idToAsbo: Map[ValueNumber, Set[ASBO]] = idToAsboForNode(node)
     val solver: IntraProcStringAppendSolver = getAppendSolver(node, idToAsbo, fieldToAutomaton)
     val automata = stringAppendsForSolver(solver)
@@ -42,13 +40,13 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
   def getAppendSolver(
     node: Node,
     vnToAsbo: Map[Identifier, Set[ASBO]],
-    fieldToAutomaton: Map[FieldReference, StringPartAutomaton]
+    fieldToAutomaton: FieldToAutomaton
   ) = new IntraProcStringAppendSolver(node, vnToAsbo, fieldToAutomaton)
 
   class IntraProcStringAppendSolver(
     node: Node,
     idToAsbo: Map[Identifier, Set[ASBO]],
-    fieldToAutomaton: Map[FieldReference, StringPartAutomaton]
+    fieldToAutomaton: FieldToAutomaton
   ) extends StringAppendFixedPointSolver(idToAsbo, fieldToAutomaton) {
 
     override type BB = IExplodedBasicBlock

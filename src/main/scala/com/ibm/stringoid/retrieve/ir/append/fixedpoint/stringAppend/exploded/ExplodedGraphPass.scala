@@ -8,7 +8,6 @@ import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.StringFormat
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ssa._
-import com.ibm.wala.types.FieldReference
 import com.ibm.wala.util.graph.traverse.Topological
 
 import scala.collection.JavaConversions._
@@ -42,7 +41,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
           createAutomaton(CallGraphNode(asbo.identifier.node), asbo.identifier)
     })
 
-  def stringAppends(fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
+  def stringAppends(fieldToAutomaton: FieldToAutomaton): StringPartAutomaton = {
     // concatenation URLs
     val filteredAutomata: Iterator[StringPartAutomaton] = TimeResult("filter URL automata", getResult map {
       auto =>
@@ -126,7 +125,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
               bb.getLastInstruction match {
 
                 // StringBuilder.append(str)
-                case instr: SSAAbstractInvokeInstruction if isSbAppend(instr) =>
+                case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                     =>
                   val asbos = idToAsbo(getId(getFirstSbAppendDef(instr)))
                   append(asbos, getAppendArgument(instr), bb, factAsbo)
 
@@ -135,8 +134,11 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
                   val asbos = idToAsbo(getId(getSbConstructorDef(instr)))
                   append(asbos, getSbConstructorArgument(instr), bb, factAsbo)
 
+                case instr: SSAFieldAccessInstruction                                             =>
+                  ???
+
                 // String.format
-                case instr: SSAAbstractInvokeInstruction if isStringFormat(instr) =>
+                case instr: SSAAbstractInvokeInstruction if isStringFormat(instr)                 =>
                   val argValnums = getStringFormatArgs(instr, cgNode) flatMap {
                     vn =>
                       idToAsbo(createIdentifier(vn, cgNode))
@@ -175,7 +177,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
                 // inter-procedural call-to-start and call-to-return edges:
                 // parameter substitution in call + propagate facts down to return node
                 // todo test dynamic dispatch, e.g. merge
-                case _ =>
+                case _                                                                            =>
                   propagateIdentity(bb, factAsbo)
               }
           }

@@ -13,6 +13,7 @@ import com.ibm.wala.types.FieldReference
 import com.ibm.wala.util.debug.UnimplementedError
 
 import scala.collection.JavaConversions._
+import scala.collection.mutable
 
 abstract class FixedPointAppendIrRetriever(
   override val config: AnalysisConfig
@@ -33,8 +34,8 @@ abstract class FixedPointAppendIrRetriever(
   /**
     * collect all assignments to static fields into map from field to sum-automaton
     */
-  override lazy val fieldToAutomaton: Map[FieldReference, StringPartAutomaton] =
-    TimeResult("field-to-automaton", getAllNodes.foldLeft(Map.empty[FieldReference, StringPartAutomaton]) {
+  override lazy val fieldToAutomaton: FieldToAutomaton =
+    TimeResult("field-to-automaton", getAllNodes.foldLeft(mutable.Map.empty[FieldReference, StringPartAutomaton]) {
       case (oldMap, node) if hasIr(node) =>
         val ir = node.getIr
         ir.iterateNormalInstructions().foldLeft(oldMap) {

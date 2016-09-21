@@ -8,7 +8,9 @@ import seqset.regular.Automaton
 
 trait StringAutomata extends Nodes {
 
-  def fieldToAutomaton: Map[FieldReference, StringPartAutomaton]
+  type FieldToAutomaton = scala.collection.mutable.Map[FieldReference, StringPartAutomaton]
+
+  def fieldToAutomaton: FieldToAutomaton
 
   def createAutomaton(node: Node, id: Identifier): StringPartAutomaton =
     node.getDu getDef valNum(id) match {

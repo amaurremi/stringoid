@@ -11,14 +11,13 @@ import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.cfg.{BasicBlockInContext, ExplodedInterproceduralCFG}
 import com.ibm.wala.ssa._
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
-import com.ibm.wala.types.FieldReference
 
 import scala.collection.JavaConversions._
 import scala.collection.breakOut
 
 trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOModule {
 
-  def stringAppends(fieldToAutomaton: Map[FieldReference, StringPartAutomaton]): StringPartAutomaton = {
+  def stringAppends(fieldToAutomaton: FieldToAutomaton): StringPartAutomaton = {
     val solver = new InterProcStringAppendSolver(identifierToAsbo, fieldToAutomaton)
     val automata = stringAppendsForSolver(solver)
     val filteredAutomata: Iterator[StringPartAutomaton] = TimeResult("filter URL automata", automata map {
@@ -40,7 +39,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
 
   class InterProcStringAppendSolver(
     idToAsbo: Map[Identifier, Set[ASBO]],
-    fieldToAutomaton: Map[FieldReference, StringPartAutomaton]
+    fieldToAutomaton: FieldToAutomaton
   ) extends StringAppendFixedPointSolver(idToAsbo, fieldToAutomaton) {
 
     type BB = BasicBlockInContext[IExplodedBasicBlock]
