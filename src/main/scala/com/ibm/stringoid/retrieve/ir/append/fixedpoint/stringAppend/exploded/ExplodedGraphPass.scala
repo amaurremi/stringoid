@@ -19,17 +19,6 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
 
   private[this] val GRAPH_PASSES = 2
 
-//  /**
-//    * Analysis result that maps exploded nodes to automata. This maps tracks only mutable ASBOs, i.e.
-//    * ASBOs corresponding to StringBuilders and StringBuffers.
-//    */
-//  private[this] val resultMutable = mutable.Map.empty[ExplodedNode, StringPartAutomaton] withDefaultValue StringPartAutomaton()
-//
-//  /**
-//    * Analysis result that maps immutable ASBOs to automata.
-//    */
-//  private[this] val resultImmutable = mutable.Map.empty[ASBO, StringPartAutomaton] withDefaultValue StringPartAutomaton()
-
   // todo is it good to make the outer map mutable and inner immutable?
   val resultMap: mutable.Map[BB, Map[ASBO, StringPartAutomaton]] = initialResultMap
 
@@ -119,7 +108,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
 
     (0 until GRAPH_PASSES) foreach { _ =>
 
-      val topOrder = Topological.makeTopologicalIter(acyclicCFG)
+      val topOrder = Topological.makeTopologicalIter(acyclicCFG) // todo avoid recalculating this?
       topOrder foreach {
         bb: BB =>
 
