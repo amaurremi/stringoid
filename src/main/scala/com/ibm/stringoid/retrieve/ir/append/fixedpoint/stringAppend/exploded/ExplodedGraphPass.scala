@@ -237,7 +237,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
     if (factInArgs || sfAsbo == factAsbo) {
       val sfArgSeqs: Seq[Seq[StringPart]] = reorderStringFormatArgs(instr, cgNode)
       val automaton = sfArgSeqs.foldLeft(epsilonAuto) {
-        case (prevAuto, sfArgs) =>
+        case (prevAuto, sfArgs) if sfArgs.nonEmpty =>
           val nextAuto = sfArgs.tail.foldLeft(newAuto(sfArgs.head)) {
             case (resultAutomaton, stringFormatArg) =>
               stringFormatArg match {
@@ -253,6 +253,8 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
               }
           }
           prevAuto | nextAuto
+        case (prevAuto, _)                         =>
+          prevAuto
       }
       acyclicCFG getSuccNodes bb foreach {
         succ =>

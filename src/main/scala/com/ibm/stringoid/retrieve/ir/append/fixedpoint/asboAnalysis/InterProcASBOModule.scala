@@ -33,7 +33,7 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
   protected lazy val identifierToAsbo: Map[Identifier, Set[ASBO]] =
     TimeResult("ID-to-ASBO map", {
       val solver = new InterProcAsboFixedPointSolver(abstractObjectNumbering)
-      val result = getResult(solver)
+      val result = TimeResult("running solver", getResult(solver))
       (for {
         id <- solver.valueNumberGraph
         intSet <- Option((result getOut id).getValue)
@@ -131,12 +131,6 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
 
   class InterProcAsboFixedPointSolver(numbering: AsboMapping) extends AsboFixedPointSolver(numbering) {
 
-//    override def getDef(id: Identifier): SSAInstruction =
-//      CallGraphNode(id.node).getDu getDef id.vn
-//
-//    override def getUses(id: Identifier): Iterator[SSAInstruction] =
-//      CallGraphNode(id.node).getDu getUses id.vn
-
     override def getDef(id: Identifier): SSAInstruction = id.node.getDU getDef id.vn
 
     override def getUses(id: Identifier): Iterator[SSAInstruction] = id.node.getDU getUses id.vn
@@ -154,7 +148,7 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
       idInfo(id) = idInfo(id).copy(isRet = true)
     }
 
-    lazy val valueNumberGraph: Graph[Identifier] = {
+    lazy val valueNumberGraph: Graph[Identifier] = TimeResult("value number graph", {
       // 1 = new SB();
       // 2 = 1.append(3);
       // ...
@@ -243,7 +237,7 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
       }
 
       graph
-    }
+    })
 
     /* does the invoke instruction in `bb` call the target node? */
     private[this] def calls(bb: BB, target: CGNode): Boolean =

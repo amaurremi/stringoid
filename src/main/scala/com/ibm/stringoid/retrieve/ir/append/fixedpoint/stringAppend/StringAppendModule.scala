@@ -268,7 +268,7 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
             rhsMap
           else {
             sfArgSeqs.foldLeft(rhsMap) {
-              case (m, sfArgs) =>
+              case (m, sfArgs) if sfArgs.nonEmpty =>
                 val sfTail = sfArgs.tail
                 val (updNewMap, automaton) = sfTail.foldLeft(m, newAuto(sfArgs.head)) {
                   case ((updM, resultAutomaton), stringFormatArg) =>
@@ -285,6 +285,9 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
                 // the ASBO corresponding to String.format can't be already contained in rhsMap,
                 // so we just add the result to the map
                 updNewMap + (createAsbo(instr.getDef, node) -> automaton)
+
+              case (m, _)                         =>
+                m
             }
           }
         }

@@ -1,7 +1,6 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded
 
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.InterProcASBOModule
-import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.cfg.{ExplodedInterproceduralCFG, PrunedCFG}
 import com.ibm.wala.util.collections.IndiscriminateFilter
@@ -33,5 +32,5 @@ trait CFG extends InterProcASBOModule {
     def getEntryPoints: Iterable[BB] = callGraph.getEntrypointNodes map getEntry
   }
 
-  lazy val acyclicCFG: AcyclicInterproceduralCFG = TimeResult("acyclic CFG", new AcyclicInterproceduralCFG)
+  lazy val acyclicCFG: AcyclicInterproceduralCFG = new AcyclicInterproceduralCFG
 }
