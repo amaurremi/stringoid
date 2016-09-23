@@ -161,7 +161,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
           if (factInArgs || sfAsbo == factAsbo) {
             val sfArgSeqs: Seq[Seq[StringPart]] = reorderStringFormatArgs(instr, node)
             val automaton = sfArgSeqs.foldLeft(epsilonAuto) {
-              case (prevAuto, sfArgs) =>
+              case (prevAuto, sfArgs) if sfArgs.nonEmpty =>
                 val nextAuto = sfArgs.tail.foldLeft(newAuto(sfArgs.head)) {
                   case (resultAutomaton, stringFormatArg) =>
                     stringFormatArg match {
@@ -177,6 +177,8 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
                     }
                 }
                 prevAuto | nextAuto
+              case (prevAuto, _)                         =>
+                prevAuto
             }
             acyclicCFG getSuccNodes bb foreach {
               succ =>
