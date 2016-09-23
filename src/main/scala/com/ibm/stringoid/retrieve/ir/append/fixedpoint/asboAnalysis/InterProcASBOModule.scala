@@ -229,7 +229,9 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
       // todo or does it?
       for {
         node   <- callGraph
-        instr  <- node.getIR.iteratePhis
+        ir      = node.getIR
+        if Option(ir).isDefined
+        instr  <- ir.iteratePhis
         phi    = instr.asInstanceOf[SSAPhiInstruction]
         defId  = createIdentifier(phi.getDef, CallGraphNode(node))
         use    <- getPhiUses(phi)
