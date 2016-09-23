@@ -159,7 +159,8 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
       // todo test this case in unit tests
 
       val graph = new SlowSparseNumberedGraph[Identifier](1)
-      acyclicCFG.iterator foreach {
+
+      TimeResult("acyclic cfg iterator", acyclicCFG.iterator) foreach {
         bb =>
           val node = bb.getNode
           def addNode(vn: ValueNumber, n: CGNode = node) {
