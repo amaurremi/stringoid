@@ -52,6 +52,15 @@
     adb devices
 
 
+## Comparison with specifications
+
+- Blogger (com.google.android.apps.blogger) https://api.apis.guru/v2/specs/googleapis.com/blogger/v3/swagger.json
+- Instagram (com.instagram.android) https://api.apis.guru/v2/specs/instagram.com/1.0.0/swagger.json
+- GitHub (com.gh4a) https://api.apis.guru/v2/specs/github.com/v3/swagger.json
+- Slack (com.Slack) https://api.apis.guru/v2/specs/slack.com/1.0.0/swagger.json
+- Trello (com.trello) https://api.apis.guru/v2/specs/trello.com/1.0/swagger.json
+
+
 ## Apps to test:
 Lep's World (361) https://archive.org/download/playdrone-apk-46/at.nerbrothers.SuperJump-17.apk
 Xperia Z Live Wallpaper (1774) https://archive.org/download/playdrone-apk-d3/com.androidwasabi.livewallpaper.xperiaz-13.apk
