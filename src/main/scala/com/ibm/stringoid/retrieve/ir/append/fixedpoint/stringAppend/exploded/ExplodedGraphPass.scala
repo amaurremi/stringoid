@@ -73,13 +73,13 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
 
     val topOrder = TimeResult("CFG in topological order", Topological.makeTopologicalIter(acyclicCFG).toList)
     val size = acyclicCFG.size
+    if (DEBUG) {
+      println(s"CFG size: $size")
+      println("_" * 100)
+    }
 
     (0 until GRAPH_PASSES) foreach { graphPass =>
 
-      if (DEBUG) {
-        println(s"CFG size: $size")
-        println("_" * 100 + " (100%)")
-      }
       var iteration = 0
 
       topOrder foreach {
@@ -132,10 +132,10 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
               ()
           }
 
-          if (DEBUG && (iteration % (size / 100) == 0)) print(".")
+          if (DEBUG && size >= 100 && (iteration % (size / 100) == 0)) print(".")
       }
 
-      if (DEBUG) println(s"finished graph pass $graphPass out of $GRAPH_PASSES")
+      if (DEBUG) println(s"finished graph pass ${graphPass + 1} out of $GRAPH_PASSES")
     }
     resultMap.valuesIterator flatMap {
       _.valuesIterator
@@ -146,11 +146,16 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
     val predNodes = acyclicCFG getPredNodes bb
     val newMap    = predNodes map resultMap reduceLeftOption {
       (map1, map2) =>
-        val diffMap = map1 collect {
-          case (asbo, auto) if map2 contains asbo =>
-            asbo -> (map2(asbo) | auto)
+        val (smaller, bigger) = if (map1.size < map2.size) (map1, map2) else (map2, map1)
+        smaller.foldLeft(bigger) {
+          case (prevMap, (asbo, auto)) =>
+            prevMap get asbo match {
+              case Some(prevAuto) if prevAuto != auto =>
+                prevMap + (asbo -> (prevAuto | auto))
+              case _                                  =>
+                prevMap
+            }
         }
-        map1 ++ map2 ++ diffMap
     }
     resultMap(bb) = newMap getOrElse Map.empty[ASBO, StringPartAutomaton] withDefault defaultAsbo
   }
