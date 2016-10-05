@@ -13,24 +13,22 @@ import com.ibm.wala.util.graph.traverse.Topological
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
-// todo remove instructions from StringPartAutomaton!
-
 trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers with WorkListModule with IrUrlRetriever {
 
   private[this] val GRAPH_PASSES = 2
 
-  // todo is it good to make the outer map mutable and inner immutable?
   val resultMap: mutable.Map[BB, Map[ASBO, StringPartAutomaton]] = initialResultMap
 
   lazy val initialResultMap = mutable.Map.empty[BB, Map[ASBO, StringPartAutomaton]] withDefaultValue
-    (Map.empty[ASBO, StringPartAutomaton] withDefault {
-      asbo =>
-        val id = asbo.identifier
-        if (hasSbType(id.node, id.vn, getTypeAbstraction(id.node.getIR, id.vn)))
-          epsilonAuto
-        else
-          createAutomaton(CallGraphNode(asbo.identifier.node), asbo.identifier)
-    })
+    (Map.empty[ASBO, StringPartAutomaton] withDefault defaultAsbo)
+
+  def defaultAsbo(asbo: ASBO) = {
+    val id = asbo.identifier
+    if (hasSbType(id.node, id.vn, getTypeAbstraction(id.node.getIR, id.vn)))
+      epsilonAuto
+    else
+      createAutomaton(CallGraphNode(asbo.identifier.node), asbo.identifier)
+  }
 
   def stringAppends(fieldToAutomaton: FieldToAutomaton): StringPartAutomaton = {
     // concatenation URLs
@@ -71,39 +69,6 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
       id => Set(createAsbo(id.vn, CallGraphNode(id.node)))
     }
 
-  // todo repeated work with `getResult`
-  def getUsedFacts(bb: BB): Set[ASBO] = {
-    val node = CallGraphNode(bb.getNode)
-    bb.getLastInstruction match {
-      // StringBuilder.append(str)
-      case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                     =>
-        val sb   = idToAsbo(createIdentifier(getFirstSbAppendDef(instr), node))
-        val args = idToAsbo(createIdentifier(getAppendArgument(instr), node))
-        sb ++ args
-      // new StringBuilder(str)
-      case instr: SSAAbstractInvokeInstruction if isSbConstructorWithStringParam(instr) =>
-        val sb   = idToAsbo(createIdentifier(getSbConstructorDef(instr), node))
-        val args = idToAsbo(createIdentifier(getSbConstructorArgument(instr), node))
-        sb ++ args
-      // String.format
-      case instr: SSAAbstractInvokeInstruction if isStringFormat(instr)                 =>
-        val sf   = createAsbo(instr.getDef, node)
-        val args = getStringFormatArgs(instr, node) flatMap {
-          vn =>
-            idToAsbo(createIdentifier(vn, node))
-        }
-        Set(sf) ++ args
-      case instr: SSAFieldAccessInstruction                                             =>
-        val vn = instr getUse (if (instr.isStatic) 1 else 2)
-        if (vn > 0)
-          idToAsbo(createIdentifier(vn, node))
-        else
-          Set.empty[ASBO]
-      case _                                                                            =>
-        Set.empty[ASBO]
-    }
-  }
-
   private[this] def getResult: Iterator[StringPartAutomaton] = TimeResult("II analysis phase (computing automata)", {
 
     (0 until GRAPH_PASSES) foreach { _ =>
@@ -113,61 +78,56 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
         bb: BB =>
 
           val predNodes = acyclicCFG getPredNodes bb
-          val factAsbos = (predNodes flatMap {
-            resultMap(_).keys
-          }) ++ getUsedFacts(bb).iterator
-          val asbos = getAsbosForNode(bb)
-          val node = CallGraphNode(bb.getNode)
+          val asbos     = getAsbosForNode(bb)
+          val node      = CallGraphNode(bb.getNode)
           def getId(vn: ValueNumber) = {
             createIdentifier(vn, node)
           }
 
-          factAsbos foreach {
-            factAsbo =>
+          bb.getLastInstruction match {
 
-              bb.getLastInstruction match {
+            // StringBuilder.append(str)
+            case instr: SSAAbstractInvokeInstruction if isSbAppend(instr) =>
+              val asbos = idToAsbo(getId(getFirstSbAppendDef(instr)))
+              propagateIdentity(bb, asbos)
+              append(asbos, getAppendArgument(instr), bb)
 
-                // StringBuilder.append(str)
-                case instr: SSAAbstractInvokeInstruction if isSbAppend(instr) =>
-                  val asbos = idToAsbo(getId(getFirstSbAppendDef(instr)))
-                  append(asbos, getAppendArgument(instr), bb, factAsbo)
+            // new StringBuilder(str)
+            case instr: SSAAbstractInvokeInstruction if isSbConstructorWithStringParam(instr) =>
+              val asbos = Set(createAsbo(getSbConstructorDef(instr), node))
+              propagateIdentity(bb, asbos)
+              append(asbos, getSbConstructorArgument(instr), bb)
 
-                // new StringBuilder(str)
-                case instr: SSAAbstractInvokeInstruction if isSbConstructorWithStringParam(instr) =>
-                  val asbos = idToAsbo(getId(getSbConstructorDef(instr)))
-                  append(asbos, getSbConstructorArgument(instr), bb, factAsbo)
+            // String.format
+            case instr: SSAAbstractInvokeInstruction if isStringFormat(instr) =>
+              propagateIdentity(bb, Set(createAsbo(instr.getDef, node)))
+              stringFormat(instr, bb)
 
-                // String.format
-                case instr: SSAAbstractInvokeInstruction if isStringFormat(instr) =>
-                  stringFormat(instr, bb, factAsbo)
-
-                // field writes
-                case instr: SSAPutInstruction =>
-                  propagateIdentity(bb, factAsbo)
-                  val argVn = instr getUse (if (instr.isStatic) 2 else 1)
-                  val rhs = idToAsbo(getId(argVn))
-                  if (rhs contains factAsbo) {
-                    val field = instr.getDeclaredField
-                    val fieldAuto = fieldToAutomaton getOrElse(field, epsilonAuto)
-                    val rhsAutos = rhs map {
-                      resultMap(bb)(_)
-                    }
-                    fieldToAutomaton += (field -> (fieldAuto | merge(rhsAutos.iterator)))
-                  }
-
-                // field reads
-                case instr: SSAGetInstruction =>
-                  val vn = instr getUse (if (instr.isStatic) 1 else 2)
-                  val varAsbo = createAsbo(vn, node)
-                  if (vn > 0 && varAsbo == factAsbo) {
-                    val fieldAuto = fieldToAutomaton getOrElse(instr.getDeclaredField, epsilonAuto)
-                    val prevMap = resultMap(bb)
-                    resultMap(bb) = prevMap + (varAsbo -> (prevMap(varAsbo) | fieldAuto))
-                  } else
-                    propagateIdentity(bb, factAsbo)
-                case _ =>
-                  propagateIdentity(bb, factAsbo)
+            // field writes
+            case instr: SSAPutInstruction =>
+              propagateIdentity(bb, Set.empty[ASBO])
+              val argVn     = instr getUse (if (instr.isStatic) 2 else 1)
+              val rhs       = idToAsbo(getId(argVn))
+              val field     = instr.getDeclaredField
+              val fieldAuto = fieldToAutomaton getOrElse(field, epsilonAuto)
+              val rhsAutos  = rhs map {
+                rh =>
+                  resultMap(bb) getOrElse (rh, defaultAsbo(rh))
               }
+              fieldToAutomaton += (field -> (fieldAuto | merge(rhsAutos.iterator)))
+
+            // field reads
+            case instr: SSAGetInstruction =>
+              propagateIdentity(bb, Set.empty[ASBO])
+              val vn      = instr getUse (if (instr.isStatic) 1 else 2)
+              val varAsbo = createAsbo(vn, node)
+              if (vn > 0) {
+                val fieldAuto = fieldToAutomaton getOrElse(instr.getDeclaredField, epsilonAuto)
+                val prevMap   = resultMap(bb)
+                resultMap(bb) = prevMap + (varAsbo -> ((prevMap getOrElse (varAsbo, defaultAsbo(varAsbo))) | fieldAuto))
+              }
+            case _ =>
+              propagateIdentity(bb, Set.empty[ASBO])
           }
       }
     }
@@ -178,13 +138,32 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
 
   private[this] def propagateIdentity(
     bb: BB,
-    factAsbo: ASBO
+    exclude: Set[ASBO]
   ): Unit = {
-    val automaton = acyclicCFG.getPredNodes(bb).foldLeft(epsilonAuto) {
-      case (auto, pred) =>
-        resultMap(pred)(factAsbo) | auto
+    val predNodes   = (acyclicCFG getPredNodes bb).toList
+    val predNodeNum = predNodes.size
+    lazy val allPredAsbos = (predNodes flatMap {
+      resultMap(_).keySet
+    }).toSet
+    // if we have to merge results from several pred nodes, or
+    // if the to-be-propagated ASBOs contain ones that should be excluded,
+    // then we create a new ASBO-to-automaton map from scratch
+    if (predNodeNum > 1 || (allPredAsbos diff exclude).nonEmpty) {
+      // todo if this is a bottle neck it can be made more efficient by looking only at relevant ASBOs
+      val asboToAuto: Map[ASBO, StringPartAutomaton] = (for {
+        asbo <- allPredAsbos
+        if !(exclude contains asbo)
+      } yield {
+        val automaton = predNodes.foldLeft(epsilonAuto) {
+          case (auto, pred) =>
+            (resultMap(pred) getOrElse (asbo, defaultAsbo(asbo))) | auto
+        }
+        asbo -> automaton
+      })(scala.collection.breakOut)
+      resultMap(bb) = asboToAuto
+    } else if (predNodeNum == 1) {
+      resultMap(bb) = resultMap(predNodes.head)
     }
-    resultMap(bb) = resultMap(bb) + (factAsbo -> automaton)
   }
 
   /**
@@ -194,8 +173,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
   private[this] def append(
     asbos: Set[ASBO],
     argVn: ValueNumber,
-    bb: BB,
-    factAsbo: ASBO
+    bb: BB
   ): Unit = {
 
     def predNodes = acyclicCFG getPredNodes bb
@@ -204,66 +182,53 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
     val argAutos  = for {
       predNode <- predNodes
       argAsbo  <- argAsbos
-    } yield resultMap(predNode)(argAsbo)
+    } yield resultMap(predNode) getOrElse (argAsbo, defaultAsbo(argAsbo))
     val argAutomaton = merge(argAutos)
 
     asbos foreach {
       sb =>
-        if (sb == factAsbo || (argAsbos contains factAsbo)) {
-          val predAuto = predNodes.foldLeft(epsilonAuto) {
-            case (auto, predNode) =>
-              resultMap(predNode)(sb) | auto
-          }
-
-          val newAuto = predAuto +++ argAutomaton
-          resultMap(bb) = resultMap(bb) + (sb -> newAuto)
+        val predAuto = predNodes.foldLeft(epsilonAuto) {
+          case (auto, predNode) =>
+            (resultMap(predNode) getOrElse (sb, defaultAsbo(sb))) | auto
         }
-    }
 
-    if (!(asbos contains factAsbo)) {
-      val factAuto = merge(predNodes map { resultMap(_)(factAsbo) })
-      resultMap(bb) = resultMap(bb) + (factAsbo -> factAuto)
+        val newAuto = predAuto +++ argAutomaton
+        resultMap(bb) = resultMap(bb) + (sb -> newAuto)
     }
   }
 
-  private[this] def stringFormat(instr: SSAAbstractInvokeInstruction, bb: BB, factAsbo: ASBO): Unit = {
+  private[this] def stringFormat(instr: SSAAbstractInvokeInstruction, bb: BB): Unit = {
     val cgNode = CallGraphNode(bb.getNode)
     val argValnums = getStringFormatArgs(instr, cgNode) flatMap {
       vn =>
         idToAsbo(createIdentifier(vn, cgNode))
     }
-    val factInArgs = argValnums contains factAsbo
     val sfAsbo = createAsbo(instr.getDef, cgNode)
-    if (factInArgs || sfAsbo == factAsbo) {
-      val sfArgSeqs: Seq[Seq[StringPart]] = reorderStringFormatArgs(instr, cgNode)
-      val automaton = sfArgSeqs.foldLeft(epsilonAuto) {
-        case (prevAuto, sfArgs) if sfArgs.nonEmpty =>
-          val nextAuto = sfArgs.tail.foldLeft(newAuto(sfArgs.head)) {
-            case (resultAutomaton, stringFormatArg) =>
-              stringFormatArg match {
-                case StringIdentifier(id) =>
-                  val automata = idToAsbo(id) map {
-                    asbo =>
-                      resultMap(bb) getOrElse (asbo, createAutomaton(CallGraphNode(id.node), id))
-                  }
-                  resultAutomaton +++ merge(automata.toIterator)
-                case other =>
-                  val appendAutomaton = newAuto(other)
-                  resultAutomaton +++ appendAutomaton
-              }
-          }
-          prevAuto | nextAuto
-        case (prevAuto, _)                         =>
-          prevAuto
-      }
-      acyclicCFG getSuccNodes bb foreach {
-        succ =>
-          resultMap(bb) = resultMap(bb) + (sfAsbo -> automaton)
-      }
-    } else
-      propagateIdentity(bb, factAsbo)
-    if (factInArgs)
-      propagateIdentity(bb, factAsbo)
+    val sfArgSeqs: Seq[Seq[StringPart]] = reorderStringFormatArgs(instr, cgNode)
+    val automaton = sfArgSeqs.foldLeft(epsilonAuto) {
+      case (prevAuto, sfArgs) if sfArgs.nonEmpty =>
+        val nextAuto = sfArgs.tail.foldLeft(newAuto(sfArgs.head)) {
+          case (resultAutomaton, stringFormatArg) =>
+            stringFormatArg match {
+              case StringIdentifier(id) =>
+                val automata = idToAsbo(id) map {
+                  asbo =>
+                    resultMap(bb) getOrElse (asbo, createAutomaton(CallGraphNode(id.node), id))
+                }
+                resultAutomaton +++ merge(automata.toIterator)
+              case other =>
+                val appendAutomaton = newAuto(other)
+                resultAutomaton +++ appendAutomaton
+            }
+        }
+        prevAuto | nextAuto
+      case (prevAuto, _)                         =>
+        prevAuto
+    }
+    acyclicCFG getSuccNodes bb foreach {
+      succ =>
+        resultMap(bb) = resultMap(bb) + (sfAsbo -> automaton)
+    }
   }
 
   private[this] def getConstantReturnValue(bb: BB, instr: SSAReturnInstruction): Option[ValueNumber] = {
