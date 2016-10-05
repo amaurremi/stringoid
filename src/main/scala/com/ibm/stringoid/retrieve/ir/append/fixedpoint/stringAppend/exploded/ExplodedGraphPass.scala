@@ -112,7 +112,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
               val argVn     = instr getUse (if (instr.isStatic) 2 else 1)
               val rhs       = idToAsbo(getId(argVn))
               val field     = instr.getDeclaredField
-              val fieldAuto = fieldToAutomaton getOrElse(field, epsilonAuto)
+              val fieldAuto = fieldToAutomaton getOrElse (field, epsilonAuto)
               val rhsAutos  = rhs map {
                 rh =>
                   resultMap(bb) getOrElse (rh, defaultAsbo(rh))
@@ -135,7 +135,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
           if (DEBUG && size >= 100 && (iteration % (size / 100) == 0)) print(".")
       }
 
-      if (DEBUG) println(s"finished graph pass ${graphPass + 1} out of $GRAPH_PASSES")
+      if (DEBUG) println(s" finished graph pass ${graphPass + 1} out of $GRAPH_PASSES")
     }
     resultMap.valuesIterator flatMap {
       _.valuesIterator
