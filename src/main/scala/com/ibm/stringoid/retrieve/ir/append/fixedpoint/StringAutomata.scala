@@ -34,7 +34,7 @@ trait StringAutomata extends Nodes {
   def newAuto(sp: StringPart): StringPartAutomaton = epsilonAuto + Seq(sp)
 
   def merge(sps: Iterator[StringPartAutomaton]): StringPartAutomaton = {
-    sps.foldLeft(epsilonAuto) {
+    sps.foldLeft(epsilonAuto) { // TODO EMPTY AUTO
       _ | _
     }
   }

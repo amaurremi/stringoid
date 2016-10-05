@@ -198,7 +198,7 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
               val argsAndParams = getArgsAndParams(inv)
               for {
                 callTarget   <- targets
-                if calls(bb, callTarget)
+                if calls(bb, callTarget) // TODO look whether this is necessary
                 (arg, param) <- argsAndParams
               } {
                 setIdInfoArg(createIdentifier(arg, CallGraphNode(node)))
@@ -242,10 +242,10 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
 
     /* does the invoke instruction in `bb` call the target node? */
     private[this] def calls(bb: BB, target: CGNode): Boolean =
-    acyclicCFG getSuccNodes bb exists {
-      succ =>
-        succ.getNode.getMethod.getReference == target.getMethod.getReference
-    }
+      acyclicCFG getSuccNodes bb exists {
+        succ =>
+          succ.getNode.getMethod.getReference == target.getMethod.getReference
+      }
 
 
     class InterStringBuilderTransferFunctions extends StringBuilderTransferFunctions {
