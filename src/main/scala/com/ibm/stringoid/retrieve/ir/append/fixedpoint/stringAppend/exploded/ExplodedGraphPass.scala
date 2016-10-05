@@ -146,14 +146,15 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
     val predNodes = acyclicCFG getPredNodes bb
     val newMap    = predNodes map resultMap reduceLeftOption {
       (map1, map2) =>
-        val (smaller, bigger) = if (map1.size < map2.size) (map1, map2) else (map2, map1)
-        smaller.foldLeft(bigger) {
+        map2.foldLeft(map1) {
           case (prevMap, (asbo, auto)) =>
             prevMap get asbo match {
               case Some(prevAuto) if prevAuto != auto =>
-                prevMap + (asbo -> (prevAuto | auto))
-              case _                                  =>
+                prevMap updated (asbo, prevAuto | auto)
+              case Some(prevAuto)                     =>
                 prevMap
+              case None                               =>
+                prevMap + (asbo -> auto)
             }
         }
     }
