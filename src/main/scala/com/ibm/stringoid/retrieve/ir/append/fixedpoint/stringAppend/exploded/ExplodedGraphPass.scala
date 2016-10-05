@@ -71,12 +71,21 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
 
   private[this] def getResult: Iterator[StringPartAutomaton] = TimeResult("II analysis phase (computing automata)", {
 
-    (0 until GRAPH_PASSES) foreach { iteration =>
+    val topOrder = TimeResult("CFG in topological order", Topological.makeTopologicalIter(acyclicCFG).toList)
+    val size = acyclicCFG.size
 
-      val topOrder = Topological.makeTopologicalIter(acyclicCFG) // todo avoid recalculating this?
+    (0 until GRAPH_PASSES) foreach { graphPass =>
+
+      if (DEBUG) {
+        println(s"CFG size: $size")
+        println("_" * 100 + " (100%)")
+      }
+      var iteration = 0
+
       topOrder foreach {
         bb: BB =>
 
+          iteration = iteration + 1
           propagateIdentity(bb)
 
           val node = CallGraphNode(bb.getNode)
@@ -122,9 +131,11 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
             case _ =>
               ()
           }
+
+          if (DEBUG && (iteration % (size / 100) == 0)) print(".")
       }
 
-      if (DEBUG) println(s"finished iteration #$iteration")
+      if (DEBUG) println(s"finished graph pass $graphPass out of $GRAPH_PASSES")
     }
     resultMap.valuesIterator flatMap {
       _.valuesIterator
