@@ -101,6 +101,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
       println(s"running graph pass ${graphPass + 1} out of $GRAPH_PASSES")
 
       var iteration = 0
+      var printedOut = 0
 
       topOrder foreach {
         bb: BB =>
@@ -152,8 +153,12 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
               ()
           }
 
-          if (DEBUG && size >= 100 && (iteration % (size / 100) == 0)) print(".")
+          if (Math.ceil((iteration.toFloat / size) * 100).toInt > printedOut) {
+            print(".")
+            printedOut = printedOut + 1
+          }
       }
+      println()
     }
     val resultsMut = resultMapMut.valuesIterator flatMap {
       _.valuesIterator
