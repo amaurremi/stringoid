@@ -78,7 +78,7 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
             use =>
               createAsbo(createIdentifier(phi getUse use, node))
           }
-        case ret: SSAReturnInstruction =>
+        case ret: SSAReturnInstruction if ret.getResult > 0 =>
           Iterator(createAsbo(createIdentifier(ret.getResult, node)))
         case _ =>
           Iterator.empty

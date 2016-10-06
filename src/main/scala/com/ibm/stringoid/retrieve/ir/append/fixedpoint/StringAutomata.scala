@@ -64,6 +64,8 @@ trait CgNodes extends StringAutomata {
 
   override type Node = CallGraphNode
 
-  final override def createIdentifier(vn: ValueNumber, node: CallGraphNode) =
+  final override def createIdentifier(vn: ValueNumber, node: CallGraphNode) = {
+    assert(vn > 0)
     CgIdentifier(node.node, vn)
+  }
 }

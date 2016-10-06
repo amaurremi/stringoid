@@ -37,7 +37,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
   def getResultOrDefault(bb: BB, at: ASBO): StringPartAutomaton =
     getResult(bb, at) getOrElse defaultAsbo(at)
 
-  val resultMapMut = mutable.Map[BB, Map[MutAsbo, StringPartAutomaton]]()
+  val resultMapMut = mutable.Map[BB, Map[MutAsbo, StringPartAutomaton]]() withDefaultValue Map.empty[MutAsbo, StringPartAutomaton]
   val resultMapImmut = mutable.Map[ImmutAsbo, StringPartAutomaton]()
 
   def defaultAsbo(asbo: ASBO): StringPartAutomaton = {
@@ -141,9 +141,9 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
 
             // field reads
             case instr: SSAGetInstruction =>
-              val vn      = instr getUse (if (instr.isStatic) 1 else 2)
-              val varAsbo = createAsbo(createIdentifier(vn, node))
+              val vn = instr getUse (if (instr.isStatic) 1 else 2)
               if (vn > 0) {
+                val varAsbo = createAsbo(createIdentifier(vn, node))
                 val fieldAuto    = fieldToAutomaton getOrElse(instr.getDeclaredField, epsilonAuto)
                 val prevMap      = resultMapMut(bb)
                 addToResult(bb, varAsbo, fieldAuto)
