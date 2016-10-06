@@ -61,7 +61,7 @@ abstract class FixedPointAppendIrRetriever(
     val table = node.getIr.getSymbolTable
     val inTable = (table isStringConstant vn) && isUrlPrefix(table getStringValue vn)
     if (inTable)
-      Seq(StringIdentifier(createIdentifier(vn, node)))
+      Seq(StringIdentifier(createId(vn, node)))
     else {
       node.getDu getDef vn match {
         case instr: SSAFieldAccessInstruction =>

@@ -46,5 +46,5 @@ trait Nodes {
 
   def createAsbo(id: Identifier): ASBO
 
-  def createIdentifier(vn: ValueNumber, node: Node): Identifier
+  def createId(vn: ValueNumber, node: Node): Identifier
 }

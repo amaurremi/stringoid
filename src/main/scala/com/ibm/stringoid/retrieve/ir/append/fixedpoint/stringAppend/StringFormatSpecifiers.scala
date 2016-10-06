@@ -78,7 +78,7 @@ trait StringFormatSpecifiers extends StringAutomata {
         case (parts, Specifier(count)) =>
           val newVariables =
             if (argValNums.hasNext)
-              createAutomaton(node, createIdentifier(argValNums.next(), node)).iterator.toVector
+              createAutomaton(node, createId(argValNums.next(), node)).iterator.toVector
             else Vector(Seq(MissingStringFormatArgument))
           if (parts.isEmpty) newVariables map { _.toVector }
           else for {

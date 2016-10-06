@@ -65,27 +65,27 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
     if (Option(ir).isDefined) {
       val abstractObjects = ir.iterateAllInstructions() flatMap {
         case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv) =>
-          Iterator(createAsbo(createIdentifier(getSbConstructorDef(inv), node)))
+          Iterator(createAsbo(createId(getSbConstructorDef(inv), node)))
         case inv: SSAAbstractInvokeInstruction if isStringFormat(inv) =>
-          Iterator(createAsbo(createIdentifier(inv.getDef, node)))
+          Iterator(createAsbo(createId(inv.getDef, node)))
         case inv: SSAAbstractInvokeInstruction =>
           getArgsAndParams(inv) map {
             case (arg, _) =>
-              createAsbo(createIdentifier(arg, node))
+              createAsbo(createId(arg, node))
           }
         case phi: SSAPhiInstruction =>
-          0 until phi.getNumberOfUses map {
-            use =>
-              createAsbo(createIdentifier(phi getUse use, node))
+          0 until phi.getNumberOfUses collect {
+            case use if use > 0 =>
+              createAsbo(createId(phi getUse use, node))
           }
         case ret: SSAReturnInstruction if ret.getResult > 0 =>
-          Iterator(createAsbo(createIdentifier(ret.getResult, node)))
+          Iterator(createAsbo(createId(ret.getResult, node)))
         case _ =>
           Iterator.empty
       }
       val params = 1 to ir.getSymbolTable.getNumberOfParameters collect {
         case vn if isMutable(getTypeAbstraction(ir, vn).getTypeReference) =>
-          createAsbo(createIdentifier(vn, node))
+          createAsbo(createId(vn, node))
       }
       abstractObjects ++ params
     } else Iterator[ASBO]()
@@ -114,7 +114,7 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
   ): Seq[(ASBO, Int)] =
     for {
       argIndex <- 0 until paramNum
-      argId     = createIdentifier(getArg(argIndex), node)
+      argId     = createId(getArg(argIndex), node)
       asbo     <- (idToAsbo getOrElse (argId, Set(createAsbo(argId)))).toSeq
     } yield (asbo, argIndex)
 
@@ -175,15 +175,15 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
         bb =>
           val node = bb.getNode
           def addNode(vn: ValueNumber, n: CGNode = node) {
-            val id = createIdentifier(vn, CallGraphNode(n))
+            val id = createId(vn, CallGraphNode(n))
             if (!(graph containsNode id)) graph addNode id
           }
           def addEdge(sourceVn: ValueNumber, targetVn: ValueNumber, sourceNode: CGNode = node, targetNode: CGNode = node) {
             addNode(sourceVn, sourceNode)
             addNode(targetVn, targetNode)
             graph addEdge(
-              createIdentifier(sourceVn, CallGraphNode(sourceNode)),
-              createIdentifier(targetVn, CallGraphNode(targetNode)))
+              createId(sourceVn, CallGraphNode(sourceNode)),
+              createId(targetVn, CallGraphNode(targetNode)))
           }
 
           bb.getLastInstruction match {
@@ -212,12 +212,12 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
                 if calls(bb, callTarget) // TODO look whether this is necessary
                 (arg, param) <- argsAndParams
               } {
-                setIdInfoArg(createIdentifier(arg, CallGraphNode(node)))
+                setIdInfoArg(createId(arg, CallGraphNode(node)))
                 addEdge(arg, param, sourceNode = node, targetNode = callTarget)
               }
             case ret: SSAReturnInstruction if ret.getResult > 0                 =>
               val retResult = ret.getResult
-              setIdInfoRet(createIdentifier(retResult, CallGraphNode(node)))
+              setIdInfoRet(createId(retResult, CallGraphNode(node)))
                 for {
                   callBlock    <- getCallBlocks(bb)
                   callInstr     = callBlock.getLastInstruction.asInstanceOf[SSAAbstractInvokeInstruction]
@@ -239,9 +239,9 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
         if Option(ir).isDefined
         instr  <- ir.iteratePhis
         phi    = instr.asInstanceOf[SSAPhiInstruction]
-        defId  = createIdentifier(phi.getDef, CallGraphNode(node))
+        defId  = createId(phi.getDef, CallGraphNode(node))
         use    <- getPhiUses(phi)
-        useId  = createIdentifier(use, CallGraphNode(node))
+        useId  = createId(use, CallGraphNode(node))
       } {
         if (!(graph containsNode defId)) graph addNode defId
         if (!(graph containsNode useId)) graph addNode useId

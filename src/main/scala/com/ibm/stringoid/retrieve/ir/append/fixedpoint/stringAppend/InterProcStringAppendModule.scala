@@ -65,7 +65,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
 
       override def getNodeTransferFunction(bb: BB): UnaryOperator[AtaReference] = {
         val node = CallGraphNode(bb.getNode)
-        def getId(vn: ValueNumber) = createIdentifier(vn, node)
+        def getId(vn: ValueNumber) = createId(vn, node)
         bb.getLastInstruction match {
           case instr: SSAAbstractInvokeInstruction if isSbAppend(instr)                 =>
             idToAsbo get getId(getFirstSbAppendDef(instr)) match {
@@ -98,7 +98,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
               callerInstr <- getCallInstructions(callerNode, node)
               if ret.returnsPrimitiveType || hasStringReturnType(callerInstr)  // todo test primitive & void
               callDef      = callerInstr.getDef
-              callId       = createIdentifier(callDef, callerNode)
+              callId       = createId(callDef, callerNode)
               asbo        <- idToAsbo getOrElse (callId, Set(createAsbo(callId)))
             } yield asbo
             ReturnOperator(lhsAsbos, ret.getResult, node)
@@ -123,12 +123,12 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
         /* l = c()   ... c() { ... return result; } */
         private[this] def addReturnResult(rhsMap: AsboMap): AsboMap = {
           if (result > 0) {
-            val resultId = createIdentifier(result, retNode)
+            val resultId = createId(result, retNode)
             val newMap = (for {
               resultAsbo <- idToAsbo getOrElse(resultId, Set(createAsbo(resultId)))
               lAsbo <- lhsAsbos
               lAuto = rhsMap getOrElse(lAsbo, epsilonAuto)
-              resultAsboId = createIdentifier(resultAsbo.identifier.vn, CallGraphNode(resultAsbo.identifier.node))
+              resultAsboId = createId(resultAsbo.identifier.vn, CallGraphNode(resultAsbo.identifier.node))
               oldLhs = rhsMap getOrElse(lAsbo, epsilonAuto) // todo replace with createAutomaton
               resultAuto = rhsMap getOrElse(resultAsbo, createAutomaton(retNode, resultAsboId))
             } yield lAsbo -> (oldLhs | lAuto | resultAuto))(breakOut)
@@ -164,7 +164,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             node <- targetNodes
             cgNode = CallGraphNode(node)
             (asbo, paramIndex) <- substitutionAsbos
-            paramId = createIdentifier(paramIndex + 1, cgNode)
+            paramId = createId(paramIndex + 1, cgNode)
             paramAsbo    <- idToAsbo getOrElse (paramId, Set(createAsbo(paramId)))
             oldAutomaton  = rhsMap getOrElse (paramAsbo, epsilonAuto)
             automaton     = rhsMap getOrElse (asbo, epsilonAuto)

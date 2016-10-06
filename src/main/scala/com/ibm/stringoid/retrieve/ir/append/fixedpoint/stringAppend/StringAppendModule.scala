@@ -78,7 +78,7 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
       val table = node.getIr.getSymbolTable
       (1 to table.getMaxValueNumber).foldLeft(Map.empty[ASBO, StringPartAutomaton]) {
         case (oldMap, vn) =>
-          val id = createIdentifier(vn, node)
+          val id = createId(vn, node)
           if (table isConstant vn) {
             val automaton = newAuto(StringIdentifier(id))
             oldMap + (createAsbo(id) -> automaton)
@@ -195,12 +195,12 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
                     }
                     val (automata, asboMaps) = (uses map {
                       u =>
-                        getAppendAutomaton(node, createIdentifier(u, node), idNode, rhsMap, processedAcc + id)
+                        getAppendAutomaton(node, createId(u, node), idNode, rhsMap, processedAcc + id)
                     }).unzip
                     val mergedAutomaton = merge(automata.iterator)
                     val mergedMap = (asboMaps reduceLeft {
                       _ ++ _
-                    }) + (createAsbo(createIdentifier(phi.getDef, node)) -> mergedAutomaton)
+                    }) + (createAsbo(createId(phi.getDef, node)) -> mergedAutomaton)
                     (mergedAutomaton, mergedMap)
                   case _ =>
                     (createAutomaton(node, id), Map.empty[ASBO, StringPartAutomaton])
@@ -285,7 +285,7 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
 
                 // the ASBO corresponding to String.format can't be already contained in rhsMap,
                 // so we just add the result to the map
-                updNewMap + (createAsbo(createIdentifier(instr.getDef, node)) -> automaton)
+                updNewMap + (createAsbo(createId(instr.getDef, node)) -> automaton)
 
               case (m, _)                         =>
                 m

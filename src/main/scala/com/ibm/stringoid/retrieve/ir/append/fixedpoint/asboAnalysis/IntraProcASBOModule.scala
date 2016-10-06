@@ -21,20 +21,20 @@ trait IntraProcASBOModule extends AbstractStringBuilderModule with IrNodes {
     val ir = node.getIr
     val abstractObjects = ir.iterateAllInstructions() flatMap {
       case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv)                            =>
-        Iterator(createAsbo(createIdentifier(getSbConstructorDef(inv), node)))
+        Iterator(createAsbo(createId(getSbConstructorDef(inv), node)))
       case inv: SSAAbstractInvokeInstruction if isStringFormat(inv) || hasStringReturnType(inv) =>
-        Iterator(createAsbo(createIdentifier(inv.getDef, node)))
+        Iterator(createAsbo(createId(inv.getDef, node)))
       case phi: SSAPhiInstruction                                                               =>
         0 until phi.getNumberOfUses map {
           use =>
-            createAsbo(createIdentifier(phi getUse use, node))
+            createAsbo(createId(phi getUse use, node))
         }
       case _                                                                                    =>
         Iterator.empty
     }
     val params = 1 to ir.getSymbolTable.getNumberOfParameters collect {
       case vn if isMutable(getTypeAbstraction(ir, vn).getTypeReference) =>
-        createAsbo(createIdentifier(vn, node))
+        createAsbo(createId(vn, node))
     }
 
     abstractObjects ++ params
@@ -74,12 +74,12 @@ trait IntraProcASBOModule extends AbstractStringBuilderModule with IrNodes {
       // todo test this case in unit tests
       val graph = new SlowSparseNumberedGraph[Identifier](1)
       def addNode(vn: ValueNumber) {
-        val n = createIdentifier(vn, node)
+        val n = createId(vn, node)
         if (!(graph containsNode n)) graph addNode n
       }
       def addEdge(source: ValueNumber, target: ValueNumber) {
-        val sourceN = createIdentifier(source, node)
-        val targetN = createIdentifier(target, node)
+        val sourceN = createId(source, node)
+        val targetN = createId(target, node)
         addNode(source)
         addNode(target)
         graph addEdge(sourceN, targetN)

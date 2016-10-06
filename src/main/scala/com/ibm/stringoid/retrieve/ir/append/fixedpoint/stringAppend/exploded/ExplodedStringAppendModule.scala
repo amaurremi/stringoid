@@ -58,7 +58,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
       if table isStringConstant vn
       string = table getStringValue vn
       if isUrlPrefix(string)
-      spart  = StringIdentifier(createIdentifier(vn, CallGraphNode(node)))
+      spart  = StringIdentifier(createId(vn, CallGraphNode(node)))
     } yield newAuto(spart)
 
   val idToAsbo: Map[CgIdentifier, Set[ASBO]] =
@@ -136,7 +136,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
       val (bb, factAsbo) = worklist.take()
       val node           = CallGraphNode(bb.getNode)
 
-      def getId(vn: ValueNumber) = createIdentifier(vn, node)
+      def getId(vn: ValueNumber) = createId(vn, node)
 
       bb.getLastInstruction match {
 
@@ -154,10 +154,10 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
         case instr: SSAAbstractInvokeInstruction if isStringFormat(instr)                 =>
           val argValnums = getStringFormatArgs(instr, node) flatMap {
             vn =>
-              idToAsbo(createIdentifier(vn, node))
+              idToAsbo(createId(vn, node))
           }
           val factInArgs = argValnums contains factAsbo
-          val sfAsbo     = createAsbo(createIdentifier(instr.getDef, node))
+          val sfAsbo     = createAsbo(createId(instr.getDef, node))
           if (factInArgs || sfAsbo == factAsbo) {
             val sfArgSeqs: Seq[Seq[StringPart]] = reorderStringFormatArgs(instr, node)
             val automaton = sfArgSeqs.foldLeft(epsilonAuto) {
@@ -200,7 +200,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
             if Option(ir).isDefined
             (asbo, paramIndex) <- argumentAsbos(idToAsbo, instr, node)
             if asbo == factAsbo
-            paramId             = createIdentifier(paramIndex + 1, CallGraphNode(succ))
+            paramId             = createId(paramIndex + 1, CallGraphNode(succ))
             paramAsbo          <- idToAsbo getOrElse (paramId, Set(createAsbo(paramId)))
             oldAutomaton        = resultGetOrElse(bb, paramAsbo)
             automaton           = resultGetOrElse(bb, asbo, createAutomaton(node, asbo.identifier))
@@ -219,7 +219,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
           if (retDef > 0) {
             val retCgNode = bb.getNode
             val retNode   = CallGraphNode(retCgNode)
-            val resultId  = createIdentifier(retDef, retNode)
+            val resultId  = createId(retDef, retNode)
             for {
             // return stuff
               resultAsbo   <- idToAsbo getOrElse (resultId, Set(createAsbo(resultId)))
@@ -231,7 +231,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
               if mutable || hasPrimitiveReturnType(callInstr) || hasStringReturnType(callInstr)
               callCgNode    = callBlock.getNode
               callNode      = CallGraphNode(callCgNode)
-              callId        = createIdentifier(callInstr.getDef, callNode)
+              callId        = createId(callInstr.getDef, callNode)
               callAsbo     <- idToAsbo getOrElse(callId, Set(createAsbo(callId)))
             } {
               val callExplNode = (callBlock, callAsbo)
@@ -283,7 +283,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     implicit worklist: WorkList
   ): Unit = {
     val node = CallGraphNode(bb.getNode)
-    def getId(vn: ValueNumber) = createIdentifier(vn, node)
+    def getId(vn: ValueNumber) = createId(vn, node)
     val succNodes = acyclicCFG getSuccNodes bb
     for {
       succ <- succNodes.toIterable
@@ -344,7 +344,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
           instrToVn get(node, instr.iindex) match {
             case Some(vn) =>
               // add to work list
-              idToAsbo(createIdentifier(vn, CallGraphNode(node))) foreach {
+              idToAsbo(createId(vn, CallGraphNode(node))) foreach {
                 asbo =>
                   worklist insert ((bb, asbo))
               }

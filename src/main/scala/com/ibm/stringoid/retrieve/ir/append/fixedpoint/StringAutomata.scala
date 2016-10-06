@@ -48,7 +48,7 @@ trait IrNodes extends StringAutomata {
 
   override type Node = IrNode
 
-  final override def createIdentifier(vn: ValueNumber, node: IrNode) = vn
+  final override def createId(vn: ValueNumber, node: IrNode) = vn
 }
 
 trait CgNodes extends StringAutomata {
@@ -64,7 +64,7 @@ trait CgNodes extends StringAutomata {
 
   override type Node = CallGraphNode
 
-  final override def createIdentifier(vn: ValueNumber, node: CallGraphNode) = {
+  final override def createId(vn: ValueNumber, node: CallGraphNode) = {
     assert(vn > 0)
     CgIdentifier(node.node, vn)
   }
