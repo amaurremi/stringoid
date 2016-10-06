@@ -17,13 +17,31 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
 
   private[this] val GRAPH_PASSES = 2
 
-  val resultMap: mutable.Map[BB, Map[ASBO, StringPartAutomaton]] = initialResultMap
+  def addToResult(bb: BB, asbo: ASBO, auto: StringPartAutomaton): Unit = {
+    asbo match {
+      case imm: ImmutAsbo =>
+        resultMapImmut += (imm -> auto)
+      case mut: MutAsbo   =>
+        resultMapMut(bb) = resultMapMut(bb) + (mut -> auto)
+    }
+  }
 
-  lazy val initialResultMap = mutable.Map.empty[BB, Map[ASBO, StringPartAutomaton]] withDefaultValue
-    (Map.empty[ASBO, StringPartAutomaton] withDefault defaultAsbo)
+  def getResult(bb: BB, at: ASBO): Option[StringPartAutomaton] =
+    at match {
+      case asbo: ImmutAsbo =>
+        resultMapImmut get asbo
+      case asbo: MutAsbo   =>
+        resultMapMut(bb) get asbo
+    }
 
-  def defaultAsbo(asbo: ASBO) = {
-    val id = asbo.identifier
+  def getResultOrDefault(bb: BB, at: ASBO): StringPartAutomaton =
+    getResult(bb, at) getOrElse defaultAsbo(at)
+
+  val resultMapMut = mutable.Map[BB, Map[MutAsbo, StringPartAutomaton]]()
+  val resultMapImmut = mutable.Map[ImmutAsbo, StringPartAutomaton]()
+
+  def defaultAsbo(asbo: ASBO): StringPartAutomaton = {
+    val id   = asbo.identifier
     if (hasSbType(id.node, id.vn, getTypeAbstraction(id.node.getIR, id.vn)))
       epsilonAuto
     else
@@ -66,7 +84,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
 
   private[this] val idToAsbo: Map[CgIdentifier, Set[ASBO]] =
     identifierToAsbo withDefault {
-      id => Set(createAsbo(id.vn, CallGraphNode(id.node)))
+      id => Set(createAsbo(id))
     }
 
   private[this] def getResult: Iterator[StringPartAutomaton] = TimeResult("II analysis phase (computing automata)", {
@@ -75,10 +93,12 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
     val size = acyclicCFG.size
     if (DEBUG) {
       println(s"CFG size: $size")
-      println("_" * 100)
     }
+    println("_" * 100)
 
     (0 until GRAPH_PASSES) foreach { graphPass =>
+
+      println(s"running graph pass ${graphPass + 1} out of $GRAPH_PASSES")
 
       var iteration = 0
 
@@ -100,7 +120,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
 
             // new StringBuilder(str)
             case instr: SSAAbstractInvokeInstruction if isSbConstructorWithStringParam(instr) =>
-              val asbos = Set(createAsbo(getSbConstructorDef(instr), node))
+              val asbos = Set(createAsbo(createIdentifier(getSbConstructorDef(instr), node)))
               append(asbos, getSbConstructorArgument(instr), bb)
 
             // String.format
@@ -115,18 +135,18 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
               val fieldAuto = fieldToAutomaton getOrElse (field, epsilonAuto)
               val rhsAutos  = rhs map {
                 rh =>
-                  resultMap(bb) getOrElse (rh, defaultAsbo(rh))
+                  getResultOrDefault(bb, rh)
               }
               fieldToAutomaton += (field -> (fieldAuto | merge(rhsAutos.iterator)))
 
             // field reads
             case instr: SSAGetInstruction =>
               val vn      = instr getUse (if (instr.isStatic) 1 else 2)
-              val varAsbo = createAsbo(vn, node)
+              val varAsbo = createAsbo(createIdentifier(vn, node))
               if (vn > 0) {
-                val fieldAuto = fieldToAutomaton getOrElse(instr.getDeclaredField, epsilonAuto)
-                val prevMap   = resultMap(bb)
-                resultMap(bb) = prevMap + (varAsbo -> fieldAuto)
+                val fieldAuto    = fieldToAutomaton getOrElse(instr.getDeclaredField, epsilonAuto)
+                val prevMap      = resultMapMut(bb)
+                addToResult(bb, varAsbo, fieldAuto)
               }
             case _ =>
               ()
@@ -134,17 +154,17 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
 
           if (DEBUG && size >= 100 && (iteration % (size / 100) == 0)) print(".")
       }
-
-      if (DEBUG) println(s" finished graph pass ${graphPass + 1} out of $GRAPH_PASSES")
     }
-    resultMap.valuesIterator flatMap {
+    val resultsMut = resultMapMut.valuesIterator flatMap {
       _.valuesIterator
     }
+    val resultsImmut = resultMapImmut.valuesIterator
+    resultsMut ++ resultsImmut
   })
 
   private[this] def propagateIdentity(bb: BB): Unit = {
     val predNodes = acyclicCFG getPredNodes bb
-    val newMap    = predNodes map resultMap reduceLeftOption {
+    val newMap    = predNodes map resultMapMut reduceLeftOption {
       (map1, map2) =>
         map2.foldLeft(map1) {
           case (prevMap, (asbo, auto)) =>
@@ -158,7 +178,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
             }
         }
     }
-    resultMap(bb) = newMap getOrElse Map.empty[ASBO, StringPartAutomaton] withDefault defaultAsbo
+    resultMapMut(bb) = newMap getOrElse Map.empty[MutAsbo, StringPartAutomaton] withDefault defaultAsbo
   }
 
   /**
@@ -173,18 +193,18 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
 
     def predNodes = acyclicCFG getPredNodes bb
     val node      = CallGraphNode(bb.getNode)
-    val argAsbos  = idToAsbo getOrElse (createIdentifier(argVn, node), Set(createAsbo(argVn, node)))
+    val argAsbos  = idToAsbo getOrElse (createIdentifier(argVn, node), Set(createAsbo(createIdentifier(argVn, node))))
     val argAutos  = argAsbos map {
       argAsbo =>
-        resultMap(bb) getOrElse(argAsbo, defaultAsbo(argAsbo))
+        getResultOrDefault(bb, argAsbo)
     }
     val argAutomaton = merge(argAutos.iterator)
 
     asbos foreach {
       sb =>
-        val predAuto = resultMap(bb) getOrElse (sb, defaultAsbo(sb))
+        val predAuto = getResultOrDefault(bb, sb)
         val newAuto = predAuto +++ argAutomaton
-        resultMap(bb) = resultMap(bb) + (sb -> newAuto)
+        addToResult(bb, sb, newAuto)
     }
   }
 
@@ -194,7 +214,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
       vn =>
         idToAsbo(createIdentifier(vn, cgNode))
     }
-    val sfAsbo = createAsbo(instr.getDef, cgNode)
+    val sfAsbo = createAsbo(createIdentifier(instr.getDef, cgNode))
     val sfArgSeqs: Seq[Seq[StringPart]] = reorderStringFormatArgs(instr, cgNode)
     val automaton = sfArgSeqs.foldLeft(epsilonAuto) {
       case (prevAuto, sfArgs) if sfArgs.nonEmpty =>
@@ -204,7 +224,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
               case StringIdentifier(id) =>
                 val automata = idToAsbo(id) map {
                   asbo =>
-                    resultMap(bb) getOrElse (asbo, createAutomaton(CallGraphNode(id.node), id))
+                    getResultOrDefault(bb, asbo)
                 }
                 resultAutomaton +++ merge(automata.toIterator)
               case other =>
@@ -216,10 +236,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
       case (prevAuto, _)                         =>
         prevAuto
     }
-    acyclicCFG getSuccNodes bb foreach {
-      succ =>
-        resultMap(bb) = resultMap(bb) + (sfAsbo -> automaton)
-    }
+    addToResult(bb, sfAsbo, automaton)
   }
 
   private[this] def getConstantReturnValue(bb: BB, instr: SSAReturnInstruction): Option[ValueNumber] = {

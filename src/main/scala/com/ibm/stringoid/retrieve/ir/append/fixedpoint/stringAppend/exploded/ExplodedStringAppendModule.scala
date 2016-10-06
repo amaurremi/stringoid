@@ -63,14 +63,14 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
 
   val idToAsbo: Map[CgIdentifier, Set[ASBO]] =
     identifierToAsbo withDefault {
-      id => Set(createAsbo(id.vn, CallGraphNode(id.node)))
+      id => Set(createAsbo(id))
     }
 
   private[this] def appendResult(
-    bb: BB,
-    succ: BB,
-    asbo: ASBO,
-    newAutomaton: StringPartAutomaton
+                                  bb: BB,
+                                  succ: BB,
+                                  asbo: ASBO,
+                                  newAutomaton: StringPartAutomaton
   )(
     implicit worklist: WorkList
   ): Unit = {
@@ -157,7 +157,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
               idToAsbo(createIdentifier(vn, node))
           }
           val factInArgs = argValnums contains factAsbo
-          val sfAsbo     = createAsbo(instr.getDef, node)
+          val sfAsbo     = createAsbo(createIdentifier(instr.getDef, node))
           if (factInArgs || sfAsbo == factAsbo) {
             val sfArgSeqs: Seq[Seq[StringPart]] = reorderStringFormatArgs(instr, node)
             val automaton = sfArgSeqs.foldLeft(epsilonAuto) {
@@ -201,7 +201,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
             (asbo, paramIndex) <- argumentAsbos(idToAsbo, instr, node)
             if asbo == factAsbo
             paramId             = createIdentifier(paramIndex + 1, CallGraphNode(succ))
-            paramAsbo          <- idToAsbo getOrElse (paramId, Set(ASBO(paramId)))
+            paramAsbo          <- idToAsbo getOrElse (paramId, Set(createAsbo(paramId)))
             oldAutomaton        = resultGetOrElse(bb, paramAsbo)
             automaton           = resultGetOrElse(bb, asbo, createAutomaton(node, asbo.identifier))
             targetBB            = acyclicCFG getEntry succ
@@ -222,7 +222,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
             val resultId  = createIdentifier(retDef, retNode)
             for {
             // return stuff
-              resultAsbo   <- idToAsbo getOrElse (resultId, Set(createAsbo(retDef, retNode)))
+              resultAsbo   <- idToAsbo getOrElse (resultId, Set(createAsbo(resultId)))
               if resultAsbo == factAsbo
               // call stuff
               callBlock    <- getCallBlocks(bb)
@@ -231,9 +231,8 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
               if mutable || hasPrimitiveReturnType(callInstr) || hasStringReturnType(callInstr)
               callCgNode    = callBlock.getNode
               callNode      = CallGraphNode(callCgNode)
-              callDef       = callInstr.getDef
-              callId        = createIdentifier(callDef, callNode)
-              callAsbo     <- idToAsbo getOrElse(callId, Set(createAsbo(callDef, callNode)))
+              callId        = createIdentifier(callInstr.getDef, callNode)
+              callAsbo     <- idToAsbo getOrElse(callId, Set(createAsbo(callId)))
             } {
               val callExplNode = (callBlock, callAsbo)
               val prevResult   = resultGetOrElse(callBlock, callAsbo)

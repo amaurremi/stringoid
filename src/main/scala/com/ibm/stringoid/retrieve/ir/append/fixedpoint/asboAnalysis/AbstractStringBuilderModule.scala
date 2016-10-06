@@ -83,7 +83,7 @@ trait AbstractStringBuilderModule extends IrUrlRetriever {
         getDef(id).isInstanceOf[SSAPhiInstruction]
 
       def createOperator(id: Identifier): UnaryOperator[BitVectorVariable] = {
-        val mappedIndex = abstractObjectNumbering getMappedIndex ASBO(id)
+        val mappedIndex = abstractObjectNumbering getMappedIndex createAsbo(id)
         assert(mappedIndex >= 0)
         val gen = new BitVector()
         gen set mappedIndex

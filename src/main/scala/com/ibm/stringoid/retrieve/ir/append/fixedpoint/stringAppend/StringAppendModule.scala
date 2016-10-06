@@ -44,8 +44,8 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
   }
 
   abstract class StringAppendFixedPointSolver(
-    vnToAsbo: Map[Identifier, Set[ASBO]],
-    fieldToAutomaton: FieldToAutomaton
+                                               vnToAsbo: Map[Identifier, Set[ASBO]],
+                                               fieldToAutomaton: FieldToAutomaton
   ) {
 
     type BB
@@ -78,15 +78,16 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
       val table = node.getIr.getSymbolTable
       (1 to table.getMaxValueNumber).foldLeft(Map.empty[ASBO, StringPartAutomaton]) {
         case (oldMap, vn) =>
+          val id = createIdentifier(vn, node)
           if (table isConstant vn) {
-            val automaton = newAuto(StringIdentifier(createIdentifier(vn, node)))
-            oldMap + (createAsbo(vn, node) -> automaton)
+            val automaton = newAuto(StringIdentifier(id))
+            oldMap + (createAsbo(id) -> automaton)
           } else {
             node.getDu getDef vn match {
               case fdAccess: SSAFieldAccessInstruction =>
                 (fieldToAutomaton get fdAccess.getDeclaredField).foldLeft(oldMap) {
                   case (oldOldMap, automaton) =>
-                    oldOldMap + (createAsbo(vn, node) -> automaton)
+                    oldOldMap + (createAsbo(id) -> automaton)
                 }
               case _                                   =>
                 oldMap
@@ -184,8 +185,8 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
                   if (automata.isEmpty) createAutomaton(node, id)
                   else merge(automata)
                 (newValNumAutomaton, Map.empty[ASBO, StringPartAutomaton])
-              case None if rhsMap contains createAsbo(valNum(id), idNode) =>
-                (rhsMap(createAsbo(valNum(id), idNode)), Map.empty[ASBO, StringPartAutomaton])
+              case None if rhsMap contains createAsbo(id) =>
+                (rhsMap(createAsbo(id)), Map.empty[ASBO, StringPartAutomaton])
               case None =>
                 node.getDu getDef valNum(id) match {
                   case phi: SSAPhiInstruction =>
@@ -199,7 +200,7 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
                     val mergedAutomaton = merge(automata.iterator)
                     val mergedMap = (asboMaps reduceLeft {
                       _ ++ _
-                    }) + (createAsbo(phi.getDef, node) -> mergedAutomaton)
+                    }) + (createAsbo(createIdentifier(phi.getDef, node)) -> mergedAutomaton)
                     (mergedAutomaton, mergedMap)
                   case _ =>
                     (createAutomaton(node, id), Map.empty[ASBO, StringPartAutomaton])
@@ -235,11 +236,11 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
         * Append the automaton for [[appendId]] to all [[asbos]].
         */
       protected case class StringBuilderAppendOperator(
-        asbos: Set[ASBO],
-        appendId: Identifier,
-        idNode: Node,
-        node: Node,
-        instruction: SSAInstruction
+                                                        asbos: Set[ASBO],
+                                                        appendId: Identifier,
+                                                        idNode: Node,
+                                                        node: Node,
+                                                        instruction: SSAInstruction
       ) extends AbstractAppendOperator {
 
         override def createNewMap(rhsMap: AsboMap): AsboMap = {
@@ -284,7 +285,7 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
 
                 // the ASBO corresponding to String.format can't be already contained in rhsMap,
                 // so we just add the result to the map
-                updNewMap + (createAsbo(instr.getDef, node) -> automaton)
+                updNewMap + (createAsbo(createIdentifier(instr.getDef, node)) -> automaton)
 
               case (m, _)                         =>
                 m
@@ -309,10 +310,10 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
             }
 
           def getNewMap(
-            oldLhsMap: AsboMap,
-            newMap: AsboMap,
-            asbo: ASBO,
-            rAuto: StringPartAutomaton
+                         oldLhsMap: AsboMap,
+                         newMap: AsboMap,
+                         asbo: ASBO,
+                         rAuto: StringPartAutomaton
           ): AsboMap = {
             oldLhsMap get asbo match {
               case Some(_) => // avoiding loops

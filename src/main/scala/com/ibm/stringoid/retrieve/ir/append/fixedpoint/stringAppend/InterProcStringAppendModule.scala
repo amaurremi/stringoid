@@ -38,8 +38,8 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
   }
 
   class InterProcStringAppendSolver(
-    idToAsbo: Map[Identifier, Set[ASBO]],
-    fieldToAutomaton: FieldToAutomaton
+                                     idToAsbo: Map[Identifier, Set[ASBO]],
+                                     fieldToAutomaton: FieldToAutomaton
   ) extends StringAppendFixedPointSolver(idToAsbo, fieldToAutomaton) {
 
     type BB = BasicBlockInContext[IExplodedBasicBlock]
@@ -99,7 +99,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
               if ret.returnsPrimitiveType || hasStringReturnType(callerInstr)  // todo test primitive & void
               callDef      = callerInstr.getDef
               callId       = createIdentifier(callDef, callerNode)
-              asbo        <- idToAsbo getOrElse (callId, Set(createAsbo(callDef, callerNode)))
+              asbo        <- idToAsbo getOrElse (callId, Set(createAsbo(callId)))
             } yield asbo
             ReturnOperator(lhsAsbos, ret.getResult, node)
           case instr =>
@@ -115,9 +115,9 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
        *                       if the function does not return a String, this set should be empty
        */
       case class ReturnOperator(
-        lhsAsbos: Iterator[ASBO],
-        result: ValueNumber,
-        retNode: Node
+                                 lhsAsbos: Iterator[ASBO],
+                                 result: ValueNumber,
+                                 retNode: Node
       ) extends UnaryOperator[AtaReference] {
 
         /* l = c()   ... c() { ... return result; } */
@@ -125,7 +125,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
           if (result > 0) {
             val resultId = createIdentifier(result, retNode)
             val newMap = (for {
-              resultAsbo <- idToAsbo getOrElse(resultId, Set(createAsbo(result, retNode)))
+              resultAsbo <- idToAsbo getOrElse(resultId, Set(createAsbo(resultId)))
               lAsbo <- lhsAsbos
               lAuto = rhsMap getOrElse(lAsbo, epsilonAuto)
               resultAsboId = createIdentifier(resultAsbo.identifier.vn, CallGraphNode(resultAsbo.identifier.node))
@@ -165,7 +165,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             cgNode = CallGraphNode(node)
             (asbo, paramIndex) <- substitutionAsbos
             paramId = createIdentifier(paramIndex + 1, cgNode)
-            paramAsbo    <- idToAsbo getOrElse (paramId, Set(ASBO(paramId)))
+            paramAsbo    <- idToAsbo getOrElse (paramId, Set(createAsbo(paramId)))
             oldAutomaton  = rhsMap getOrElse (paramAsbo, epsilonAuto)
             automaton     = rhsMap getOrElse (asbo, epsilonAuto)
           } yield paramAsbo -> (oldAutomaton | automaton))(breakOut)

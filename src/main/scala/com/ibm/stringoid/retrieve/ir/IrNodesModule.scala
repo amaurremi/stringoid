@@ -61,7 +61,12 @@ object IrNodesModule {
       conf withValue ("wala.entry.signature-pattern", ConfigImpl.fromAnyRef(".*main\\(\\[Ljava/lang/String;\\)V", ""))
   }
 
-  trait IntraProcIrNodes extends IrUrlRetriever with IrNodes
+  trait IntraProcIrNodes extends IrUrlRetriever with IrNodes {
+
+    case class IdAsbo(identifier: Identifier) extends ASBO
+
+    override def createAsbo(id: ValueNumber): ASBO = IdAsbo(id)
+  }
 
   trait CgIntraProcIrNodes extends IntraProcIrNodes with CgNodeRetriever {
 

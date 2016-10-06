@@ -21,6 +21,17 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
 
   protected type BB = BasicBlockInContext[IExplodedBasicBlock]
 
+  override def createAsbo(id: Identifier): ASBO = {
+    if (hasSbType(id.node, id.vn, getTypeAbstraction(id.node.getIR, id.vn)))
+      MutAsbo(id)
+    else
+      ImmutAsbo(id)
+  }
+
+  case class ImmutAsbo(identifier: Identifier) extends ASBO
+
+  case class MutAsbo(identifier: Identifier) extends ASBO
+
   def callGraph: CallGraph
 
   def acyclicCFG: ExplodedInterproceduralCFG
@@ -54,27 +65,27 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
     if (Option(ir).isDefined) {
       val abstractObjects = ir.iterateAllInstructions() flatMap {
         case inv: SSAAbstractInvokeInstruction if isSbConstructor(inv) =>
-          Iterator(createAsbo(getSbConstructorDef(inv), node))
+          Iterator(createAsbo(createIdentifier(getSbConstructorDef(inv), node)))
         case inv: SSAAbstractInvokeInstruction if isStringFormat(inv) =>
-          Iterator(createAsbo(inv.getDef, node))
+          Iterator(createAsbo(createIdentifier(inv.getDef, node)))
         case inv: SSAAbstractInvokeInstruction =>
           getArgsAndParams(inv) map {
             case (arg, _) =>
-              createAsbo(arg, node)
+              createAsbo(createIdentifier(arg, node))
           }
         case phi: SSAPhiInstruction =>
           0 until phi.getNumberOfUses map {
             use =>
-              createAsbo(phi getUse use, node)
+              createAsbo(createIdentifier(phi getUse use, node))
           }
         case ret: SSAReturnInstruction =>
-          Iterator(createAsbo(ret.getResult, node))
+          Iterator(createAsbo(createIdentifier(ret.getResult, node)))
         case _ =>
           Iterator.empty
       }
       val params = 1 to ir.getSymbolTable.getNumberOfParameters collect {
         case vn if isMutable(getTypeAbstraction(ir, vn).getTypeReference) =>
-          createAsbo(vn, node)
+          createAsbo(createIdentifier(vn, node))
       }
       abstractObjects ++ params
     } else Iterator[ASBO]()
@@ -103,8 +114,8 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
   ): Seq[(ASBO, Int)] =
     for {
       argIndex <- 0 until paramNum
-      arg       = getArg(argIndex)
-      asbo     <- (idToAsbo getOrElse (createIdentifier(arg, node), Set(createAsbo(arg, node)))).toSeq
+      argId     = createIdentifier(getArg(argIndex), node)
+      asbo     <- (idToAsbo getOrElse (argId, Set(createAsbo(argId)))).toSeq
     } yield (asbo, argIndex)
 
   protected def getCallInstructions(

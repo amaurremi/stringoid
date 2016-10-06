@@ -7,13 +7,14 @@ import com.ibm.wala.ssa.{DefUse, IR}
 
 trait Nodes {
 
-  val DEBUG = false
+  val DEBUG = true
 
   type Identifier
 
   def valNum(id: Identifier): ValueNumber
 
-  case class ASBO(identifier: Identifier) {
+  trait ASBO {
+    val identifier: Identifier
     override val hashCode = identifier.hashCode
   }
 
@@ -43,7 +44,7 @@ trait Nodes {
     def getDu: DefUse = node.getDU
   }
 
-  final def createAsbo(vn: ValueNumber, node: Node) = ASBO(createIdentifier(vn, node))
+  def createAsbo(id: Identifier): ASBO
 
   def createIdentifier(vn: ValueNumber, node: Node): Identifier
 }

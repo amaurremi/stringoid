@@ -38,15 +38,15 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
   }
 
   def getAppendSolver(
-    node: Node,
-    vnToAsbo: Map[Identifier, Set[ASBO]],
-    fieldToAutomaton: FieldToAutomaton
+                       node: Node,
+                       vnToAsbo: Map[Identifier, Set[ASBO]],
+                       fieldToAutomaton: FieldToAutomaton
   ) = new IntraProcStringAppendSolver(node, vnToAsbo, fieldToAutomaton)
 
   class IntraProcStringAppendSolver(
-    node: Node,
-    idToAsbo: Map[Identifier, Set[ASBO]],
-    fieldToAutomaton: FieldToAutomaton
+                                     node: Node,
+                                     idToAsbo: Map[Identifier, Set[ASBO]],
+                                     fieldToAutomaton: FieldToAutomaton
   ) extends StringAppendFixedPointSolver(idToAsbo, fieldToAutomaton) {
 
     override type BB = IExplodedBasicBlock
