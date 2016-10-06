@@ -15,8 +15,6 @@ import scala.collection.mutable
 
 trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers with WorkListModule with IrUrlRetriever {
 
-  private[this] val GRAPH_PASSES = 2
-
   def addToResult(bb: BB, asbo: ASBO, auto: StringPartAutomaton): Unit = {
     asbo match {
       case imm: ImmutAsbo =>
@@ -89,16 +87,17 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
 
   private[this] def getResult: Iterator[StringPartAutomaton] = TimeResult("II analysis phase (computing automata)", {
 
+    val passes   = config.graphPasses
     val topOrder = TimeResult("CFG in topological order", Topological.makeTopologicalIter(acyclicCFG).toList)
-    val size = acyclicCFG.size
+    val size     = acyclicCFG.size
     if (DEBUG) {
       println(s"CFG size: $size")
     }
-    println("_" * 100)
+    println("_" * 100 + "(100%)")
 
-    (0 until GRAPH_PASSES) foreach { graphPass =>
+    (0 until passes) foreach { graphPass =>
 
-      println(s"running graph pass ${graphPass + 1} out of $GRAPH_PASSES")
+      println(s"running graph pass ${graphPass + 1} out of $passes")
 
       var iteration = 0
       var printedOut = 0

@@ -70,7 +70,13 @@ object IrSourceObject {
 import com.ibm.stringoid.AnalysisTypeObject.AnalysisType._
 import com.ibm.stringoid.IrSourceObject.IrSource._
 
-case class AnalysisConfig(irSource: IrSource, ignoreLibs: Boolean, analysis: AnalysisType, outputUrls: Boolean, file: Path)
+case class AnalysisConfig(
+  irSource: IrSource,
+  ignoreLibs: Boolean,
+  analysis: AnalysisType,
+  outputUrls: Boolean,
+  graphPasses: Int,
+  file: Path)
 
 object AnalysisConfig {
 
@@ -88,6 +94,8 @@ object AnalysisConfig {
     ignoreLibs = true,
     analysis = ATUnset,
     outputUrls = false,
-    Paths.get("src/test/java/testPrograms")
+    graphPasses = 2,
+    file = Paths.get("src/test/java/testPrograms"
+    )
   )
 }

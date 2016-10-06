@@ -44,8 +44,8 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
   }
 
   abstract class StringAppendFixedPointSolver(
-                                               vnToAsbo: Map[Identifier, Set[ASBO]],
-                                               fieldToAutomaton: FieldToAutomaton
+    vnToAsbo: Map[Identifier, Set[ASBO]],
+    fieldToAutomaton: FieldToAutomaton
   ) {
 
     type BB

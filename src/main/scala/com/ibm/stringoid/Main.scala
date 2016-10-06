@@ -15,7 +15,12 @@ import scala.util.Try
 object Main extends StringoidAnalysis {
 
   // Program arguments example
-  // -a append --lib false --ir-source cha -u true <apk file>
+  // -a append --lib false --ir-source interproc -u true -p 2 <apk file>
+  // run concatenation analysis
+  //           without analyzing libraries
+  //                       run the interprocedural analysis
+  //                                             output URLs (not automata)
+  //                                                     do two passes over the CFG
 
   def main(args: Array[String]): Unit =
     parser.parse(args, CmdOptions()) foreach { options =>
@@ -32,9 +37,10 @@ object Main extends StringoidAnalysis {
     file: Path,
     irSource: String,
     ignoreLibraries: Boolean,
-    outputUrls: Boolean
+    outputUrls: Boolean,
+    graphPasses: Int
   ) : Try[String] = {
-    val config = AnalysisConfig(IrSource.withName(irSource), ignoreLibraries, AnalysisType.withName(analysis), outputUrls = outputUrls, file)
+    val config = AnalysisConfig(IrSource.withName(irSource), ignoreLibraries, AnalysisType.withName(analysis), outputUrls = outputUrls, graphPasses = graphPasses, file)
     Try(AnalysisResult.fromConfig(config).asJson.nospaces)
   }
 
@@ -88,6 +94,10 @@ object Main extends StringoidAnalysis {
       (irSource, opts) =>
         opts.copy(config = opts.config.copy(irSource = irSource))
     } text s"construct call graph to only retrieve URLs in reachable methods? options: $irSources"
+    opt[Int]('p', "passes") optional() valueName "<# of graph passes>" action {
+      (graphPasses, opts) =>
+        opts.copy(config = opts.config.copy(graphPasses = graphPasses))
+    }
     arg[Path]("<file>...") unbounded() action {
       (f, opts) =>
         opts.copy(files = opts.files :+ f)
