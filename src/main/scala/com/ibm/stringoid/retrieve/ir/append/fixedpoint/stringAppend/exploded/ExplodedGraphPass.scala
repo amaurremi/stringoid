@@ -99,13 +99,20 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
 
       println(s"running graph pass ${graphPass + 1} out of $passes")
 
-      var iteration = 0
+      // for the "progress bar"
+      var iteration  = 0
       var printedOut = 0
 
       topOrder foreach {
         bb: BB =>
 
+          // printing progress bar
           iteration = iteration + 1
+          if (Math.ceil((iteration.toFloat / size) * 100).toInt > printedOut) {
+            print(".")
+            printedOut = printedOut + 1
+          }
+
           propagateIdentity(bb)
 
           val node = CallGraphNode(bb.getNode)
@@ -150,11 +157,6 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
               }
             case _ =>
               ()
-          }
-
-          if (Math.ceil((iteration.toFloat / size) * 100).toInt > printedOut) {
-            print(".")
-            printedOut = printedOut + 1
           }
       }
       println()
