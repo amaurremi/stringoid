@@ -14,16 +14,15 @@ public class EriksFineTests {
 
         sb.append(getQuery(2));
 
-        System.out.println(sb.toString());
-
+        
         // to assert that "http://example.com" and "http://example.com/path" are detected by stringoid,
         // we pass them into the `Assertions.shouldContainHttp` method.
         // important: please pass the necessary URL _without_ the "http://" or "https://" prefix.
         // if you do, the analysis will detect it anyway, which could lead to false positives!
         Assertions.shouldContainHttp("erik.com");
-        Assertions.shouldContainHttp("erik.com/path");
-        Assertions.shouldContainHttp("erik.com/path/big");
-        Assertions.shouldContainHttp("erik.com/path/big?first=one");
+        Assertions.shouldContainHttp("erik.com/big");
+        Assertions.shouldContainHttp("erik.com/big?first=one");
+        Assertions.shouldContainHttp("erik.com/big?first=one&second=two");
     }
 
     static String getDomain(String prefix) {
