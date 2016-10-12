@@ -34,7 +34,7 @@ object TimeResult {
     num = num + 1
     val timeResult = TimeResult(block)
     num = num - 1
-    printColoured(num, "elapsed time: " + timeResult.time.toLong + " s (" + process + ")\n")
+    printColoured(num, "elapsed time: " + timeResult.time.toLong + " s\n")
     timeResult.result
   }
 
