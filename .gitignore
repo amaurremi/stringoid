@@ -6,3 +6,7 @@ target/
 projectFilesBackup/
 project/target/
 .DS_Store
+
+# IntelliJ
+*.iml
+.history
