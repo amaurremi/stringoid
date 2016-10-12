@@ -15,12 +15,12 @@ import scala.util.Try
 object Main extends StringoidAnalysis {
 
   // Program arguments example
-  // -a append --lib false --ir-source interproc -u true -p 2 <apk file>
+  // -a append --lib false --ir-source interproc -u true -p 1 <apk file>
   // run concatenation analysis
   //           without analyzing libraries
   //                       run the interprocedural analysis
   //                                             output URLs (not automata)
-  //                                                     do two passes over the CFG
+  //                                                     do one pass over the CFG
 
   def main(args: Array[String]): Unit =
     parser.parse(args, CmdOptions()) foreach { options =>

@@ -175,10 +175,10 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
         map2.foldLeft(map1) {
           case (prevMap, (asbo, auto)) =>
             prevMap get asbo match {
-              case Some(prevAuto) if prevAuto != auto =>
-                prevMap updated (asbo, prevAuto | auto)
-              case Some(prevAuto)                     =>
+              case Some(prevAuto) if prevAuto eq auto =>
                 prevMap
+              case Some(prevAuto)                     =>
+                prevMap updated (asbo, prevAuto | auto)
               case None                               =>
                 prevMap + (asbo -> auto)
             }
