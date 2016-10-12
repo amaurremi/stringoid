@@ -1,5 +1,7 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded
 
+import java.util
+
 import com.ibm.stringoid.retrieve.UrlCheck._
 import com.ibm.stringoid.retrieve.ir._
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
@@ -39,7 +41,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
   val resultMapImmut = mutable.Map[ImmutAsbo, StringPartAutomaton]()
 
   def defaultAsbo(asbo: ASBO): StringPartAutomaton = {
-    val id   = asbo.identifier
+    val id = asbo.identifier
     if (hasSbType(id.node, id.vn, getTypeAbstraction(id.node.getIR, id.vn)))
       epsilonAuto
     else
@@ -47,10 +49,11 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
   }
 
   def stringAppends(fieldToAutomaton: FieldToAutomaton): StringPartAutomaton = {
+    val automatonCache = new util.IdentityHashMap[StringPartAutomaton, Unit]
     // concatenation URLs
-    val filteredAutomata: Iterator[StringPartAutomaton] = TimeResult("filter URL automata", getResult map {
+    val filteredAutomata: Iterator[StringPartAutomaton] = TimeResult("filter URL automata", getResult flatMap {
       auto =>
-        auto.filterHeads {
+        val filtered = auto.filterHeads {
           case StringIdentifier(id)     =>
             val table = id.node.getIR.getSymbolTable
             val vn    = id.vn
@@ -60,6 +63,12 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
           case StringFormatPart(string) =>
             isUrlPrefix(string)
           case _                        => false
+        }
+        if (automatonCache contains filtered)
+          None
+        else {
+          automatonCache += (filtered -> ())
+          Some(filtered)
         }
     })
     // constant URLs
