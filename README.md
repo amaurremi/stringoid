@@ -39,3 +39,30 @@ Some example `.apk` files are provided in this project under `stringoid/dynamic-
 1. Get Spark. Pick the same version as in `build.sbt`, pre-compiled for Hadoop works.
 2. Run `sbt assembly`
 3. Run `spark-submit --master local[1] --class com.ibm.stringoid.spark.SparkHarness target/.../stringoid-assembly....jar constants src/test/resources spark-out 0`, or similar.
+
+
+## Create and run tests
+1. Create Java source tests and put them into the `src/test/java/moretests` directory. You can look at the `Example.java` file to see an example. To create a test, write a Java program that creates URLs in some interesting way. Then, if you want to check whether stringoid detects a URL "http://xxx" or "https://yyy", write somewhere (for example in the main method):
+
+  - `Assertions.shouldContainHttp("xxx");`
+  - `Assertions.shouldContainHttp("yyy");`
+  
+  That is, don't include the "http://" or "https://" as part of the URL in the assertion.
+2. To run the tests, you can use `sbt test` from your command line. If you're using an IDE, you can go to `src/test/scala/com/ibm/stringoid/ConcatenationSpec.scala` and run the tests directly from there (if you use IntelliJ, right-click the file and select "Run ConcatenationSpec"). Note the following:
+  1. The tests will run an inter-procedural analysis.
+  2. The analysis will not detect string concatenation with the "+" operator. To write "http://" + "url.com", you can write anything like: 
+    - `StringBuilder sb = new StringBuilder();`
+    - `sb.append("http://");`
+    - `sb.append("url.com");`
+    - `String s = url.toString;`
+    - `String s = new StringBuilder("http://").append("url.com").toString;`
+3. The analysis will create an acyclic control-flow graph. Here is one consequence: consider the program
+  
+  ```java
+  StringBuilder sb = new StringBuilder("http://");
+  while (...) { sb.append("url.com"); }
+  sb.append("path");
+  ```
+
+  Stringoid will detect the URLs "http://", "http://url.com", and "http://path", but not "http://url.com/path".
+4. Please make sure that the methods in which you construct URLs are reachable from the main method of the public class in the Java test file you're implementing.
