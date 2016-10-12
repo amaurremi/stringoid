@@ -3,22 +3,18 @@ package moretests;
 import java.util.ArrayList;
 
 // this example tests that stringoid can construct URLs out of parameters and method-return values
-public class EriksFineTests {
+public class ArrayListTests {
 
     public static void main(String[] args) {
         String domain = getDomain("http://");
         StringBuilder sb = new StringBuilder(domain);
-        // instead of using concatenation with the '+' operator, we have to use StringBuilder's
-        // or StringBuffer's append method
+
         sb.append(getPath(20));
 
         sb.append(getQuery(2));
 
-        
-        // to assert that "http://example.com" and "http://example.com/path" are detected by stringoid,
-        // we pass them into the `Assertions.shouldContainHttp` method.
-        // important: please pass the necessary URL _without_ the "http://" or "https://" prefix.
-        // if you do, the analysis will detect it anyway, which could lead to false positives!
+//        System.out.println(sb.toString());
+
         Assertions.shouldContainHttp("erik.com");
         Assertions.shouldContainHttp("erik.com/big");
         Assertions.shouldContainHttp("erik.com/big?first=one");
