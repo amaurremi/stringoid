@@ -67,10 +67,10 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     }
 
   private[this] def appendResult(
-                                  bb: BB,
-                                  succ: BB,
-                                  asbo: ASBO,
-                                  newAutomaton: StringPartAutomaton
+    bb: BB,
+    succ: BB,
+    asbo: ASBO,
+    newAutomaton: StringPartAutomaton
   )(
     implicit worklist: WorkList
   ): Unit = {

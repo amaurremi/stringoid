@@ -99,9 +99,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
     val passes   = config.graphPasses
     val topOrder = TimeResult("CFG in topological order", Topological.makeTopologicalIter(acyclicCFG).toList)
     val size     = acyclicCFG.size
-    if (DEBUG) {
-      println(s"CFG size: $size")
-    }
+    if (DEBUG) println(s"CFG size: $size")
     println("_" * 100 + "(100%)")
 
     (0 until passes) foreach { graphPass =>
