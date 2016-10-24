@@ -12,24 +12,26 @@ import com.ibm.wala.ssa._
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
-// todo remove instructions from StringPartAutomaton!
+// todo remove instructions from SPA!
 
 trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSpecifiers with WorkListModule with IrUrlRetriever {
 
+  import SPA._
+  
   /**
     * Analysis result that maps exploded nodes to automata. This maps tracks only mutable ASBOs, i.e.
     * ASBOs corresponding to StringBuilders and StringBuffers.
     */
-  private[this] val resultMutable = mutable.Map.empty[ExplodedNode, StringPartAutomaton] withDefaultValue epsilonAuto
+  private[this] val resultMutable = mutable.Map.empty[ExplodedNode, SPA] withDefaultValue empty
 
   /**
     * Analysis result that maps immutable ASBOs to automata.
     */
-  private[this] val resultImmutable = mutable.Map.empty[ASBO, StringPartAutomaton] withDefaultValue epsilonAuto
+  private[this] val resultImmutable = mutable.Map.empty[ASBO, SPA] withDefaultValue empty
 
   def stringAppends(fieldToAutomaton: FieldToAutomaton): StringPartAutomaton = {
     // concatenation URLs
-    val filteredAutomata: Iterator[StringPartAutomaton] = TimeResult("filter URL automata", getResult map {
+    val filteredAutomata: Iterator[SPA] = TimeResult("filter URL automata", getResult map {
       auto =>
         auto.filterHeads {
           case StringIdentifier(id)     =>
@@ -45,10 +47,10 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     })
     // constant URLs
     val constants = TimeResult("constant URLs", getConstantUrls)
-    TimeResult("merging filtered automata", merge(filteredAutomata ++ constants))
+    TimeResult("merging filtered automata", merge(filteredAutomata ++ constants).auto)
   }
 
-  private[this] def getConstantUrls: Iterator[StringPartAutomaton] =
+  private[this] def getConstantUrls: Iterator[SPA] =
     for {
       node <- callGraph.iterator()
       ir    = node.getIR
@@ -59,7 +61,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
       string = table getStringValue vn
       if isUrlPrefix(string)
       spart  = StringIdentifier(createId(vn, CallGraphNode(node)))
-    } yield newAuto(spart)
+    } yield SPA(spart)
 
   val idToAsbo: Map[CgIdentifier, Set[ASBO]] =
     identifierToAsbo withDefault {
@@ -70,22 +72,22 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     bb: BB,
     succ: BB,
     asbo: ASBO,
-    newAutomaton: StringPartAutomaton
+    SPAmaton: SPA
   )(
     implicit worklist: WorkList
   ): Unit = {
     val succNode  = (succ, asbo)
     val oldResult = resultMutable((bb, asbo))
     val newResult =
-      if (oldResult == epsilonAuto) newAutomaton
-      else oldResult +++ newAutomaton
+      if (oldResult == empty) SPAmaton
+      else oldResult +++ SPAmaton
     val oldSuccResult = resultMutable(succNode)
     updateResultAndWorkListMutable(succNode, oldSuccResult | newResult)
   }
 
   private[this] def updateResultAndWorkListMutable(
     node: ExplodedNode,
-    automaton: StringPartAutomaton
+    automaton: SPA
   )(
     implicit worklist: WorkList
   ): Unit = {
@@ -96,7 +98,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
 
   private[this] def updateResultAndWorkListImmutable(
     node: ExplodedNode,
-    automaton: StringPartAutomaton
+    automaton: SPA
   )(
     implicit worklist: WorkList
   ): Unit = {
@@ -108,15 +110,15 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
   private[this] def resultGetOrElse(
     bb: BB,
     asbo: ASBO,
-    default: StringPartAutomaton = epsilonAuto
-  ): StringPartAutomaton = {
+    default: SPA = empty
+  ): SPA = {
     val immutAuto = resultImmutable get asbo
     if (immutAuto.isEmpty) {
       resultMutable getOrElse ((bb, asbo), default)
     } else immutAuto.get
   }
 
-  private[this] def getResult: Iterator[StringPartAutomaton] = TimeResult("II analysis phase (computing automata)", {
+  private[this] def getResult: Iterator[SPA] = TimeResult("II analysis phase (computing automata)", {
 
     implicit val worklist = TimeResult("initialize work list", initializeWorklist(idToAsbo))
 
@@ -160,19 +162,19 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
           val sfAsbo     = createAsbo(createId(instr.getDef, node))
           if (factInArgs || sfAsbo == factAsbo) {
             val sfArgSeqs: Seq[Seq[StringPart]] = reorderStringFormatArgs(instr, node)
-            val automaton = sfArgSeqs.foldLeft(epsilonAuto) {
+            val automaton = sfArgSeqs.foldLeft(empty) {
               case (prevAuto, sfArgs) if sfArgs.nonEmpty =>
-                val nextAuto = sfArgs.tail.foldLeft(newAuto(sfArgs.head)) {
+                val nextAuto = sfArgs.tail.foldLeft(SPA(sfArgs.head)) {
                   case (resultAutomaton, stringFormatArg) =>
                     stringFormatArg match {
                       case StringIdentifier(id) =>
                         val automata = idToAsbo(id) map {
                           asbo =>
-                            resultGetOrElse(bb, asbo, createAutomaton(CallGraphNode(asbo.identifier.node), asbo.identifier))
+                            resultGetOrElse(bb, asbo, SPA(CallGraphNode(asbo.identifier.node), asbo.identifier))
                         }
                         resultAutomaton +++ merge(automata.toIterator)
                       case other =>
-                        val appendAutomaton = newAuto(other)
+                        val appendAutomaton = SPA(other)
                         resultAutomaton +++ appendAutomaton
                     }
                 }
@@ -203,7 +205,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
             paramId             = createId(paramIndex + 1, CallGraphNode(succ))
             paramAsbo          <- idToAsbo getOrElse (paramId, Set(createAsbo(paramId)))
             oldAutomaton        = resultGetOrElse(bb, paramAsbo)
-            automaton           = resultGetOrElse(bb, asbo, createAutomaton(node, asbo.identifier))
+            automaton           = resultGetOrElse(bb, asbo, SPA(node, asbo.identifier))
             targetBB            = acyclicCFG getEntry succ
           } {
             val paramType = ir getParameterType paramIndex
@@ -236,7 +238,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
             } {
               val callExplNode = (callBlock, callAsbo)
               val prevResult   = resultGetOrElse(callBlock, callAsbo)
-              val retResult    = resultGetOrElse(bb, resultAsbo, createAutomaton(retNode, resultAsbo.identifier))
+              val retResult    = resultGetOrElse(bb, resultAsbo, SPA(retNode, resultAsbo.identifier))
               if (mutable) updateResultAndWorkListMutable(callExplNode, prevResult | retResult)
               else updateResultAndWorkListImmutable(callExplNode, prevResult | retResult)
             }
@@ -260,7 +262,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
     succNodes foreach {
       succ =>
         val succNode = (succ, factAsbo)
-        def createdAutomaton = createAutomaton(CallGraphNode(bb.getNode), identifier)
+        def createdAutomaton = SPA(CallGraphNode(bb.getNode), identifier)
         val automaton =
           if (mutable) resultMutable getOrElse((bb, factAsbo), createdAutomaton)
           else resultImmutable getOrElse(factAsbo, createdAutomaton)
@@ -293,7 +295,7 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
       if ((sb == factAsbo) || (args contains factAsbo)) {
         val argAutos = args map {
           a =>
-            resultGetOrElse(bb, a, createAutomaton(node, a.identifier))
+            resultGetOrElse(bb, a, SPA(node, a.identifier))
         }
         val argAuto = merge(argAutos.toIterator)
         appendResult(bb, succ, sb, argAuto)

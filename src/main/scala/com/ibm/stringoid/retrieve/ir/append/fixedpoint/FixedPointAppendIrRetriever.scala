@@ -35,7 +35,7 @@ abstract class FixedPointAppendIrRetriever(
     * collect all assignments to static fields into map from field to sum-automaton
     */
   override lazy val fieldToAutomaton: FieldToAutomaton =
-    TimeResult("field-to-automaton", getAllNodes.foldLeft(mutable.Map.empty[FieldReference, StringPartAutomaton]) {
+    TimeResult("field-to-automaton", getAllNodes.foldLeft(mutable.Map.empty[FieldReference, SPA]) {
       case (oldMap, node) if hasIr(node) =>
         val ir = node.getIr
         ir.iterateNormalInstructions().foldLeft(oldMap) {
@@ -44,7 +44,7 @@ abstract class FixedPointAppendIrRetriever(
             val writeVal = instr.getVal
             val table = ir.getSymbolTable
             if (table isConstant writeVal) {
-              val stringPart = newAuto(StaticFieldPart(String.valueOf(table getConstantValue writeVal)))
+              val stringPart = SPA(StaticFieldPart(String.valueOf(table getConstantValue writeVal)))
               val automaton =
                 if (oldMap2 contains field) oldMap2(field) | stringPart
                 else stringPart

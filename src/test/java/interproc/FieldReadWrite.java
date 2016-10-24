@@ -23,3 +23,22 @@ public class FieldReadWrite {
         return "http://field-read-write.com";
     }
 }
+
+///// main()
+///// constants: 11 = path1
+//
+// 2 = new FRW
+// 7 = new SB
+// 9 = getField url
+// 7(9)
+// 6 = 7.append(11)
+// 5 = 6.toString
+// putfield url = 5
+// f()
+
+
+///// FRW.init
+//
+// invokespecial Object.init
+// 4 = getDomain
+// putfield url = 4

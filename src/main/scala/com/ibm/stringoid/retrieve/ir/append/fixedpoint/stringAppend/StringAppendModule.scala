@@ -17,6 +17,8 @@ import scala.collection.mutable.ArrayBuffer
 
 trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuilderModule {
 
+  import SPA._
+  
   protected val MISSING_STRING_BUILDER_MESSAGE: String =
     "Value-number-to-ASBO map should contain the value number for this string builder."
   protected val EDGE_FUNCTIONS_NOT_SUPPORTED_MESSAGE: String =
@@ -30,7 +32,7 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
   var processedMeetInstructions = 0
   var instrCount = 0
 
-  def stringAppendsForSolver(solver: StringAppendFixedPointSolver): Iterator[StringPartAutomaton] = {
+  def stringAppendsForSolver(solver: StringAppendFixedPointSolver): Iterator[SPA] = {
     val result  = TimeResult("string-append solver", solver.result)
     val mapping = solver.ataRefMapping
     val ataRefs: Set[Int] = (solver.cfg map {
@@ -49,7 +51,7 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
   ) {
 
     type BB
-    type AsboMap = Map[ASBO, StringPartAutomaton]
+    type AsboMap = Map[ASBO, SPA]
 
     def cfg: NumberedGraph[BB]
 
@@ -76,11 +78,11 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
 
     def initialAtaForNode(node: Node): AsboMap = {
       val table = node.getIr.getSymbolTable
-      (1 to table.getMaxValueNumber).foldLeft(Map.empty[ASBO, StringPartAutomaton]) {
+      (1 to table.getMaxValueNumber).foldLeft(Map.empty[ASBO, SPA]) {
         case (oldMap, vn) =>
           val id = createId(vn, node)
           if (table isConstant vn) {
-            val automaton = newAuto(StringIdentifier(id))
+            val automaton = SPA(StringIdentifier(id))
             oldMap + (createAsbo(id) -> automaton)
           } else {
             node.getDu getDef vn match {
@@ -170,10 +172,10 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
         idNode: Node,
         rhsMap: AsboMap,
         processedAcc: Set[Identifier]
-      ): (StringPartAutomaton, AsboMap) = {
+      ): (SPA, AsboMap) = {
         val (resultAuto, resultMap) =
           if (processedAcc contains id)
-            (newAuto(StringCycle), Map.empty[ASBO, StringPartAutomaton])
+            (SPA(StringCycle), Map.empty[ASBO, SPA])
           else {
             idToAsbo get id match {
               case Some(asbos) =>
@@ -182,11 +184,11 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
                   automaton <- rhsMap get asbo
                 } yield automaton
                 val newValNumAutomaton =
-                  if (automata.isEmpty) createAutomaton(node, id)
+                  if (automata.isEmpty) SPA(node, id)
                   else merge(automata)
-                (newValNumAutomaton, Map.empty[ASBO, StringPartAutomaton])
+                (newValNumAutomaton, Map.empty[ASBO, SPA])
               case None if rhsMap contains createAsbo(id) =>
-                (rhsMap(createAsbo(id)), Map.empty[ASBO, StringPartAutomaton])
+                (rhsMap(createAsbo(id)), Map.empty[ASBO, SPA])
               case None =>
                 node.getDu getDef valNum(id) match {
                   case phi: SSAPhiInstruction =>
@@ -203,14 +205,14 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
                     }) + (createAsbo(createId(phi.getDef, node)) -> mergedAutomaton)
                     (mergedAutomaton, mergedMap)
                   case _ =>
-                    (createAutomaton(node, id), Map.empty[ASBO, StringPartAutomaton])
+                    (SPA(node, id), Map.empty[ASBO, SPA])
                 }
             }
           }
         (resultAuto, resultMap)
       }
 
-      def getAppendAutomaton(node: Node, id: Identifier, instruction: SSAInstruction, idNode: Node, rhsMap: AsboMap): (StringPartAutomaton, AsboMap) =
+      def getAppendAutomaton(node: Node, id: Identifier, instruction: SSAInstruction, idNode: Node, rhsMap: AsboMap): (SPA, AsboMap) =
         getAppendAutomaton(node, id, idNode, rhsMap, Set.empty[Identifier])
 
 
@@ -271,14 +273,14 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
             sfArgSeqs.foldLeft(rhsMap) {
               case (m, sfArgs) if sfArgs.nonEmpty =>
                 val sfTail = sfArgs.tail
-                val (updNewMap, automaton) = sfTail.foldLeft(m, newAuto(sfArgs.head)) {
+                val (updNewMap, automaton) = sfTail.foldLeft(m, SPA(sfArgs.head)) {
                   case ((updM, resultAutomaton), stringFormatArg) =>
                     stringFormatArg match {
                       case StringIdentifier(id) =>
                         val (auto, toAppend) = getAppendAutomaton(node, id, instr, node, m)
                         (updM ++ toAppend, resultAutomaton +++ auto)
                       case other =>
-                        val appendAutomaton = newAuto(other)
+                        val appendAutomaton = SPA(other)
                         (updM, resultAutomaton +++ appendAutomaton)
                     }
                 }
@@ -301,7 +303,7 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
         override def evaluate(lhs: AtaReference, rhs: Array[AtaReference]): Byte = {
           processedMeetInstructions = processedMeetInstructions + 1
 
-          def add(asbo: ASBO, auto1: StringPartAutomaton, l: AsboMap): StringPartAutomaton =
+          def add(asbo: ASBO, auto1: SPA, l: AsboMap): SPA =
             l get asbo match {
               case Some(auto2) =>
                 auto1 | auto2
@@ -313,7 +315,7 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
                          oldLhsMap: AsboMap,
                          newMap: AsboMap,
                          asbo: ASBO,
-                         rAuto: StringPartAutomaton
+                         rAuto: SPA
           ): AsboMap = {
             oldLhsMap get asbo match {
               case Some(_) => // avoiding loops
@@ -331,7 +333,7 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
           val oldLhsMap = lhsAta.asboToAutomaton
           var newMap = oldLhsMap
           for {
-            rmapRef      <- rhs
+            rmapRef       <- rhs
             rmap          = ataRefMapping(rmapRef.index).asboToAutomaton
             (asbo, rAuto) <- rmap
           } {

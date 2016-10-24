@@ -13,6 +13,8 @@ import com.ibm.wala.ssa.analysis.{ExplodedControlFlowGraph, IExplodedBasicBlock}
 
 trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOModule with BackEdges {
 
+  import SPA._
+
   /**
     * Get the string concatenation results.
     */
@@ -20,7 +22,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
     val idToAsbo: Map[ValueNumber, Set[ASBO]] = idToAsboForNode(node)
     val solver: IntraProcStringAppendSolver = getAppendSolver(node, idToAsbo, fieldToAutomaton)
     val automata = stringAppendsForSolver(solver)
-    val filteredAutomata: Iterator[StringPartAutomaton] = TimeResult("filter URL automata", automata map {
+    val filteredAutomata: Iterator[SPA] = TimeResult("filter URL automata", automata map {
       auto =>
         auto.filterHeads {
           case StringIdentifier(vn)     =>
@@ -33,7 +35,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
           case _                        => false
         }
     })
-    TimeResult("merging filtered automata", merge(filteredAutomata))
+    TimeResult("merging filtered automata", merge(filteredAutomata).auto)
 
   }
 

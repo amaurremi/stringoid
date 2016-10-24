@@ -17,10 +17,12 @@ import scala.collection.breakOut
 
 trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOModule {
 
+  import SPA._
+  
   def stringAppends(fieldToAutomaton: FieldToAutomaton): StringPartAutomaton = {
     val solver = new InterProcStringAppendSolver(identifierToAsbo, fieldToAutomaton)
     val automata = stringAppendsForSolver(solver)
-    val filteredAutomata: Iterator[StringPartAutomaton] = TimeResult("filter URL automata", automata map {
+    val filteredAutomata: Iterator[SPA] = TimeResult("filter URL automata", automata map {
       auto =>
         auto.filterHeads {
           case StringIdentifier(id)     =>
@@ -34,7 +36,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
           case _                        => false
         }
     })
-    TimeResult("merging filtered automata", merge(filteredAutomata))
+    TimeResult("merging filtered automata", merge(filteredAutomata).auto)
   }
 
   class InterProcStringAppendSolver(
@@ -52,7 +54,7 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
       * value to later manually add constants to the result.
       */
     override lazy val initialMapping: AsboMap =
-      TimeResult("initial mapping", callGraph.foldLeft(Map.empty[ASBO, StringPartAutomaton]) {
+      TimeResult("initial mapping", callGraph.foldLeft(Map.empty[ASBO, SPA]) {
         case (oldMap, node) if Option(node.getIR).isDefined =>
           oldMap ++ initialAtaForNode(CallGraphNode(node))
         case (oldMap, _)                                    =>
@@ -127,10 +129,10 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             val newMap = (for {
               resultAsbo <- idToAsbo getOrElse(resultId, Set(createAsbo(resultId)))
               lAsbo <- lhsAsbos
-              lAuto = rhsMap getOrElse(lAsbo, epsilonAuto)
+              lAuto = rhsMap getOrElse(lAsbo, empty)
               resultAsboId = createId(resultAsbo.identifier.vn, CallGraphNode(resultAsbo.identifier.node))
-              oldLhs = rhsMap getOrElse(lAsbo, epsilonAuto) // todo replace with createAutomaton
-              resultAuto = rhsMap getOrElse(resultAsbo, createAutomaton(retNode, resultAsboId))
+              oldLhs = rhsMap getOrElse(lAsbo, empty) // todo replace with SPA
+              resultAuto = rhsMap getOrElse(resultAsbo, SPA(retNode, resultAsboId))
             } yield lAsbo -> (oldLhs | lAuto | resultAuto))(breakOut)
             rhsMap ++ newMap
           } else rhsMap
@@ -166,8 +168,8 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             (asbo, paramIndex) <- substitutionAsbos
             paramId = createId(paramIndex + 1, cgNode)
             paramAsbo    <- idToAsbo getOrElse (paramId, Set(createAsbo(paramId)))
-            oldAutomaton  = rhsMap getOrElse (paramAsbo, epsilonAuto)
-            automaton     = rhsMap getOrElse (asbo, epsilonAuto)
+            oldAutomaton  = rhsMap getOrElse (paramAsbo, empty)
+            automaton     = rhsMap getOrElse (asbo, empty)
           } yield paramAsbo -> (oldAutomaton | automaton))(breakOut)
           rhsMap ++ newPairs
         }
