@@ -17,12 +17,10 @@ import scala.collection.breakOut
 
 trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOModule {
 
-  import SPA._
-  
   def stringAppends(fieldToAutomaton: FieldToAutomaton): StringPartAutomaton = {
     val solver = new InterProcStringAppendSolver(identifierToAsbo, fieldToAutomaton)
     val automata = stringAppendsForSolver(solver)
-    val filteredAutomata: Iterator[SPA] = TimeResult("filter URL automata", automata map {
+    val filteredAutomata: Iterator[StringPartAutomaton] = TimeResult("filter URL automata", automata map {
       auto =>
         auto.filterHeads {
           case StringIdentifier(id)     =>
@@ -36,13 +34,13 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
           case _                        => false
         }
     })
-    TimeResult("merging filtered automata", merge(filteredAutomata).auto)
+    TimeResult("merging filtered automata", merge(filteredAutomata))
   }
 
   class InterProcStringAppendSolver(
                                      idToAsbo: Map[Identifier, Set[ASBO]],
                                      fieldToAutomaton: FieldToAutomaton
-  ) extends StringAppendFixedPointSolver(idToAsbo, fieldToAutomaton) {
+                                   ) extends StringAppendFixedPointSolver(idToAsbo, fieldToAutomaton) {
 
     type BB = BasicBlockInContext[IExplodedBasicBlock]
 
@@ -54,12 +52,12 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
       * value to later manually add constants to the result.
       */
     override lazy val initialMapping: AsboMap =
-      TimeResult("initial mapping", callGraph.foldLeft(Map.empty[ASBO, SPA]) {
-        case (oldMap, node) if Option(node.getIR).isDefined =>
-          oldMap ++ initialAtaForNode(CallGraphNode(node))
-        case (oldMap, _)                                    =>
-          oldMap
-      })
+    TimeResult("initial mapping", callGraph.foldLeft(Map.empty[ASBO, StringPartAutomaton]) {
+      case (oldMap, node) if Option(node.getIR).isDefined =>
+        oldMap ++ initialAtaForNode(CallGraphNode(node))
+      case (oldMap, _)                                    =>
+        oldMap
+    })
 
     override protected def transferFunctions: StringAppendTransferFunctions = new InterProcStringAppendTransferFunctions
 
@@ -117,9 +115,9 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
        *                       if the function does not return a String, this set should be empty
        */
       case class ReturnOperator(
-                                 lhsAsbos: Iterator[ASBO],
-                                 result: ValueNumber,
-                                 retNode: Node
+        lhsAsbos: Iterator[ASBO],
+        result: ValueNumber,
+        retNode: Node
       ) extends UnaryOperator[AtaReference] {
 
         /* l = c()   ... c() { ... return result; } */
@@ -129,10 +127,10 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             val newMap = (for {
               resultAsbo <- idToAsbo getOrElse(resultId, Set(createAsbo(resultId)))
               lAsbo <- lhsAsbos
-              lAuto = rhsMap getOrElse(lAsbo, empty)
+              lAuto = rhsMap getOrElse(lAsbo, epsilonAuto)
               resultAsboId = createId(resultAsbo.identifier.vn, CallGraphNode(resultAsbo.identifier.node))
-              oldLhs = rhsMap getOrElse(lAsbo, empty) // todo replace with SPA
-              resultAuto = rhsMap getOrElse(resultAsbo, SPA(retNode, resultAsboId))
+              oldLhs = rhsMap getOrElse(lAsbo, epsilonAuto) // todo replace with createAutomaton
+              resultAuto = rhsMap getOrElse(resultAsbo, createAutomaton(retNode, resultAsboId))
             } yield lAsbo -> (oldLhs | lAuto | resultAuto))(breakOut)
             rhsMap ++ newMap
           } else rhsMap
@@ -168,8 +166,8 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             (asbo, paramIndex) <- substitutionAsbos
             paramId = createId(paramIndex + 1, cgNode)
             paramAsbo    <- idToAsbo getOrElse (paramId, Set(createAsbo(paramId)))
-            oldAutomaton  = rhsMap getOrElse (paramAsbo, empty)
-            automaton     = rhsMap getOrElse (asbo, empty)
+            oldAutomaton  = rhsMap getOrElse (paramAsbo, epsilonAuto)
+            automaton     = rhsMap getOrElse (asbo, epsilonAuto)
           } yield paramAsbo -> (oldAutomaton | automaton))(breakOut)
           rhsMap ++ newPairs
         }

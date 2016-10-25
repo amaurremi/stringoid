@@ -35,12 +35,12 @@ class ConcatenationSpec extends FunSpec with StringoidAnalysis {
       //        println(ret.getResult)
       //      }
 
-      //      /* debugging */
-      //      it("reproduces debugging test") {
-      //        val file = Paths.get("src/test/java/debug")
-      //        val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true)
-      //        run(analysisConfig)
-      //      }
+            /* debugging */
+            it("reproduces debugging test") {
+              val file = Paths.get("src/test/java/debug")
+              val analysisConfig = AnalysisConfig(irSource = InterProc, ignoreLibs = true, analysis = Append, file = file, outputUrls = true, graphPasses = 2)
+              run(analysisConfig)
+            }
 
       /* failing */
       //      it("reproduces failing tests") {

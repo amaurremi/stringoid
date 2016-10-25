@@ -18,8 +18,7 @@ import scala.collection.mutable
 abstract class FixedPointAppendIrRetriever(
   override val config: AnalysisConfig
 )
-  extends IrUrlRetriever
-  with StringAppendModule {
+  extends IrUrlRetriever with StringAppendModule {
 
   override def getResult: Json =
     if (config.outputUrls)
@@ -35,27 +34,27 @@ abstract class FixedPointAppendIrRetriever(
     * collect all assignments to static fields into map from field to sum-automaton
     */
   override lazy val fieldToAutomaton: FieldToAutomaton =
-    TimeResult("field-to-automaton", getAllNodes.foldLeft(mutable.Map.empty[FieldReference, SPA]) {
-      case (oldMap, node) if hasIr(node) =>
-        val ir = node.getIr
-        ir.iterateNormalInstructions().foldLeft(oldMap) {
-          case (oldMap2, instr: SSAPutInstruction) =>
-            val field = instr.getDeclaredField
-            val writeVal = instr.getVal
-            val table = ir.getSymbolTable
-            if (table isConstant writeVal) {
-              val stringPart = SPA(StaticFieldPart(String.valueOf(table getConstantValue writeVal)))
-              val automaton =
-                if (oldMap2 contains field) oldMap2(field) | stringPart
-                else stringPart
-              oldMap2 + (field -> automaton)
-            } else oldMap2
-          case (oldMap2, _) =>
-            oldMap2
-        }
-      case (oldMap, _) =>
-        oldMap
-    })
+  TimeResult("field-to-automaton", getAllNodes.foldLeft(mutable.Map.empty[FieldReference, StringPartAutomaton]) {
+    case (oldMap, node) if hasIr(node) =>
+      val ir = node.getIr
+      ir.iterateNormalInstructions().foldLeft(oldMap) {
+        case (oldMap2, instr: SSAPutInstruction) =>
+          val field = instr.getDeclaredField
+          val writeVal = instr.getVal
+          val table = ir.getSymbolTable
+          if (table isConstant writeVal) {
+            val stringPart = newAuto(StaticFieldPart(String.valueOf(table getConstantValue writeVal)))
+            val automaton =
+              if (oldMap2 contains field) oldMap2(field) | stringPart
+              else stringPart
+            oldMap2 + (field -> automaton)
+          } else oldMap2
+        case (oldMap2, _) =>
+          oldMap2
+      }
+    case (oldMap, _) =>
+      oldMap
+  })
 
   protected def urlPrefixes(vn: ValueNumber, node: Node): Seq[StringPart] = {
     val table = node.getIr.getSymbolTable

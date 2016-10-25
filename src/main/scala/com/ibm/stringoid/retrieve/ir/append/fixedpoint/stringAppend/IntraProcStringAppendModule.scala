@@ -13,8 +13,6 @@ import com.ibm.wala.ssa.analysis.{ExplodedControlFlowGraph, IExplodedBasicBlock}
 
 trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOModule with BackEdges {
 
-  import SPA._
-
   /**
     * Get the string concatenation results.
     */
@@ -22,7 +20,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
     val idToAsbo: Map[ValueNumber, Set[ASBO]] = idToAsboForNode(node)
     val solver: IntraProcStringAppendSolver = getAppendSolver(node, idToAsbo, fieldToAutomaton)
     val automata = stringAppendsForSolver(solver)
-    val filteredAutomata: Iterator[SPA] = TimeResult("filter URL automata", automata map {
+    val filteredAutomata: Iterator[StringPartAutomaton] = TimeResult("filter URL automata", automata map {
       auto =>
         auto.filterHeads {
           case StringIdentifier(vn)     =>
@@ -35,7 +33,7 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
           case _                        => false
         }
     })
-    TimeResult("merging filtered automata", merge(filteredAutomata).auto)
+    TimeResult("merging filtered automata", merge(filteredAutomata))
 
   }
 
@@ -43,13 +41,13 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
                        node: Node,
                        vnToAsbo: Map[Identifier, Set[ASBO]],
                        fieldToAutomaton: FieldToAutomaton
-  ) = new IntraProcStringAppendSolver(node, vnToAsbo, fieldToAutomaton)
+                     ) = new IntraProcStringAppendSolver(node, vnToAsbo, fieldToAutomaton)
 
   class IntraProcStringAppendSolver(
                                      node: Node,
                                      idToAsbo: Map[Identifier, Set[ASBO]],
                                      fieldToAutomaton: FieldToAutomaton
-  ) extends StringAppendFixedPointSolver(idToAsbo, fieldToAutomaton) {
+                                   ) extends StringAppendFixedPointSolver(idToAsbo, fieldToAutomaton) {
 
     override type BB = IExplodedBasicBlock
 

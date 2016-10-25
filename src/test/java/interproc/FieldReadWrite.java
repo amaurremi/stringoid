@@ -37,6 +37,17 @@ public class FieldReadWrite {
 // f()
 
 
+///// f()
+///// constants: 10 -> /path2hg
+//
+// 1 = new FR
+// FR()
+// 6 = new SB
+// 8 = getfield url
+// SB(8)
+// 5 = 6.append(10)
+// 4 = 6.toString
+
 ///// FRW.init
 //
 // invokespecial Object.init

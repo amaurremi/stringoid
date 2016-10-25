@@ -25,8 +25,8 @@ trait StringFormatSpecifiers extends StringAutomata {
   case class Specifier(useNumber: Int) extends FormattedString
 
   /**
-   * Returns the sequence of string parts and specifiers, along with the number of specifiers.
-   */
+    * Returns the sequence of string parts and specifiers, along with the number of specifiers.
+    */
   def parse(s: String): (Iterable[FormattedString], Int) = {
     var specifierCount = 0
     val matcher = fsPattern matcher s
@@ -78,7 +78,7 @@ trait StringFormatSpecifiers extends StringAutomata {
         case (parts, Specifier(count)) =>
           val newVariables =
             if (argValNums.hasNext)
-              SPA(node, createId(argValNums.next(), node)).iterator.toVector
+              createAutomaton(node, createId(argValNums.next(), node)).iterator.toVector
             else Vector(Seq(MissingStringFormatArgument))
           if (parts.isEmpty) newVariables map { _.toVector }
           else for {

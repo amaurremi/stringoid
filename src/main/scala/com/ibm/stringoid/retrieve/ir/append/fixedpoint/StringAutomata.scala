@@ -8,9 +8,17 @@ import seqset.regular.Automaton
 
 trait StringAutomata extends Nodes {
 
-  type FieldToAutomaton = scala.collection.mutable.Map[FieldReference, SPA]
+  type FieldToAutomaton = scala.collection.mutable.Map[FieldReference, StringPartAutomaton]
 
   def fieldToAutomaton: FieldToAutomaton
+
+  def createAutomaton(node: Node, id: Identifier): StringPartAutomaton =
+    node.getDu getDef valNum(id) match {
+      case instr: SSAFieldAccessInstruction if fieldToAutomaton contains instr.getDeclaredField =>
+        fieldToAutomaton(instr.getDeclaredField)
+      case _                                                                                    =>
+        newAuto(StringIdentifier(id))
+    }
 
   sealed trait StringPart
   case class StringIdentifier(id: Identifier) extends StringPart
@@ -21,49 +29,14 @@ trait StringAutomata extends Nodes {
 
   type StringPartAutomaton = Automaton[StringPart]
 
-  case class SPA private[StringAutomata] (auto: StringPartAutomaton) {
+  def epsilonAuto = Automaton(Seq.empty[StringPart])
 
-    import SPA._
+  def newAuto(sp: StringPart): StringPartAutomaton = epsilonAuto + Seq(sp)
 
-    def |(other: SPA) = SPA(auto | other.auto)
-
-    def +++(other: SPA) = {
-      if (isEmpty) other else SPA(auto +++ other.auto)
+  def merge(sps: Iterator[StringPartAutomaton]): StringPartAutomaton = {
+    sps.foldLeft(epsilonAuto) { // TODO EMPTY AUTO
+      _ | _
     }
-
-    def isEmpty = auto == emptyAuto
-
-    def filterHeads(f: StringPart => Boolean) = SPA(auto.filterHeads(f))
-
-    def iterator: Iterator[Seq[StringPart]] = auto.iterator
-  }
-
-  object SPA {
-
-    private[StringAutomata] val emptyAuto     = Automaton.empty[StringPart]
-    private[this] def newAuto(sp: StringPart) = emptyAuto + Seq(sp)
-
-    def apply(node: Node, id: Identifier): SPA =
-      node.getDu getDef valNum(id) match {
-        case instr: SSAFieldAccessInstruction if fieldToAutomaton contains instr.getDeclaredField =>
-          fieldToAutomaton(instr.getDeclaredField)
-        case _                                                                                    =>
-          SPA(newAuto(StringIdentifier(id)))
-      }
-
-    def apply(sp: StringPart): SPA = SPA(newAuto(sp))
-
-    val empty = SPA(emptyAuto)
-
-    def merge(sps: Iterator[SPA]): SPA= {
-      if (sps.isEmpty)
-        empty
-      else
-        sps.reduce {
-          _ | _
-        }
-    }
-
   }
 }
 

@@ -6,15 +6,16 @@ import com.ibm.stringoid._
 import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.ir.IrNodesModule.ChaIntraProcIrNodes
 import com.ibm.stringoid.util.TimeResult
+import com.ibm.wala.types.FieldReference
 
 /**
- * An analysis that is based on extracting the URL strings that appear as
- * constants in an IR's symbol table.
- */
+  * An analysis that is based on extracting the URL strings that appear as
+  * constants in an IR's symbol table.
+  */
 final class ConstantUrlFromIrRetriever(override val config: AnalysisConfig) extends ChaIntraProcIrNodes {
 
 
-  override def fieldToAutomaton: FieldToAutomaton =
+  override def fieldToAutomaton: scala.collection.mutable.Map[FieldReference, StringPartAutomaton] =
     throw new UnsupportedOperationException("field to automaton not needed in constant analysis")
 
   override def getUrlsWithSources: UrlsWithSources = {

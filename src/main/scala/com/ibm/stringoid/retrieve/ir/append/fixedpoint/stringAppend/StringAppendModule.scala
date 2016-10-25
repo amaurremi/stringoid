@@ -17,8 +17,6 @@ import scala.collection.mutable.ArrayBuffer
 
 trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuilderModule {
 
-  import SPA._
-  
   protected val MISSING_STRING_BUILDER_MESSAGE: String =
     "Value-number-to-ASBO map should contain the value number for this string builder."
   protected val EDGE_FUNCTIONS_NOT_SUPPORTED_MESSAGE: String =
@@ -32,7 +30,7 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
   var processedMeetInstructions = 0
   var instrCount = 0
 
-  def stringAppendsForSolver(solver: StringAppendFixedPointSolver): Iterator[SPA] = {
+  def stringAppendsForSolver(solver: StringAppendFixedPointSolver): Iterator[StringPartAutomaton] = {
     val result  = TimeResult("string-append solver", solver.result)
     val mapping = solver.ataRefMapping
     val ataRefs: Set[Int] = (solver.cfg map {
@@ -51,7 +49,7 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
   ) {
 
     type BB
-    type AsboMap = Map[ASBO, SPA]
+    type AsboMap = Map[ASBO, StringPartAutomaton]
 
     def cfg: NumberedGraph[BB]
 
@@ -71,18 +69,18 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
     }
 
     /**
-     * For efficiency we store our AsboToAutomaton in this array. The analysis operates on its indices
-     * that serve as references to the stored AsboToAutomaton objects.
-     */
+      * For efficiency we store our AsboToAutomaton in this array. The analysis operates on its indices
+      * that serve as references to the stored AsboToAutomaton objects.
+      */
     val ataRefMapping: ArrayBuffer[AsboToAutomaton] = new ArrayBuffer[AsboToAutomaton]()
 
     def initialAtaForNode(node: Node): AsboMap = {
       val table = node.getIr.getSymbolTable
-      (1 to table.getMaxValueNumber).foldLeft(Map.empty[ASBO, SPA]) {
+      (1 to table.getMaxValueNumber).foldLeft(Map.empty[ASBO, StringPartAutomaton]) {
         case (oldMap, vn) =>
           val id = createId(vn, node)
           if (table isConstant vn) {
-            val automaton = SPA(StringIdentifier(id))
+            val automaton = newAuto(StringIdentifier(id))
             oldMap + (createAsbo(id) -> automaton)
           } else {
             node.getDu getDef vn match {
@@ -100,16 +98,16 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
 
     // ITransferFunctionProvider's methods force the lattice elements to be mutable
     /**
-     * The map from ASBOs to string concatenations
+      * The map from ASBOs to string concatenations
       *
       * @param bb we need to keep track of the basic block in order to see whether a statement
-     *           appears in a strongly connected component
-     */
+      *           appears in a strongly connected component
+      */
     case class AsboToAutomaton(var asboToAutomaton: AsboMap, bb: Option[BB])
 
     /**
-     * A reference to an AsboToAutomaton in the [[ataRefMapping]] array
-     */
+      * A reference to an AsboToAutomaton in the [[ataRefMapping]] array
+      */
     sealed trait AtaReference extends NodeWithNumber with IVariable[AtaReference]  {
 
       val index: Int
@@ -175,7 +173,7 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
       ): (SPA, AsboMap) = {
         val (resultAuto, resultMap) =
           if (processedAcc contains id)
-            (SPA(StringCycle), Map.empty[ASBO, SPA])
+            (newAuto(StringCycle), Map.empty[ASBO, StringPartAutomaton])
           else {
             idToAsbo get id match {
               case Some(asbos) =>
@@ -184,11 +182,11 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
                   automaton <- rhsMap get asbo
                 } yield automaton
                 val newValNumAutomaton =
-                  if (automata.isEmpty) SPA(node, id)
+                  if (automata.isEmpty) createAutomaton(node, id)
                   else merge(automata)
-                (newValNumAutomaton, Map.empty[ASBO, SPA])
+                (newValNumAutomaton, Map.empty[ASBO, StringPartAutomaton])
               case None if rhsMap contains createAsbo(id) =>
-                (rhsMap(createAsbo(id)), Map.empty[ASBO, SPA])
+                (rhsMap(createAsbo(id)), Map.empty[ASBO, StringPartAutomaton])
               case None =>
                 node.getDu getDef valNum(id) match {
                   case phi: SSAPhiInstruction =>
@@ -205,14 +203,14 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
                     }) + (createAsbo(createId(phi.getDef, node)) -> mergedAutomaton)
                     (mergedAutomaton, mergedMap)
                   case _ =>
-                    (SPA(node, id), Map.empty[ASBO, SPA])
+                    (createAutomaton(node, id), Map.empty[ASBO, StringPartAutomaton])
                 }
             }
           }
         (resultAuto, resultMap)
       }
 
-      def getAppendAutomaton(node: Node, id: Identifier, instruction: SSAInstruction, idNode: Node, rhsMap: AsboMap): (SPA, AsboMap) =
+      def getAppendAutomaton(node: Node, id: Identifier, instruction: SSAInstruction, idNode: Node, rhsMap: AsboMap): (StringPartAutomaton, AsboMap) =
         getAppendAutomaton(node, id, idNode, rhsMap, Set.empty[Identifier])
 
 
@@ -238,11 +236,11 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
         * Append the automaton for [[appendId]] to all [[asbos]].
         */
       protected case class StringBuilderAppendOperator(
-                                                        asbos: Set[ASBO],
-                                                        appendId: Identifier,
-                                                        idNode: Node,
-                                                        node: Node,
-                                                        instruction: SSAInstruction
+        asbos: Set[ASBO],
+        appendId: Identifier,
+        idNode: Node,
+        node: Node,
+        instruction: SSAInstruction
       ) extends AbstractAppendOperator {
 
         override def createNewMap(rhsMap: AsboMap): AsboMap = {
@@ -273,14 +271,14 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
             sfArgSeqs.foldLeft(rhsMap) {
               case (m, sfArgs) if sfArgs.nonEmpty =>
                 val sfTail = sfArgs.tail
-                val (updNewMap, automaton) = sfTail.foldLeft(m, SPA(sfArgs.head)) {
+                val (updNewMap, automaton) = sfTail.foldLeft(m, newAuto(sfArgs.head)) {
                   case ((updM, resultAutomaton), stringFormatArg) =>
                     stringFormatArg match {
                       case StringIdentifier(id) =>
                         val (auto, toAppend) = getAppendAutomaton(node, id, instr, node, m)
                         (updM ++ toAppend, resultAutomaton +++ auto)
                       case other =>
-                        val appendAutomaton = SPA(other)
+                        val appendAutomaton = newAuto(other)
                         (updM, resultAutomaton +++ appendAutomaton)
                     }
                 }
@@ -303,7 +301,7 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
         override def evaluate(lhs: AtaReference, rhs: Array[AtaReference]): Byte = {
           processedMeetInstructions = processedMeetInstructions + 1
 
-          def add(asbo: ASBO, auto1: SPA, l: AsboMap): SPA =
+          def add(asbo: ASBO, auto1: StringPartAutomaton, l: AsboMap): StringPartAutomaton =
             l get asbo match {
               case Some(auto2) =>
                 auto1 | auto2
@@ -315,8 +313,8 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
                          oldLhsMap: AsboMap,
                          newMap: AsboMap,
                          asbo: ASBO,
-                         rAuto: SPA
-          ): AsboMap = {
+                         rAuto: StringPartAutomaton
+                       ): AsboMap = {
             oldLhsMap get asbo match {
               case Some(_) => // avoiding loops
                 val automaton = add(asbo, rAuto, newMap)
