@@ -170,7 +170,7 @@ trait StringAppendModule extends StringFormatSpecifiers with AbstractStringBuild
         idNode: Node,
         rhsMap: AsboMap,
         processedAcc: Set[Identifier]
-      ): (SPA, AsboMap) = {
+      ): (StringPartAutomaton, AsboMap) = {
         val (resultAuto, resultMap) =
           if (processedAcc contains id)
             (newAuto(StringCycle), Map.empty[ASBO, StringPartAutomaton])
