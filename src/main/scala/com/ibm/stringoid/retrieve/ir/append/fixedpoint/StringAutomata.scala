@@ -29,15 +29,16 @@ trait StringAutomata extends Nodes {
 
   type StringPartAutomaton = Automaton[StringPart]
 
-  def epsilonAuto = Automaton(Seq.empty[StringPart])
+  val epsilonAuto = Automaton(Seq.empty[StringPart])
 
-  def newAuto(sp: StringPart): StringPartAutomaton = epsilonAuto + Seq(sp)
+  val emptyAuto = Automaton.empty[StringPart]
 
-  def merge(sps: Iterator[StringPartAutomaton]): StringPartAutomaton = {
-    sps.foldLeft(epsilonAuto) { // TODO EMPTY AUTO
+  def newAuto(sp: StringPart): StringPartAutomaton = Automaton(Seq(sp))
+
+  def merge(sps: Iterator[StringPartAutomaton]): StringPartAutomaton =
+    sps reduce {
       _ | _
     }
-  }
 }
 
 trait IrNodes extends StringAutomata {

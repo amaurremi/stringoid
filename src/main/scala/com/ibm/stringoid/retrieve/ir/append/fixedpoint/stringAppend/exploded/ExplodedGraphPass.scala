@@ -157,11 +157,16 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
             case instr: SSAGetInstruction =>
               val vn = instr getUse (if (instr.isStatic) 1 else 2)
               if (vn > 0) {
-                val varAsbo = createAsbo(createId(vn, node))
+                val varAsbo      = createAsbo(createId(vn, node))
                 val fieldAuto    = fieldToAutomaton getOrElse(instr.getDeclaredField, epsilonAuto)
                 val prevMap      = resultMapMut(bb)
                 addToResult(bb, varAsbo, fieldAuto)
               }
+
+            // SB.toString
+            case instr: SSAAbstractInvokeInstruction if isSbTostring(instr) =>
+              () // todo
+
             case _ =>
               ()
           }
@@ -199,10 +204,10 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
     * @param argVn  value number of the argument that's being appended
     */
   private[this] def append(
-                            asbos: Set[ASBO],
-                            argVn: ValueNumber,
-                            bb: BB
-                          ): Unit = {
+    asbos: Set[ASBO],
+    argVn: ValueNumber,
+    bb: BB
+  ): Unit = {
 
     def predNodes = acyclicCFG getPredNodes bb
     val node      = CallGraphNode(bb.getNode)
@@ -216,7 +221,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
     asbos foreach {
       sb =>
         val predAuto = getResultOrDefault(bb, sb)
-        val newAuto = predAuto +++ argAutomaton
+        val newAuto = predAuto | (predAuto +++ argAutomaton)
         addToResult(bb, sb, newAuto)
     }
   }
@@ -229,7 +234,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
     }
     val sfAsbo = createAsbo(createId(instr.getDef, cgNode))
     val sfArgSeqs: Seq[Seq[StringPart]] = reorderStringFormatArgs(instr, cgNode)
-    val automaton = sfArgSeqs.foldLeft(epsilonAuto) {
+    val automaton = sfArgSeqs.foldLeft(emptyAuto) {
       case (prevAuto, sfArgs) if sfArgs.nonEmpty =>
         val nextAuto = sfArgs.tail.foldLeft(newAuto(sfArgs.head)) {
           case (resultAutomaton, stringFormatArg) =>
@@ -249,6 +254,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
       case (prevAuto, _)                         =>
         prevAuto
     }
+    assert(automaton != emptyAuto)
     addToResult(bb, sfAsbo, automaton)
   }
 

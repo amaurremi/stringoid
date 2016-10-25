@@ -33,27 +33,30 @@ abstract class FixedPointAppendIrRetriever(
   /**
     * collect all assignments to static fields into map from field to sum-automaton
     */
-  override lazy val fieldToAutomaton: FieldToAutomaton =
-  TimeResult("field-to-automaton", getAllNodes.foldLeft(mutable.Map.empty[FieldReference, StringPartAutomaton]) {
-    case (oldMap, node) if hasIr(node) =>
-      val ir = node.getIr
-      ir.iterateNormalInstructions().foldLeft(oldMap) {
-        case (oldMap2, instr: SSAPutInstruction) =>
-          val field = instr.getDeclaredField
-          val writeVal = instr.getVal
+  override lazy val fieldToAutomaton: FieldToAutomaton = TimeResult("field-to-automaton", {
+    val resultMap = mutable.Map.empty[FieldReference, StringPartAutomaton]
+    for {
+      node  <- getAllNodes
+      if hasIr(node)
+      ir     = node.getIr
+      instr <- ir.iterateNormalInstructions()
+    } {
+      instr match {
+        case pi: SSAPutInstruction =>
+          val field = pi.getDeclaredField
+          val writeVal = pi.getVal
           val table = ir.getSymbolTable
           if (table isConstant writeVal) {
             val stringPart = newAuto(StaticFieldPart(String.valueOf(table getConstantValue writeVal)))
             val automaton =
-              if (oldMap2 contains field) oldMap2(field) | stringPart
+              if (resultMap contains field) resultMap(field) | stringPart
               else stringPart
-            oldMap2 + (field -> automaton)
-          } else oldMap2
-        case (oldMap2, _) =>
-          oldMap2
+            resultMap += (field -> automaton)
+          }
+        case _                    => ()
       }
-    case (oldMap, _) =>
-      oldMap
+    }
+    resultMap
   })
 
   protected def urlPrefixes(vn: ValueNumber, node: Node): Seq[StringPart] = {
