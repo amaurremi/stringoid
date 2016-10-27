@@ -15,7 +15,6 @@ public class StringReturn2 {
     static String getDomain() {
         StringBuilder sb = new StringBuilder("http://string-return-2.com");
         return sb.toString();
-//        return "http://string-param-and-return.com";
     }
 }
 

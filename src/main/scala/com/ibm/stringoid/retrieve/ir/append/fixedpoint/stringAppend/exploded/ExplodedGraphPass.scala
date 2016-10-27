@@ -165,7 +165,9 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
 
             // SB.toString
             case instr: SSAAbstractInvokeInstruction if isSbTostring(instr) =>
-              () // todo
+              val sbAsbos = idToAsbo(getId(instr.getUse(0)))
+              val sbAutos = sbAsbos.iterator map { sb => getResultOrDefault(bb, sb) }
+              addToResult(bb, createAsbo(getId(instr.getDef)), merge(sbAutos))
 
             case _ =>
               ()

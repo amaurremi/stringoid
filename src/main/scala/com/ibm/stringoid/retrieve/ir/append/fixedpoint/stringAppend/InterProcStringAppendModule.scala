@@ -38,9 +38,9 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
   }
 
   class InterProcStringAppendSolver(
-                                     idToAsbo: Map[Identifier, Set[ASBO]],
-                                     fieldToAutomaton: FieldToAutomaton
-                                   ) extends StringAppendFixedPointSolver(idToAsbo, fieldToAutomaton) {
+    idToAsbo: Map[Identifier, Set[ASBO]],
+    fieldToAutomaton: FieldToAutomaton
+  ) extends StringAppendFixedPointSolver(idToAsbo, fieldToAutomaton) {
 
     type BB = BasicBlockInContext[IExplodedBasicBlock]
 

@@ -196,10 +196,10 @@ trait InterProcASBOModule extends AbstractStringBuilderModule with CgNodes {
             case inv: SSAAbstractInvokeInstruction if isSbAppend(inv)          =>
               val (firstDef, secondDef) = getSbAppendDefs(inv) // in 1 = 2.append(3), 1 is firstDef and 2 is secondDef
               addEdge(secondDef, firstDef)
-            case inv: SSAAbstractInvokeInstruction if isSbTostring(inv) => // in 1 = 2.toString, 1 is sbDef and 2 is sbUse
-              val sbDef = getSbToStringDef(inv)
-              val sbUse = getSbToStringUse(inv)
-              addEdge(sbUse, sbDef)
+//            case inv: SSAAbstractInvokeInstruction if isSbTostring(inv) => // in 1 = 2.toString, 1 is sbDef and 2 is sbUse
+//              val sbDef = getSbToStringDef(inv)
+//              val sbUse = getSbToStringUse(inv)
+//              addEdge(sbUse, sbDef)
             case inv: SSAAbstractInvokeInstruction if isStringFormat(inv)      =>
               addNode(inv.getDef)
 
