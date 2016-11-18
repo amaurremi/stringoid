@@ -5,6 +5,7 @@ import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ssa.SSAFieldAccessInstruction
 import com.ibm.wala.types.FieldReference
 import seqset.regular.Automaton
+import seqset.regular.{ ADFA, ADFADag }
 
 trait StringAutomata extends Nodes {
 
@@ -29,11 +30,14 @@ trait StringAutomata extends Nodes {
 
   type StringPartAutomaton = Automaton[StringPart]
 
-  val epsilonAuto = Automaton(Seq.empty[StringPart])
+  // Never make another one !
+  implicit val automataDag: ADFADag[StringPart] = ADFA.makeDag[StringPart]()
 
-  val emptyAuto = Automaton.empty[StringPart]
+  val epsilonAuto: StringPartAutomaton = ADFA(Seq.empty[StringPart])
 
-  def newAuto(sp: StringPart): StringPartAutomaton = Automaton(Seq(sp))
+  val emptyAuto: StringPartAutomaton = ADFA.empty[StringPart]
+
+  def newAuto(sp: StringPart): StringPartAutomaton = ADFA(Seq(sp))
 
   def merge(sps: Iterator[StringPartAutomaton]): StringPartAutomaton =
     sps reduce {
