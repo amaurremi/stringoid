@@ -159,7 +159,6 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
               if (vn > 0) {
                 val varAsbo      = createAsbo(createId(vn, node))
                 val fieldAuto    = fieldToAutomaton getOrElse(instr.getDeclaredField, epsilonAuto)
-                val prevMap      = resultMapMut(bb)
                 addToResult(bb, varAsbo, fieldAuto)
               }
 
@@ -256,8 +255,8 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
       case (prevAuto, _)                         =>
         prevAuto
     }
-    assert(automaton != emptyAuto)
-    addToResult(bb, sfAsbo, automaton)
+    if (automaton == emptyAuto) sfAsbo
+    else  addToResult(bb, sfAsbo, automaton)
   }
 
   private[this] def getConstantReturnValue(bb: BB, instr: SSAReturnInstruction): Option[ValueNumber] = {
