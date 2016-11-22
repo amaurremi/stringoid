@@ -73,7 +73,10 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
     })
     // constant URLs
     val constants = TimeResult("constant URLs", getConstantUrls)
-    TimeResult("merging filtered automata", merge(filteredAutomata ++ constants))
+    TimeResult("merging filtered automata", {
+      val sps = filteredAutomata ++ constants
+      if (sps.isEmpty) emptyAuto else merge(sps)
+    })
   }
 
   private[this] def getConstantUrls: Iterator[StringPartAutomaton] =

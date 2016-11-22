@@ -35,10 +35,14 @@ trait StringAutomata extends Nodes {
 
   def newAuto(sp: StringPart): StringPartAutomaton = Automaton(Seq(sp))
 
-  def merge(sps: Iterator[StringPartAutomaton]): StringPartAutomaton =
+  def merge(sps: Iterator[StringPartAutomaton]): StringPartAutomaton = {
+    if (sps.isEmpty) {
+      val x = 1
+    }
     sps reduce {
       _ | _
     }
+  }
 }
 
 trait IrNodes extends StringAutomata {
