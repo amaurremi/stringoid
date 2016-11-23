@@ -76,19 +76,17 @@ trait ExplodedStringAppendModule extends InterProcASBOModule with StringFormatSp
   ): Unit = {
     val succNode  = (succ, asbo)
     val oldResult = resultMutable((bb, asbo))
-    val newResult =
-      if (oldResult == epsilonAuto) newAutomaton
-      else oldResult +++ newAutomaton
+    val newResult = if (oldResult == epsilonAuto) newAutomaton else oldResult +++ newAutomaton
     val oldSuccResult = resultMutable(succNode)
     updateResultAndWorkListMutable(succNode, oldSuccResult | newResult)
   }
 
   private[this] def updateResultAndWorkListMutable(
-                                                    node: ExplodedNode,
-                                                    automaton: StringPartAutomaton
-                                                  )(
-                                                    implicit worklist: WorkList
-                                                  ): Unit = {
+    node: ExplodedNode,
+    automaton: StringPartAutomaton
+  )(
+    implicit worklist: WorkList
+  ): Unit = {
     val oldResult = resultMutable(node)
     resultMutable += (node -> automaton)
     if (oldResult != automaton) worklist insert node
