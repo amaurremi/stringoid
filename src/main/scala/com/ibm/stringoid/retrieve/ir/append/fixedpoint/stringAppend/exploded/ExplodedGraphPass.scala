@@ -149,20 +149,24 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
               val argVn     = instr getUse (if (instr.isStatic) 2 else 1)
               val rhs       = idToAsbo(getId(argVn))
               val field     = instr.getDeclaredField
-              val fieldAuto = fieldToAutomaton getOrElse (field, epsilonAuto)
+              val fieldAuto = fieldToAutomaton get field
               val rhsAutos  = rhs map {
                 rh =>
                   getResultOrDefault(bb, rh)
               }
-              fieldToAutomaton += (field -> (fieldAuto | merge(rhsAutos.iterator)))
+              val rhsMerge  = merge(rhsAutos.iterator)
+              val result    = if (fieldAuto.isEmpty) rhsMerge else fieldAuto.get | rhsMerge
+              fieldToAutomaton += (field -> result)
 
             // field reads
             case instr: SSAGetInstruction =>
               val vn = instr getUse (if (instr.isStatic) 1 else 2)
               if (vn > 0) {
                 val varAsbo      = createAsbo(createId(vn, node))
-                val fieldAuto    = fieldToAutomaton getOrElse(instr.getDeclaredField, epsilonAuto)
-                addToResult(bb, varAsbo, fieldAuto)
+                fieldToAutomaton get instr.getDeclaredField foreach {
+                  fieldAuto =>
+                    addToResult(bb, varAsbo, fieldAuto)
+                }
               }
 
             // SB.toString

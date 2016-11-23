@@ -125,13 +125,17 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
           if (result > 0) {
             val resultId = createId(result, retNode)
             val newMap = (for {
-              resultAsbo <- idToAsbo getOrElse(resultId, Set(createAsbo(resultId)))
-              lAsbo <- lhsAsbos
-              lAuto = rhsMap getOrElse(lAsbo, epsilonAuto)
+              resultAsbo  <- idToAsbo getOrElse(resultId, Set(createAsbo(resultId)))
+              lAsbo       <- lhsAsbos
+              lAuto        = rhsMap get lAsbo
               resultAsboId = createId(resultAsbo.identifier.vn, CallGraphNode(resultAsbo.identifier.node))
-              oldLhs = rhsMap getOrElse(lAsbo, epsilonAuto) // todo replace with createAutomaton
-              resultAuto = rhsMap getOrElse(resultAsbo, createAutomaton(retNode, resultAsboId))
-            } yield lAsbo -> (oldLhs | lAuto | resultAuto))(breakOut)
+              oldLhs       = rhsMap get lAsbo // todo replace with createAutomaton
+              resultAuto   = rhsMap getOrElse (resultAsbo, createAutomaton(retNode, resultAsboId))
+            } yield {
+              val automata = Seq(lAuto, oldLhs).flatten
+              val resultAutomaton = if (automata.isEmpty) resultAuto else merge(automata.toIterator) | resultAuto
+              lAsbo -> resultAutomaton
+            })(breakOut)
             rhsMap ++ newMap
           } else rhsMap
         }
@@ -166,9 +170,13 @@ trait InterProcStringAppendModule extends StringAppendModule with InterProcASBOM
             (asbo, paramIndex) <- substitutionAsbos
             paramId = createId(paramIndex + 1, cgNode)
             paramAsbo    <- idToAsbo getOrElse (paramId, Set(createAsbo(paramId)))
-            oldAutomaton  = rhsMap getOrElse (paramAsbo, epsilonAuto)
-            automaton     = rhsMap getOrElse (asbo, epsilonAuto)
-          } yield paramAsbo -> (oldAutomaton | automaton))(breakOut)
+            oldAutomaton  = rhsMap get paramAsbo
+            automaton     = rhsMap get asbo
+          } yield {
+            val automata = Seq(oldAutomaton, automaton).flatten
+            val result = if (automata.isEmpty) epsilonAuto else merge(automata.toIterator)
+            paramAsbo -> result
+          })(breakOut)
           rhsMap ++ newPairs
         }
 
