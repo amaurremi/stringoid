@@ -1,6 +1,8 @@
 package com.ibm.stringoid.util
 
-import java.util.Date
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.{Calendar, Date}
 
 case class TimeResult[R] private(result: R, time: Double)
 
@@ -31,10 +33,14 @@ object TimeResult {
 
   def apply[R](process: String, block: => R): R = {
     printColoured(num, process + "... " + new Date(System.currentTimeMillis()))
-    num = num + 1
+    num            = num + 1
     val timeResult = TimeResult(block)
-    num = num - 1
-    printColoured(num, "elapsed time: " + timeResult.time.toLong + " s\n")
+    num            = num - 1
+    val duration   = timeResult.time.toLong
+    val secs       = duration % 60
+    val hours      = duration / 3600
+    val minutes    = (duration / 60) % 60
+    printColoured(num, s"elapsed time: $duration sec   ($hours:$minutes:$secs)\n")
     timeResult.result
   }
 
