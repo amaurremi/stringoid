@@ -1,4 +1,4 @@
-package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded
+package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.graphPass
 
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.InterProcASBOModule
 import com.ibm.wala.ipa.callgraph.CGNode

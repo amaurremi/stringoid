@@ -1,4 +1,4 @@
-package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded
+package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.graphPass
 
 import java.util
 
@@ -7,7 +7,7 @@ import com.ibm.stringoid.retrieve.ir._
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.InterProcASBOModule
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.StringFormatSpecifiers
-import com.ibm.stringoid.util.TimeResult
+import com.ibm.stringoid.util.{ProgressBar, TimeResult}
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ssa._
 import com.ibm.wala.util.graph.traverse.Topological
@@ -15,7 +15,7 @@ import com.ibm.wala.util.graph.traverse.Topological
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
-trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers with WorkListModule with IrUrlRetriever {
+trait StringoidGraphPass extends InterProcASBOModule with StringFormatSpecifiers with WorkListModule with IrUrlRetriever {
 
   def addToResult(bb: BB, asbo: ASBO, auto: StringPartAutomaton): Unit = {
     asbo match {
@@ -75,7 +75,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
     val constants = TimeResult("constant URLs", getConstantUrls)
     TimeResult("merging filtered automata", {
       val sps = filteredAutomata ++ constants
-      if (sps.isEmpty) emptyAuto else merge(sps)
+      if (sps.isEmpty) emptyAuto else mergeWithProgressBar(sps)
     })
   }
 
@@ -100,7 +100,7 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
   private[this] def getResult: Iterator[StringPartAutomaton] = TimeResult("II analysis phase (computing automata)", {
 
     val passes   = config.graphPasses
-    val topOrder = TimeResult("CFG in topological order", Topological.makeTopologicalIter(acyclicCFG).toList)
+    val topOrder = TimeResult("CFG in topological order", Topological.makeTopologicalIter(acyclicCFG)).toList
     val size     = acyclicCFG.size
     if (DEBUG) println(s"CFG size: $size")
     println("_" * 100 + "(100%)")
@@ -108,76 +108,10 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
     (0 until passes) foreach { graphPass =>
 
       println(s"running graph pass ${graphPass + 1} out of $passes")
-
-      // for the "progress bar"
-      var iteration  = 0
-      var printedOut = 0
+      val pb = new ProgressBar(size)
 
       topOrder foreach {
-        bb: BB =>
-
-          // printing progress bar
-          iteration = iteration + 1
-          if (Math.ceil((iteration.toFloat / size) * 100).toInt > printedOut) {
-            print(".")
-            printedOut = printedOut + 1
-          }
-
-          propagateIdentity(bb)
-
-          val node = CallGraphNode(bb.getNode)
-          def getId(vn: ValueNumber) = createId(vn, node)
-
-          bb.getLastInstruction match {
-
-            // StringBuilder.append(str)
-            case instr: SSAAbstractInvokeInstruction if isSbAppend(instr) =>
-              val asbos = idToAsbo(getId(getFirstSbAppendDef(instr)))
-              append(asbos, getAppendArgument(instr), bb)
-
-            // new StringBuilder(str)
-            case instr: SSAAbstractInvokeInstruction if isSbConstructorWithStringParam(instr) =>
-              val asbos = Set(createAsbo(createId(getSbConstructorDef(instr), node)))
-              append(asbos, getSbConstructorArgument(instr), bb)
-
-            // String.format
-            case instr: SSAAbstractInvokeInstruction if isStringFormat(instr) =>
-              stringFormat(instr, bb)
-
-            // field writes
-            case instr: SSAPutInstruction =>
-              val argVn     = instr getUse (if (instr.isStatic) 2 else 1)
-              val rhs       = idToAsbo(getId(argVn))
-              val field     = instr.getDeclaredField
-              val fieldAuto = fieldToAutomaton get field
-              val rhsAutos  = rhs map {
-                rh =>
-                  getResultOrDefault(bb, rh)
-              }
-              val rhsMerge  = merge(rhsAutos.iterator)
-              val result    = if (fieldAuto.isEmpty) rhsMerge else fieldAuto.get | rhsMerge
-              fieldToAutomaton += (field -> result)
-
-            // field reads
-            case instr: SSAGetInstruction =>
-              val vn = instr getUse (if (instr.isStatic) 1 else 2)
-              if (vn > 0) {
-                val varAsbo      = createAsbo(createId(vn, node))
-                fieldToAutomaton get instr.getDeclaredField foreach {
-                  fieldAuto =>
-                    addToResult(bb, varAsbo, fieldAuto)
-                }
-              }
-
-            // SB.toString
-            case instr: SSAAbstractInvokeInstruction if isSbTostring(instr) =>
-              val sbAsbos = idToAsbo(getId(instr.getUse(0)))
-              val sbAutos = sbAsbos.iterator map { sb => getResultOrDefault(bb, sb) }
-              addToResult(bb, createAsbo(getId(instr.getDef)), merge(sbAutos))
-
-            case _ =>
-              ()
-          }
+        oneGraphPass(_, pb)
       }
       println()
     }
@@ -187,6 +121,67 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
     val resultsImmut = resultMapImmut.valuesIterator
     resultsMut ++ resultsImmut
   })
+
+  private[this] def oneGraphPass(bb: BB, pb: ProgressBar): Unit = {
+
+    pb.advance()
+
+    propagateIdentity(bb)
+
+    val node = CallGraphNode(bb.getNode)
+    def getId(vn: ValueNumber) = createId(vn, node)
+
+    bb.getLastInstruction match {
+
+      // StringBuilder.append(str)
+      case instr: SSAAbstractInvokeInstruction if isSbAppend(instr) =>
+        val asbos = idToAsbo(getId(getFirstSbAppendDef(instr)))
+        append(asbos, getAppendArgument(instr), bb)
+
+      // new StringBuilder(str)
+      case instr: SSAAbstractInvokeInstruction if isSbConstructorWithStringParam(instr) =>
+        val asbos = Set(createAsbo(createId(getSbConstructorDef(instr), node)))
+        append(asbos, getSbConstructorArgument(instr), bb)
+
+      // String.format
+      case instr: SSAAbstractInvokeInstruction if isStringFormat(instr) =>
+        stringFormat(instr, bb)
+
+      // field writes
+      case instr: SSAPutInstruction =>
+        val argVn     = instr getUse (if (instr.isStatic) 2 else 1)
+        val rhs       = idToAsbo(getId(argVn))
+        val field     = instr.getDeclaredField
+        val fieldAuto = fieldToAutomaton get field
+        val rhsAutos  = rhs map {
+          rh =>
+            getResultOrDefault(bb, rh)
+        }
+        val rhsMerge  = merge(rhsAutos.iterator)
+        val result    = if (fieldAuto.isEmpty) rhsMerge else fieldAuto.get | rhsMerge
+        fieldToAutomaton += (field -> result)
+
+      // field reads
+      case instr: SSAGetInstruction =>
+        val vn = instr getUse (if (instr.isStatic) 1 else 2)
+        if (vn > 0) {
+          val varAsbo      = createAsbo(createId(vn, node))
+          fieldToAutomaton get instr.getDeclaredField foreach {
+            fieldAuto =>
+              addToResult(bb, varAsbo, fieldAuto)
+          }
+        }
+
+      // SB.toString
+      case instr: SSAAbstractInvokeInstruction if isSbTostring(instr) =>
+        val sbAsbos = idToAsbo(getId(instr.getUse(0)))
+        val sbAutos = sbAsbos.iterator map { sb => getResultOrDefault(bb, sb) }
+        addToResult(bb, createAsbo(getId(instr.getDef)), merge(sbAutos))
+
+      case _ =>
+        ()
+    }
+  }
 
   private[this] def propagateIdentity(bb: BB): Unit = {
     val predNodes = acyclicCFG getPredNodes bb
@@ -262,8 +257,8 @@ trait ExplodedGraphPass extends InterProcASBOModule with StringFormatSpecifiers 
       case (prevAuto, _)                         =>
         prevAuto
     }
-    if (automaton == emptyAuto) sfAsbo
-    else  addToResult(bb, sfAsbo, automaton)
+    if (automaton != emptyAuto && automaton != epsilonAuto)
+      addToResult(bb, sfAsbo, automaton)
   }
 
   private[this] def getConstantReturnValue(bb: BB, instr: SSAReturnInstruction): Option[ValueNumber] = {

@@ -1,4 +1,4 @@
-package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded
+package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.graphPass
 
 import com.ibm.stringoid.retrieve.UrlCheck._
 import com.ibm.stringoid.retrieve.ir._

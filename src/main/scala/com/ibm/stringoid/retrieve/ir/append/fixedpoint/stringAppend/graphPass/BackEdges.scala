@@ -1,4 +1,4 @@
-package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded
+package com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.graphPass
 
 import java.util
 
@@ -26,9 +26,9 @@ trait BackEdges {
       hasEdge(src, dst, cfg.getNormalSuccessors)
 
     private[this] def hasEdge(
-     src: IExplodedBasicBlock,
-     dst: IExplodedBasicBlock,
-     succFun: IExplodedBasicBlock => util.Collection[IExplodedBasicBlock]
+      src: IExplodedBasicBlock,
+      dst: IExplodedBasicBlock,
+      succFun: IExplodedBasicBlock => util.Collection[IExplodedBasicBlock]
     ): Boolean = {
       val isBackEdge = backEdges contains new IntPair(cfg getNumber src, cfg getNumber dst)
       def isSucc = succFun(src) contains dst

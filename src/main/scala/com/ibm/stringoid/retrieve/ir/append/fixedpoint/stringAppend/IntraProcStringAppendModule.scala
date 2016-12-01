@@ -4,7 +4,7 @@ import com.ibm.stringoid.retrieve.UrlCheck._
 import com.ibm.stringoid.retrieve.ir._
 import com.ibm.stringoid.retrieve.ir.append.StringConcatUtil._
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.asboAnalysis.IntraProcASBOModule
-import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded.BackEdges
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.graphPass.BackEdges
 import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.fixpoint.UnaryOperator
 import com.ibm.wala.ipa.cfg.PrunedCFG
@@ -33,7 +33,8 @@ trait IntraProcStringAppendModule extends StringAppendModule with IntraProcASBOM
           case _                        => false
         }
     })
-    TimeResult("merging filtered automata", merge(filteredAutomata))
+    if (filteredAutomata.isEmpty) epsilonAuto
+    else TimeResult("merging filtered automata", merge(filteredAutomata))
 
   }
 

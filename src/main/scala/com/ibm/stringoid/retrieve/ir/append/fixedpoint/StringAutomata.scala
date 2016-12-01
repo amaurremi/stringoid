@@ -1,11 +1,12 @@
 package com.ibm.stringoid.retrieve.ir.append.fixedpoint
 
 import com.ibm.stringoid.retrieve.ir._
+import com.ibm.stringoid.util.{ProgressBar, TimeResult}
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ssa.SSAFieldAccessInstruction
 import com.ibm.wala.types.FieldReference
 import seqset.regular.Automaton
-import seqset.regular.{ ADFA, ADFADag }
+import seqset.regular.{ADFA, ADFADag}
 
 trait StringAutomata extends Nodes {
 
@@ -17,15 +18,20 @@ trait StringAutomata extends Nodes {
     node.getDu getDef valNum(id) match {
       case instr: SSAFieldAccessInstruction if fieldToAutomaton contains instr.getDeclaredField =>
         fieldToAutomaton(instr.getDeclaredField)
-      case _                                                                                    =>
+      case _ =>
         newAuto(StringIdentifier(id))
     }
 
   sealed trait StringPart
+
   case class StringIdentifier(id: Identifier) extends StringPart
+
   case class StaticFieldPart(string: String) extends StringPart
+
   case class StringFormatPart(string: String) extends StringPart
+
   case object MissingStringFormatArgument extends StringPart
+
   case object StringCycle extends StringPart
 
   type StringPartAutomaton = Automaton[StringPart]
@@ -43,6 +49,20 @@ trait StringAutomata extends Nodes {
     sps reduce {
       _ | _
     }
+
+  def mergeWithProgressBar(sps: Iterator[StringPartAutomaton]): StringPartAutomaton = {
+    val spsList = TimeResult("automata iterator to list", sps.toList)
+    val size = spsList.size
+    val pb = new ProgressBar(size)
+    println("automata merge progress bar")
+    val result = spsList reduce {
+      (a1, a2) =>
+        pb.advance()
+        a1 | a2
+    }
+    println()
+    result
+  }
 }
 
 trait IrNodes extends StringAutomata {
@@ -63,6 +83,14 @@ trait CgNodes extends StringAutomata {
   case class CgIdentifier(node: CGNode, vn: ValueNumber) {
 
     override val hashCode = node.getGraphNodeId * 23 + vn
+
+    override def equals(obj: Any): Boolean =
+      obj match {
+        case CgIdentifier(n, v) =>
+          n.getGraphNodeId == node.getGraphNodeId && v == vn
+        case _                  =>
+          false
+      }
   }
 
   override def valNum(id: Identifier): ValueNumber = id.vn

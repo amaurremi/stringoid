@@ -5,7 +5,7 @@ import argonaut._
 import com.ibm.stringoid._
 import com.ibm.stringoid.retrieve.UrlPartDefs._
 import com.ibm.stringoid.retrieve.ir.IrNodesModule.{CgIntraProcIrNodes, ChaIntraProcIrNodes, InterProcIrNodes, IntraProcIrNodes}
-import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.exploded.{CFG, ExplodedGraphPass, ExplodedStringAppendModule}
+import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.graphPass.{CFG, StringoidGraphPass, ExplodedStringAppendModule}
 import com.ibm.stringoid.retrieve.ir.append.fixedpoint.stringAppend.{InterProcStringAppendModule, IntraProcStringAppendModule}
 import com.ibm.stringoid.util.TimeResult
 
@@ -15,7 +15,7 @@ import scala.collection.breakOut
 object FixedPointAppendIrRetrieverImplementations {
 
   final class ExplodedInterProcFixedPointAppendIrRetriever(config: AnalysisConfig)
-    extends InterProcFixedPointAppendIrRetriever(config) with ExplodedGraphPass
+    extends InterProcFixedPointAppendIrRetriever(config) with StringoidGraphPass
 
   final class ExplodedInterProcFixedPointAppendIrRetrieverOld(config: AnalysisConfig)
     extends InterProcFixedPointAppendIrRetriever(config) with ExplodedStringAppendModule
