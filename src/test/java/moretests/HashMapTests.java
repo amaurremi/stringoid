@@ -1,7 +1,6 @@
 package moretests;
 
 import java.util.HashMap;
-import java.util.Iterator;
 
 /**
  * Created by witternj on 10/12/16.
