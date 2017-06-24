@@ -14,9 +14,11 @@ public class SwitchTests {
 
         sb = appendToSbCases(sb, "users");
 
+	/*
         Assertions.shouldContainHttp("api.test.com/v1");
         Assertions.shouldContainHttp("api.test.com/v1/users");
         Assertions.shouldContainHttp("api.test.com/v1/products");
+	*/
     }
 
     public static StringBuilder appendToSb (StringBuilder sb, String element) {

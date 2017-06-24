@@ -7,7 +7,7 @@ import com.ibm.stringoid.util.TimeResult
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ipa.callgraph.impl.PartialCallGraph
 import com.ibm.wala.ipa.callgraph.pruned.PrunedCallGraph
-import com.ibm.wala.ipa.callgraph.{AnalysisCache, CGNode, CallGraph}
+import com.ibm.wala.ipa.callgraph.{AnalysisCacheImpl, CGNode, CallGraph}
 import com.ibm.wala.ssa.{IR, IRFactory}
 import com.ibm.wala.types.ClassLoaderReference
 import com.ibm.wala.util.graph.Acyclic
@@ -84,7 +84,7 @@ object IrNodesModule {
       val processed = mutable.Set.empty[IR]
 
       val irFactory: IRFactory[IMethod] = if (isApk) getDexIrFactory(scope) else getJavaIrFactory(scope)
-      val cache = new AnalysisCache(irFactory)
+      val cache = new AnalysisCacheImpl(irFactory)
       for {
         c  <- cha.iterator()
         if includeLib || isApplicationClass(c)

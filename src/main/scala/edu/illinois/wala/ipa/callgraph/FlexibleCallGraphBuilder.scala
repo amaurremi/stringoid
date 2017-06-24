@@ -51,12 +51,12 @@ trait AbstractFlexibleCallGraphBuilder extends PropagationCallGraphBuilder with 
 class BytecodeFlexibleCallGraphBuilder(
   val _cha: ClassHierarchy,
   val _options: AnalysisOptions,
-  val _cache: AnalysisCache, pointerKeys: PointerKeyFactory
+  val _cache: AnalysisCacheImpl, pointerKeys: PointerKeyFactory
 ) extends SSAPropagationCallGraphBuilder(_cha, _options, _cache, pointerKeys)
   with AbstractFlexibleCallGraphBuilder {
 
   def this(cha: ClassHierarchy, options: AnalysisOptions, irFactory: IRFactory[IMethod]) =
-    this(cha, options, new AnalysisCache(irFactory), new DefaultPointerKeyFactory())
+    this(cha, options, new AnalysisCacheImpl(irFactory), new DefaultPointerKeyFactory())
 
   def this(options: AnalysisOptions) = {
     this(options.cha, options,
@@ -73,12 +73,12 @@ class BytecodeFlexibleCallGraphBuilder(
 class AstFlexibleCallGraphBuilder(
   val _cha: ClassHierarchy,
   val _options: AnalysisOptions,
-  val _cache: AnalysisCache, pointerKeys: PointerKeyFactory
+  val _cache: AnalysisCacheImpl, pointerKeys: PointerKeyFactory
 ) extends AstJavaSSAPropagationCallGraphBuilder(_cha, _options, _cache, pointerKeys)
   with AbstractFlexibleCallGraphBuilder {
 
   def this(cha: ClassHierarchy, options: AnalysisOptions, irFactory: IRFactory[IMethod]) =
-    this(cha, options, new AnalysisCache(irFactory), new DefaultPointerKeyFactory())
+    this(cha, options, new AnalysisCacheImpl(irFactory), new DefaultPointerKeyFactory())
 
   def this(options: AnalysisOptions) =
     this(options.cha, options,

@@ -10,8 +10,8 @@ import com.ibm.wala.cast.java.analysis.typeInference.AstJavaTypeInference
 import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope
 import com.ibm.wala.classLoader.{ClassLoaderFactoryImpl, IClass, IMethod, SourceDirectoryTreeModule}
 import com.ibm.wala.dalvik.classLoader.{DexFileModule, DexIRFactory}
-import com.ibm.wala.ipa.callgraph.AnalysisCache
-import com.ibm.wala.ipa.cha.ClassHierarchy
+import com.ibm.wala.ipa.callgraph.AnalysisCacheImpl
+import com.ibm.wala.ipa.cha.{ClassHierarchy, ClassHierarchyFactory}
 import com.ibm.wala.ssa.{DefaultIRFactory, IR, IRFactory}
 import com.ibm.wala.types.ClassLoaderReference
 import com.ibm.wala.util.debug.UnimplementedError
@@ -58,7 +58,7 @@ trait IrUrlRetriever extends UrlRetriever with StringAutomata {
       typeInference getType vn
     }
 
-  protected def getIr(cache: AnalysisCache, m: IMethod, processed: mutable.Set[IR]): Option[IR] = {
+  protected def getIr(cache: AnalysisCacheImpl, m: IMethod, processed: mutable.Set[IR]): Option[IR] = {
     val ir = cache getIR m
     if (Option(ir).isDefined) {
       if (!(processed contains ir)) {
@@ -83,7 +83,7 @@ trait IrUrlRetriever extends UrlRetriever with StringAutomata {
   protected lazy val cha: ClassHierarchy = {
     val includeLib = !config.ignoreLibs
     val classLoaderImpl = new ClassLoaderFactoryImpl(scope.getExclusions)
-    ClassHierarchy.make(scope, classLoaderImpl)
+    ClassHierarchyFactory.make(scope, classLoaderImpl)
   }
 
   def getConstantUrlStrings(ir: IR): Set[String] = {

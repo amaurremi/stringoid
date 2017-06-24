@@ -18,7 +18,7 @@ public class HashMapTests {
 
         Assertions.shouldContainHttp("api.maps.com/v2");
         Assertions.shouldContainHttp("api.maps.com/v2?");
-        Assertions.shouldContainHttp("api.maps.com/v2?param1=value1&param2=value2");
+        //Assertions.shouldContainHttp("api.maps.com/v2?param1=value1&param2=value2");
     }
 
     public static String getQuery (HashMap<String, String> paramMap) {

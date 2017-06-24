@@ -9,7 +9,7 @@ import com.ibm.wala.dalvik.util.AndroidEntryPointLocator.LocatorFlags
 import com.ibm.wala.ipa.callgraph.AnalysisOptions.ReflectionOptions
 import com.ibm.wala.ipa.callgraph.Entrypoint
 import com.ibm.wala.ipa.callgraph.impl.DefaultEntrypoint
-import com.ibm.wala.ipa.cha.ClassHierarchy
+import com.ibm.wala.ipa.cha.{ClassHierarchy, ClassHierarchyFactory}
 import com.ibm.wala.types.{MethodReference, TypeName, TypeReference}
 import com.ibm.wala.util.collections.HashSetFactory
 import com.typesafe.config.{Config, ConfigFactory}
@@ -37,7 +37,7 @@ object AnalysisOptions {
     //      new PolyglotClassLoaderFactory(scope.getExclusions(), new JavaIRTranslatorExtension())
     //    else
 
-    implicit val cha = ClassHierarchy.make(scope, classLoaderImpl)
+    implicit val cha = ClassHierarchyFactory.make(scope, classLoaderImpl)
 
     val options = new AnalysisOptions(scope, entrypoints(extraEntrypoints), cha, isSource(scope))
     options.setReflectionOptions(ReflectionOptions.NONE)

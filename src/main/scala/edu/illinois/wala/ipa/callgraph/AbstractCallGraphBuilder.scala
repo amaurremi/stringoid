@@ -5,12 +5,12 @@ import com.ibm.wala.analysis.reflection.ReflectionContextInterpreter
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter
 import com.ibm.wala.ipa.callgraph.impl.{DefaultContextSelector, Util}
 import com.ibm.wala.ipa.callgraph.propagation.cfa.{DefaultSSAInterpreter, DelegatingSSAContextInterpreter, ZeroXInstanceKeys}
-import com.ibm.wala.ipa.callgraph.{AnalysisCache, CallGraph, ContextSelector}
+import com.ibm.wala.ipa.callgraph.{AnalysisCacheImpl, CallGraph, ContextSelector}
 import com.ibm.wala.ipa.cha.{ClassHierarchy, IClassHierarchy}
 
 trait AbstractCallGraphBuilder {
   def _options: AnalysisOptions
-  def _cache: AnalysisCache
+  def _cache: AnalysisCacheImpl
   def _cha: ClassHierarchy
 
   // public

@@ -10,6 +10,7 @@ import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchy;
+import com.ibm.wala.ipa.cha.ClassHierarchyFactory;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.types.ClassLoaderReference;
@@ -54,9 +55,9 @@ public class WalaApkCallGraphBuilder {
     ) throws IOException, ClassHierarchyException, IllegalArgumentException, CancelException {
         AnalysisScope scope = makeDalvikScope(androidLibs, androidAPIJar, apkFileName);
 
-        final IClassHierarchy cha = ClassHierarchy.make(scope);
+        final IClassHierarchy cha = ClassHierarchyFactory.make(scope);
 
-        AnalysisCache cache = new AnalysisCache(new DexIRFactory());
+        AnalysisCacheImpl cache = new AnalysisCacheImpl(new DexIRFactory());
 
         Set<AndroidEntryPointLocator.LocatorFlags> flags = HashSetFactory.make();
         flags.add(AndroidEntryPointLocator.LocatorFlags.INCLUDE_CALLBACKS);
