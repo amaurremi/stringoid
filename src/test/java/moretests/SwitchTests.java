@@ -1,7 +1,5 @@
 package moretests;
 
-import interproc.StringBuilderParam;
-
 /**
  * Created by witternj on 10/26/16.
  */
